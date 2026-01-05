@@ -91,7 +91,7 @@ function renderProjectNavigation() {
     
     const thumbnail = document.createElement('img');
     thumbnail.className = 'project-thumbnail';
-    thumbnail.src = project.thumbnail || 'https://shuntofujii.com/assets/top/placeholder-image.jpg';
+    thumbnail.src = project.thumbnail || 'https://assets.shuntofujii.com/top/placeholder-image.jpg';
     thumbnail.alt = project.title;
     thumbnail.onerror = function() {
       this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23333" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="%23999" font-size="12"%3E' + project.title.substring(0, 2) + '%3C/text%3E%3C/svg%3E';
@@ -360,7 +360,7 @@ function updateContextPanel(project) {
         </div>
         ${tools ? `
         <div class="context-info-item row">
-          <img src="https://shuntofujii.com/assets/icons/toolkits.svg" alt="Toolkits" class="toolkit-icon" />
+          <img src="https://assets.shuntofujii.com/icons/toolkits.svg" alt="Toolkits" class="toolkit-icon" />
           <span class="context-info-value value">${tools}</span>
         </div>
         ` : ''}
@@ -477,7 +477,7 @@ function openModal(project) {
         } else {
           return `
             <div class="gallery-item">
-              <img src="${item.src || 'https://shuntofujii.com/assets/other/placeholder-image.jpg'}" alt="${item.caption || ''}" 
+              <img src="${item.src || 'https://assets.shuntofujii.com/other/placeholder-image.jpg'}" alt="${item.caption || ''}" 
                    onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'800\\' height=\\'600\\'%3E%3Crect fill=\\'%23111\\' width=\\'800\\' height=\\'600\\'/%3E%3Ctext x=\\'400\\' y=\\'300\\' text-anchor=\\'middle\\' dy=\\'.3em\\' fill=\\'%23444\\' font-size=\\'24\\'%3EPlaceholder Image%3C/text%3E%3C/svg%3E'">
               ${item.caption ? `<div class="gallery-caption">${item.caption}</div>` : ''}
             </div>

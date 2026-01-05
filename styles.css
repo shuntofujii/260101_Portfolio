@@ -414,13 +414,13 @@ body.modal-open .context-panel {
   z-index: 140;
   display: flex;
   gap: 1.5rem;
-  padding: 12px 24px;
+  padding: 12px 2rem;
   background: rgba(255, 255, 255, 0);
   backdrop-filter: none;
   border: none;
   border-radius: 0;
   width: auto;
-  max-width: 90vw;
+  max-width: 100vw;
   overflow-x: auto;
   overflow-y: visible;
   scrollbar-width: none;
@@ -884,7 +884,7 @@ body.modal-open .modal-overlay {
     transform: translateX(-50%);
     padding: 1.5rem 1rem;
     gap: 1rem;
-    max-width: calc(100vw - 2rem);
+    max-width: 100vw;
   }
 
   .project-item {
@@ -966,6 +966,10 @@ body.modal-open .modal-overlay {
   .hover-card .row {
     grid-template-columns: auto 1fr;
     column-gap: clamp(3px, 0.4vmin, 5px);
+  }
+
+  .project-navigation {
+    padding: 1.5rem 0.75rem;
   }
 }
 
