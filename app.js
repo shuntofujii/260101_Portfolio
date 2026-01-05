@@ -468,7 +468,7 @@ function openModal(project) {
           return `
             <div class="gallery-item">
               <video controls>
-                <source src="${item.src}" type="video/mp4">
+                <source src="${item.src}" type="video/webm">
                 お使いのブラウザは動画タグをサポートしていません。
               </video>
               ${item.caption ? `<div class="gallery-caption">${item.caption}</div>` : ''}
