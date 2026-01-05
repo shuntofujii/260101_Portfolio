@@ -1,0 +1,280 @@
+[
+  {
+    "id": "project-01",
+    "title": "DATEs",
+    "category": "Web App",
+    "role": "Founding",
+    "scope": "Service Design / UIUX Design / Business Dev",
+    "year": "2019-2025",
+    "tools": ["Figma", "React", "After Effects"],
+    "tagline": "少子化対策 × 地域活性化 = デートプラン",
+    "description": "デートプラン投稿・評価サイト「DATEs」をリリースしました。\nサービス設計〜UI/UXデザイン〜フロントコーディング、また自治体との連携など、代表として必死に手を動かしました。",
+    "heroMedia": {
+      "type": "video",
+      "src": "https://shuntofujii.com/assets/top/video-01.mp4"
+    },
+    "thumbnail": "https://shuntofujii.com/assets/top/thumbnail-01.webp",
+    "gallery": [
+      {
+        "type": "image",
+        "src": "https://shuntofujii.com/assets/dates/placeholder-image.jpg",
+        "caption": "メインビジュアル"
+      },
+      {
+        "type": "video",
+        "src": "https://shuntofujii.com/assets/dates/placeholder-video.mp4",
+        "caption": "モーションデザイン"
+      }
+    ],
+    "links": [
+      {
+        "label": "Behance",
+        "url": "#"
+      }
+    ]
+  },
+  {
+    "id": "project-02",
+    "title": "EJIC",
+    "category": "Business Event",
+    "role": "Creative Direction",
+    "scope": "Intro Video / Logo Design / Graphic Design",
+    "year": "2021-2022",
+    "tools": ["Blender", "After Effects", "Illustrator", "XD"],
+    "tagline": "What's possible with Windows",
+    "description": "マイクロソフト社主催の新規事業ピッチイベント「Empower Japan Intrapreneur Community」のクリエイティブディレクションを行いました。\nイベントのロゴ、発表者登壇時の事業紹介動画、Teams背景など、幅広く制作させていただきました。",
+    "heroMedia": {
+      "type": "video",
+      "src": "https://shuntofujii.com/assets/top/video-02.mp4"
+    },
+    "thumbnail": "https://shuntofujii.com/assets/top/thumbnail-02.webp",
+    "gallery": [
+      {
+        "type": "video",
+        "src": "https://shuntofujii.com/assets/ejic/placeholder-video.mp4",
+        "caption": "メインモーション"
+      },
+      {
+        "type": "image",
+        "src": "https://shuntofujii.com/assets/ejic/placeholder-image.jpg",
+        "caption": "コンセプトスケッチ"
+      }
+    ],
+    "links": [
+      {
+        "label": "YouTube",
+        "url": "#"
+      }
+    ]
+  },
+  {
+    "id": "project-03",
+    "title": "ZABTON",
+    "category": "Hackathon App",
+    "role": "Creative Direction",
+    "scope": "Product Video / UIUX Design",
+    "year": "2022",
+    "tools": ["After Effects", "Premiere Pro", "XD"],
+    "tagline": "サステナブル大喜利",
+    "description": "国内最大級のハッカソン「東京Web3ハッカソン」に出場し、全100組の中で準グランプリを獲得しました。\n大喜利のお題とボケを投稿することにブロックチェーン技術を用いることで、トークノミクスを成立させるというサービスでした。\n1週間と短い期間の中で、UI/UXデザイン、アプリの紹介動画の制作を担当させていただきました。",
+    "heroMedia": {
+      "type": "video",
+      "src": "https://shuntofujii.com/assets/top/video-03.mp4"
+    },
+    "thumbnail": "https://shuntofujii.com/assets/top/thumbnail-03.webp",
+    "gallery": [
+      {
+        "type": "image",
+        "src": "https://shuntofujii.com/assets/zabton/placeholder-image.jpg",
+        "caption": "メインビジュアル"
+      },
+      {
+        "type": "image",
+        "src": "https://shuntofujii.com/assets/zabton/placeholder-image.jpg",
+        "caption": "アプリケーション"
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "project-04",
+    "title": "IZUMO",
+    "category": "Mobile App",
+    "role": "Marketing Strategy",
+    "scope": "Product Video",
+    "year": "2022-2023",
+    "tools": ["After Effects", "DaVinci Resolve", "XD", "Illustrator"],
+    "tagline": "ARの普及を見越したSNS",
+    "description": "香港に拠点を置くAR×Web3の会社IZUMOxr.Ltdにて、Marketing Managerを務めました。\n2022年6月の事業立ち上げから、2023年12月までの1年半で、コミュニティ立ち上げ(Discord登録者約1万人)やSNS立ち上げ(𝕏フォロワー約2万人)、それらに関わるキャンペーン実施やクリエイティブ制作など幅広くプロジェクトに携わりました。",
+    "heroMedia": {
+      "type": "video",
+      "src": "https://shuntofujii.com/assets/top/video-04.mp4"
+    },
+    "thumbnail": "https://shuntofujii.com/assets/top/thumbnail-04.webp",
+    "gallery": [
+      {
+        "type": "image",
+        "src": "https://shuntofujii.com/assets/izumo/placeholder-image.jpg",
+        "caption": "ロゴデザイン"
+      },
+      {
+        "type": "image",
+        "src": "https://shuntofujii.com/assets/izumo/placeholder-image.jpg",
+        "caption": "パッケージデザイン"
+      },
+      {
+        "type": "video",
+        "src": "https://shuntofujii.com/assets/izumo/placeholder-video.mp4",
+        "caption": "ブランドムービー"
+      }
+    ],
+    "links": [
+      {
+        "label": "Web",
+        "url": "#"
+      }
+    ]
+  },
+  {
+    "id": "project-05",
+    "title": "デテクル",
+    "category": "Web App",
+    "role": "Marketing Strategy",
+    "scope": "Business Dev / Product Video / Graphic Design",
+    "year": "2023-",
+    "tools": ["DaVinci Resolve", "After Effects", "Figma", "Illustrator"],
+    "tagline": "AR × 人から生まれる新体験",
+    "description": "国内有数のMR開発会社MuuMu社のサービス「デテクル」のマーケティング戦略策定及び、その実行を担当しております。\n戦略策定のためのリサーチ、実行に伴う制作〜商談まで全てのプロセスを担っております。",
+    "heroMedia": {
+      "type": "video",
+      "src": "https://shuntofujii.com/assets/top/video-05.mp4"
+    },
+    "thumbnail": "https://shuntofujii.com/assets/top/thumbnail-05.webp",
+    "gallery": [
+      {
+        "type": "video",
+        "src": "https://shuntofujii.com/assets/deteqle/placeholder-video.mp4",
+        "caption": "メインアニメーション"
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "project-06",
+    "title": "グーチョキデッド",
+    "category": "Film Production",
+    "role": "Art Direction",
+    "scope": "Production Design / Costume Supervisor / Set Decorator",
+    "year": "2023-",
+    "tools": ["Illustrator", "After Effects", "Figma"],
+    "tagline": "国産映画を世界へ",
+    "description": "全編英語長編映画「グーチョキデッド」の美術監督ならびに実行（デザイン、衣装調達、小道具など）、またマーケティングなど幅広い領域を担当しております。\n作品は \"ゆうばり国際ファンタスティック映画祭2025\" にノミネートされました。",
+    "heroMedia": {
+      "type": "video",
+      "src": "https://shuntofujii.com/assets/top/video-06.mp4"
+    },
+    "thumbnail": "https://shuntofujii.com/assets/top/thumbnail-06.webp",
+    "gallery": [
+      {
+        "type": "image",
+        "src": "https://shuntofujii.com/assets/rockpaperdead/placeholder-image.jpg",
+        "caption": "メインビジュアル"
+      },
+      {
+        "type": "image",
+        "src": "https://shuntofujii.com/assets/rockpaperdead/placeholder-image.jpg",
+        "caption": "アプリケーション"
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "project-07",
+    "title": "SEPILA",
+    "category": "Fitness Brand",
+    "role": "Creative Direction",
+    "scope": "Fitness Video",
+    "year": "2024-",
+    "tools": ["DaVinci Resolve", "After Effects", "Figma"],
+    "tagline": "完全個室セルフマシンピラティス",
+    "description": "セルフでピラティスを行うためのレッスン動画のディレクションを担っております。\n撮影〜画面UI制作〜編集の全工程を行っております。",
+    "heroMedia": {
+      "type": "video",
+      "src": "https://shuntofujii.com/assets/top/video-07.mp4"
+    },
+    "thumbnail": "https://shuntofujii.com/assets/top/thumbnail-07.webp",
+    "gallery": [
+      {
+        "type": "video",
+        "src": "https://shuntofujii.com/assets/sepila/placeholder-video.mp4",
+        "caption": "ブランドムービー"
+      },
+      {
+        "type": "image",
+        "src": "https://shuntofujii.com/assets/sepila/placeholder-image.jpg",
+        "caption": "ロゴデザイン"
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "project-08",
+    "title": "久次米珈琲焙煎所",
+    "category": "Coffee Shop",
+    "role": "Co-Founding",
+    "year": "2025 (Opening Soon)",
+    "tools": ["Cursor", "Illustrator"],
+    "tagline": "人間監査法人パイオニア",
+    "description": "珈琲好きの友人と事業の立ち上げを行っております。",
+    "heroMedia": {
+      "type": "video",
+      "src": "https://shuntofujii.com/assets/top/video-08.mp4"
+    },
+    "thumbnail": "https://shuntofujii.com/assets/top/thumbnail-08.webp",
+    "gallery": [
+      {
+        "type": "image",
+        "src": "https://shuntofujii.com/assets/kujico/placeholder-image.jpg",
+        "caption": "メインビジュアル"
+      }
+    ],
+    "links": []
+  },
+  {
+    "id": "project-09",
+    "title": "Others",
+    "category": "Other Projects",
+    "role": "Graphic Design",
+    "scope": "Videography / Photography",
+    "year": "1995-",
+    "tagline": "作ること全般が好きです。",
+    "description": "色々楽しく作ってきました。AIの台頭により不要となったスキルばかりですが、楽しいからOK！",
+    "heroMedia": {
+      "type": "video",
+      "src": "https://shuntofujii.com/assets/top/video-09.mp4"
+    },
+    "thumbnail": "https://shuntofujii.com/assets/top/thumbnail-09.webp",
+    "gallery": [
+      {
+        "type": "video",
+        "src": "https://shuntofujii.com/assets/other/placeholder-video.mp4",
+        "caption": "メインモーション"
+      },
+      {
+        "type": "image",
+        "src": "https://shuntofujii.com/assets/other/placeholder-image.jpg",
+        "caption": "コンセプト"
+      }
+    ],
+    "links": [
+      {
+        "label": "Behance",
+        "url": "#"
+      },
+      {
+        "label": "YouTube",
+        "url": "#"
+      }
+    ]
+  }
+]

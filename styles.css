@@ -1,0 +1,1007 @@
+/* ============================================
+   変数定義（アクセントカラーを変更可能）
+   ============================================ */
+:root {
+  /* アクセントカラー候補（コメントアウトを切り替えて使用） */
+  --accent-color: #00d9ff; /* シアン（デフォルト） */
+  /* --accent-color: #a8ff00; */ /* ライム */
+  /* --accent-color: #ffb800; */ /* アンバー */
+  /* --accent-color: #ff6b9d; */ /* ピンク */
+  
+  --bg-gradient-start: #0a0a0f;
+  --bg-gradient-end: #1a1a2e;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --text-muted: #666666;
+  --panel-bg: rgba(255, 255, 255, 0.05);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-medium: 0 8px 40px rgba(0, 0, 0, 0.5);
+  
+  --transition-fast: 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-medium: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-slow: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-video: 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ============================================
+   リセット & ベース
+   ============================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ============================================
+   ポートフォリオ名（左上・常時表示・最前面）
+   ============================================ */
+.portfolio-title {
+  position: fixed;
+  top: 1.5rem;
+  left: 2rem;
+  z-index: 250;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.portfolio-title:hover {
+  opacity: 0.7;
+}
+
+.portfolio-title-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.15em;
+  margin: 0;
+  user-select: none;
+  opacity: 0.9;
+}
+
+/* ============================================
+   ① コンテキストパネル（左上）
+   ============================================ */
+.context-panel {
+  position: fixed;
+  z-index: 140;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--push-dur) var(--modal-ease),
+    opacity var(--push-dur) var(--modal-ease);
+  will-change: transform, opacity;
+}
+
+/* レスポンシブ対応（hover-cardクラスが付与されている場合） */
+.context-panel.hover-card {
+  /* タイトルの下に配置（タイトル高さ + 余白を考慮） */
+  top: clamp(calc(1.5rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem));
+  /* タイトルと同じ左位置に揃える */
+  left: clamp(2rem, 2vmin, 2rem);
+  
+  width: clamp(260px, 34vmin, 520px);
+  max-width: calc(100vw - (clamp(2rem, 2vmin, 2rem) * 2));
+}
+
+.context-panel.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.context-panel.modal-background {
+  opacity: 0.4;
+  transform: translateY(-10px);
+  z-index: 90;
+}
+
+/* モーダル開閉時の押しのけアニメーション */
+body.modal-open .context-panel {
+  transform: translateY(-60px) !important;
+  opacity: 0 !important;
+}
+
+.context-content {
+  background: var(--panel-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 1.5rem 20px;
+}
+
+/* hover-card用のレスポンシブpadding */
+.hover-card .context-content {
+  --pad-vertical: clamp(12px, calc(1.2vmin + 0.8vh), 18px);
+  --pad-horizontal: clamp(20px, calc(2vmin + 1.2vh), 30px);
+  padding: var(--pad-vertical) var(--pad-horizontal);
+  border-radius: 14px;
+  background: rgba(20, 22, 26, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: grid;
+  gap: clamp(8px, 1vmin, 12px);
+}
+
+.context-text {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.context-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+/* hover-card用のcontext-info調整 */
+.hover-card .context-info {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 0.8vmin, 10px);
+}
+
+.context-info-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--text-secondary);
+}
+
+.hover-card .context-info-item {
+  gap: clamp(4px, 0.5vmin, 6px);
+}
+
+/* hover-card用のrow/label/valueスタイル */
+.hover-card .row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: clamp(4px, 0.5vmin, 6px);
+  align-items: center;
+}
+
+.hover-card .label {
+  font-size: clamp(11px, 1.2vmin, 12px);
+  opacity: 0.65;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  padding-right: 0;
+}
+
+.hover-card .label.muted {
+  opacity: 0.4;
+}
+
+.toolkit-icon {
+  width: clamp(12px, 1.2vmin, 14px);
+  height: clamp(12px, 1.2vmin, 14px);
+  opacity: 0.92;
+  flex-shrink: 0;
+  margin-right: clamp(6px, 0.8vmin, 10px);
+}
+
+.hover-card .value {
+  font-size: clamp(12px, 1.35vmin, 14px);
+  opacity: 0.92;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.hover-card .context-info-value {
+  opacity: 0.92;
+  font-size: clamp(12px, 1.35vmin, 14px);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+/* Focus（roleScope）を少し目立たない色に */
+.hover-card .context-info-item:nth-child(2) .context-info-value {
+  opacity: 0.7;
+}
+
+/* Toolkitを少し目立たない色に、フォントサイズを小さく */
+.hover-card .context-info-item.row .context-info-value {
+  opacity: 0.7;
+  font-size: clamp(10px, 1.1vmin, 12px);
+}
+
+.context-info-label {
+  color: var(--text-muted);
+  font-weight: 500;
+  min-width: 60px;
+}
+
+.context-info-value {
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ============================================
+   ② 動画背景レイヤー（full bleed）
+   ============================================ */
+.focus-visual {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  overflow: hidden;
+  transition: opacity var(--transition-video);
+}
+
+.focus-visual.modal-background {
+  opacity: 0.2;
+  z-index: 9;
+}
+
+.visual-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  min-width: 100%;
+  max-width: none;
+}
+
+/* 2レイヤー構成の背景動画 */
+.bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.bg__video {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  will-change: filter, transform;
+  transform: translateZ(0);
+  transition: opacity var(--transition-video);
+}
+
+/* Base layer: 通常の背景動画 */
+.bg__video--base {
+  z-index: 0;
+  filter: blur(0);
+}
+
+/* Glass layer: Fractal Glassエフェクト適用 */
+.bg__video--glass {
+  z-index: 1;
+  filter: url(#fractalGlass);
+  opacity: 0.25;
+  mix-blend-mode: soft-light;
+}
+
+.hero-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  transition: opacity var(--transition-video);
+}
+
+.hero-media.fade-in {
+  animation: fadeIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   ③ タイトル背景（巨大タイポ・中央・最前面）
+   ============================================ */
+.title-background {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 200;
+  pointer-events: none;
+  width: 100%;
+  text-align: center;
+  transition: transform var(--transition-slow);
+}
+
+.title-text {
+  font-size: clamp(8rem, 20vw, 16rem);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.02);
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+  transition: color var(--transition-medium), opacity var(--transition-slow);
+  user-select: none;
+  opacity: 0;
+}
+
+.title-text.highlight {
+  color: rgba(255, 255, 255, 0.08);
+  opacity: 0;
+}
+
+.title-background.modal-background {
+  opacity: 0.2;
+  transform: translate(-50%, -50%) scale(0.98);
+}
+
+/* ============================================
+   State0用ガイダンステキスト（非選択時のみ表示）
+   ============================================ */
+.guidance-text {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 180;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-slow);
+  font-size: clamp(0.9rem, 3vw, 1.2rem);
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.05em;
+  user-select: none;
+  text-align: center;
+  width: 100%;
+  padding: 0 1rem;
+}
+
+.guidance-text.visible {
+  opacity: 1;
+}
+
+.guidance-main {
+  display: inline-block;
+}
+
+.guidance-cursor {
+  display: inline-block;
+  animation: blink 1s infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   ④ プロジェクト選択UI（画面下中央）
+   ============================================ */
+.project-navigation {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 140;
+  display: flex;
+  gap: 1.5rem;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0);
+  backdrop-filter: none;
+  border: none;
+  border-radius: 0;
+  width: auto;
+  max-width: 90vw;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  transition: opacity var(--transition-medium), transform var(--transition-medium);
+}
+
+.project-navigation.modal-background {
+  opacity: 0.4;
+  transform: translateX(-50%) translateY(10px);
+  z-index: 90;
+}
+
+/* モーダル開閉時の押しのけアニメーション */
+.project-navigation {
+  transition:
+    transform var(--push-dur) var(--modal-ease),
+    opacity var(--push-dur) var(--modal-ease);
+  will-change: transform, opacity;
+  transition-delay: 0ms;
+}
+
+body.modal-open .project-navigation {
+  transform: translateX(-50%) translateY(60px) !important;
+  opacity: 0 !important;
+  transition-delay: 40ms;
+}
+
+.project-navigation::-webkit-scrollbar {
+  display: none;
+}
+
+.project-item {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  overflow: visible;
+  transition: opacity var(--transition-fast), margin 0.3s ease-in-out;
+  border: none;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.project-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+  box-sizing: border-box;
+  transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out;
+  transform: scale(1);
+  filter: brightness(1);
+  position: relative;
+  z-index: 1;
+}
+
+/* 疑似要素：外枠の強調（::before） */
+.project-item::before {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 4px solid var(--accent-color);
+  opacity: 0;
+  z-index: 2;
+  pointer-events: none;
+  box-sizing: border-box;
+  /* アニメーションの初期状態（大きい枠線） */
+  inset: -12px;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* hover時の枠線アニメーション */
+.project-item:hover:not(.selected)::before {
+  opacity: 1;
+  animation: frameShrink 0.3s ease-in-out forwards;
+}
+
+@keyframes frameShrink {
+  from {
+    inset: -12px;
+  }
+  to {
+    /* 拡大したサムネイル（70px * 1.3 = 91px）に合致するサイズ */
+    /* アイテムサイズ70pxに対して、拡大後91pxに合わせるには inset: -10.5px */
+    inset: -10.5px;
+  }
+}
+
+/* 疑似要素：グロー（::after） */
+.project-item::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  /* hover時のアクセントカラーのグロー（外側エッジのみ） */
+  /* 中心から85%まで: 完全に透明、85-100%: アクセントカラー */
+  background: radial-gradient(circle, transparent 85%, var(--accent-color) 85%, var(--accent-color) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out, background 0.3s ease-in-out;
+  z-index: 0;
+  pointer-events: none;
+  filter: blur(6px);
+}
+
+/* Normal状態（デフォルト） */
+.project-item:not(:hover):not(.selected) {
+  opacity: 0.4;
+}
+
+.project-item:not(:hover):not(.selected) .project-thumbnail {
+  transform: scale(1);
+  filter: brightness(1);
+}
+
+/* 非選択時の白い光彩（サムネイルのエッジから外側へ） */
+/* サムネイルのエッジ（100%付近）が白、外側に向かって徐々に透明 */
+.project-item:not(:hover):not(.selected)::after {
+  background: radial-gradient(circle, transparent 92%, rgba(255, 255, 255, 0.6) 96%, rgba(255, 255, 255, 1.0) 100%);
+  opacity: 1;
+  filter: blur(4px);
+  inset: -4px;
+}
+
+/* Hover状態（一時的フォーカス） */
+.project-item:hover:not(.selected) {
+  opacity: 1;
+  margin: 0 4px;
+}
+
+.project-item:hover:not(.selected) .project-thumbnail {
+  transform: scale(1.3);
+  filter: brightness(1.3);
+}
+
+.project-item:hover:not(.selected)::before {
+  opacity: 1;
+}
+
+.project-item:hover:not(.selected)::after {
+  opacity: 0.4;
+}
+
+/* hoverされたアイテムの前後のアイテムを左右に広げる */
+.project-item:hover:not(.selected) + .project-item:not(.selected) {
+  margin-left: 8px;
+}
+
+.project-item:not(.selected):has(+ .project-item:hover:not(.selected)) {
+  margin-right: 8px;
+}
+
+/* Selected状態（状態保持・2重枠） */
+.project-item.selected {
+  opacity: 1;
+  border-color: var(--accent-color);
+  border-width: 2px;
+}
+
+.project-item.selected::before {
+  opacity: 1;
+  border-width: 2px;
+  inset: -4px;
+  /* 2重枠の外側 */
+}
+
+.project-item.selected::after {
+  opacity: 0.6;
+}
+
+/* hover時、非hover項目を減衰 */
+.project-navigation:hover .project-item:not(:hover):not(.selected) {
+  opacity: 0.25;
+}
+
+
+/* ============================================
+   モーダル（プロジェクト詳細）
+   ============================================ */
+/* ============================================
+   モーダルアニメーション用変数
+   ============================================ */
+:root {
+  --modal-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --modal-dur: 420ms;
+  --push-dur: 360ms;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--modal-dur) var(--modal-ease);
+}
+
+body.modal-open .modal-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-container {
+  position: relative;
+  background: var(--panel-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--panel-border);
+  border-radius: 24px;
+  max-width: 900px;
+  max-height: 90vh;
+  width: min(900px, calc(100vw - 32px));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.55);
+  
+  /* 初期状態（閉じている） */
+  opacity: 0;
+  transform: scale(0.92);
+  pointer-events: none;
+  
+  transition:
+    transform var(--modal-dur) var(--modal-ease),
+    opacity var(--modal-dur) var(--modal-ease);
+  
+  will-change: transform, opacity;
+}
+
+/* 開いている状態 */
+.modal-container[data-state="open"] {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+/* 閉じている状態 */
+.modal-container[data-state="closing"] {
+  opacity: 0;
+  transform: scale(0.96);
+  pointer-events: none;
+}
+
+/* 閉じた状態（非表示） */
+.modal-container[data-state="closed"] {
+  opacity: 0;
+  transform: scale(0.92);
+  pointer-events: none;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.modal-close:hover {
+  background: var(--accent-color);
+  color: var(--bg-gradient-start);
+  transform: rotate(90deg);
+}
+
+.modal-content {
+  padding: 3rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-color) transparent;
+}
+
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 4px;
+}
+
+.modal-header {
+  margin-bottom: 2rem;
+}
+
+.modal-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.modal-tagline {
+  font-size: 1.1rem;
+  color: var(--accent-color);
+  font-weight: 400;
+  margin-bottom: 1.5rem;
+}
+
+.modal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  row-gap: 0.5rem;
+  margin-bottom: 2rem;
+  font-size: 0.75rem;
+}
+
+.modal-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.modal-meta-label {
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+.modal-meta-value {
+  color: var(--text-primary);
+  font-size: 0.75rem;
+}
+
+.modal-description {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.modal-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.gallery-item {
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.gallery-item img,
+.gallery-item video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.gallery-item video {
+  background: #000;
+}
+
+.gallery-caption {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.modal-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.modal-link {
+  padding: 0.75rem 1.5rem;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  font-size: 0.9rem;
+}
+
+.modal-link:hover {
+  background: var(--accent-color);
+  color: var(--bg-gradient-start);
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   レスポンシブ（スマホ対応）
+   ============================================ */
+@media (max-width: 768px) {
+  .portfolio-title {
+    top: 1rem;
+    left: 1rem;
+  }
+
+  .portfolio-title-text {
+    font-size: 0.95rem;
+  }
+
+  .context-panel {
+    top: 4rem;
+    left: 1rem;
+    max-width: calc(100% - 2rem);
+  }
+
+  /* hover-card用のレスポンシブ調整（タイトルの下に配置） */
+  .context-panel.hover-card {
+    top: clamp(calc(1rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem));
+    left: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+
+  .focus-visual {
+    width: 100%;
+    height: 100vh;
+    top: 0;
+  }
+
+  .bg__video {
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* Mobile: Glass layerを軽量化 or 無効化 */
+  .bg__video--glass {
+    filter: blur(8px);
+    opacity: 0.15;
+    mix-blend-mode: normal;
+  }
+
+  .title-text {
+    font-size: clamp(4rem, 15vw, 8rem);
+  }
+
+  .project-navigation {
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1.5rem 1rem;
+    gap: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+
+  .project-item {
+    width: 55px;
+    height: 55px;
+  }
+
+
+  .modal-container {
+    max-height: 95vh;
+    width: calc(100vw - 2rem);
+    border-radius: 16px;
+  }
+
+  .modal-content {
+    padding: 2rem 1.5rem;
+  }
+
+  .modal-title {
+    font-size: clamp(1.5rem, 5vw, 1.8rem);
+  }
+
+  .modal-tagline {
+    font-size: clamp(0.95rem, 3vw, 1.1rem);
+  }
+
+  .modal-description {
+    font-size: clamp(0.9rem, 3vw, 1rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .context-panel {
+    font-size: 0.8rem;
+  }
+
+  .project-navigation {
+    gap: 0.75rem;
+    padding: 1.5rem 0.75rem;
+    bottom: 16px;
+  }
+
+  .project-item {
+    width: 45px;
+    height: 45px;
+  }
+
+  .modal-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .modal-close {
+    top: 1rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    font-size: 1.3rem;
+  }
+}
+
+/* =========================================
+   Hover info panel (top-left) responsive
+   ========================================= */
+
+@media (max-width: 520px) {
+  .hover-card {
+    width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px);
+    /* タイトルの下に配置 */
+    top: clamp(calc(1rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem));
+    left: 8px;
+  }
+  
+  .hover-card .context-content {
+    --pad-vertical: clamp(10px, 2.4vmin, 14px);
+    --pad-horizontal: clamp(12px, 2.4vmin, 16px);
+  }
+  
+  .hover-card .row {
+    grid-template-columns: auto 1fr;
+    column-gap: clamp(3px, 0.4vmin, 5px);
+  }
+}
+
+@media (min-width: 1200px) {
+  .hover-card {
+    width: clamp(320px, 28vmin, 560px);
+  }
+  
+  .hover-card .context-content {
+    --pad-vertical: clamp(14px, 1.6vmin, 20px);
+    --pad-horizontal: clamp(22px, 2.2vmin, 32px);
+  }
+}
+
+/* Mobileフォールバック: pointer:coarse または prefers-reduced-motion */
+/* ============================================
+   prefers-reduced-motion 対応
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .modal-container,
+  .modal-overlay,
+  .context-panel,
+  .project-navigation {
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+  .modal-container {
+    filter: none !important;
+  }
+}
+
+@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .bg__video--glass {
+    filter: blur(6px);
+    opacity: 0.12;
+    mix-blend-mode: normal;
+  }
+}
+
