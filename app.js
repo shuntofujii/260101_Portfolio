@@ -283,11 +283,23 @@ function updateHeroMedia(heroMedia) {
       video.style.opacity = '0';
       
       setTimeout(() => {
+        // 既存のイベントリスナーをクリーンアップ
+        const existingListeners = ['loadeddata', 'canplay', 'canplaythrough', 'error'];
+        existingListeners.forEach(eventType => {
+          video.removeEventListener(eventType, video._playHandler);
+          video.removeEventListener(eventType, video._errorHandler);
+        });
+        video._playHandler = null;
+        video._errorHandler = null;
+        
         video.src = heroMedia.src;
         video.muted = true;
         video.loop = true;
         video.playsInline = true;
+        video.preload = 'auto';
         video.setAttribute('loop', 'true');
+        video.setAttribute('muted', 'true');
+        video.setAttribute('playsinline', 'true');
         video.style.display = 'block';
         
         // 動画が終了したときに再再生（ループのフォールバック）
@@ -300,24 +312,54 @@ function updateHeroMedia(heroMedia) {
         video.removeEventListener('ended', loopHandler);
         video.addEventListener('ended', loopHandler);
         
-        // 動画を読み込んで再生
+        // 再生を試行する関数
+        const attemptPlay = () => {
+          if (video.readyState >= 2) { // HAVE_CURRENT_DATA以上
+            video.play().catch(e => {
+              console.log('Video autoplay prevented:', e);
+              // ユーザー操作で再試行するためのガード
+              const retryPlay = () => {
+                video.play().catch(() => {});
+                document.removeEventListener('pointerdown', retryPlay);
+                document.removeEventListener('touchstart', retryPlay);
+                document.removeEventListener('click', retryPlay);
+              };
+              document.addEventListener('pointerdown', retryPlay, { once: true });
+              document.addEventListener('touchstart', retryPlay, { once: true });
+              document.addEventListener('click', retryPlay, { once: true });
+            });
+          }
+        };
+        
+        // 複数のイベントで再生を試行（フォールバック）
+        const playHandler = () => {
+          attemptPlay();
+          video.removeEventListener('loadeddata', playHandler);
+          video.removeEventListener('canplay', playHandler);
+          video.removeEventListener('canplaythrough', playHandler);
+        };
+        video._playHandler = playHandler;
+        
+        // エラーハンドリング
+        const errorHandler = (e) => {
+          console.error('Video load error:', e, heroMedia.src);
+          video.removeEventListener('error', errorHandler);
+        };
+        video._errorHandler = errorHandler;
+        video.addEventListener('error', errorHandler);
+        
+        // 複数のイベントリスナーを設定（最初に発火したもので再生）
+        video.addEventListener('loadeddata', playHandler, { once: true });
+        video.addEventListener('canplay', playHandler, { once: true });
+        video.addEventListener('canplaythrough', playHandler, { once: true });
+        
+        // 動画を読み込む
         video.load();
         
-        // loadeddataイベントで再生を試行（2つの動画を同期）
-        video.addEventListener('loadeddata', function playVideo() {
-          video.play().catch(e => {
-            console.log('Video autoplay prevented:', e);
-            // ユーザー操作で再試行するためのガード
-            const retryPlay = () => {
-              video.play().catch(() => {});
-              document.removeEventListener('pointerdown', retryPlay);
-              document.removeEventListener('touchstart', retryPlay);
-            };
-            document.addEventListener('pointerdown', retryPlay, { once: true });
-            document.addEventListener('touchstart', retryPlay, { once: true });
-          });
-          video.removeEventListener('loadeddata', playVideo);
-        }, { once: true });
+        // 既に読み込み済みの場合のフォールバック
+        if (video.readyState >= 2) {
+          attemptPlay();
+        }
         
         // フェードイン
         video.style.opacity = '1';
