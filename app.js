@@ -124,6 +124,25 @@ function setupEventListeners() {
       }
     });
     
+    // スマホ向け：touchstartでhover状態、touchcancel/touchendで非hover状態
+    item.addEventListener('touchstart', (e) => {
+      if (currentState !== 'modal') {
+        handleProjectHover(project, item);
+      }
+    }, { passive: true });
+    
+    item.addEventListener('touchcancel', (e) => {
+      if (currentState !== 'modal') {
+        handleProjectLeave();
+      }
+    }, { passive: true });
+    
+    item.addEventListener('touchend', (e) => {
+      if (currentState !== 'modal') {
+        handleProjectLeave();
+      }
+    }, { passive: true });
+    
     item.addEventListener('click', () => {
       handleProjectClick(project, item);
     });
@@ -458,40 +477,6 @@ function openModal(project) {
     ${project.description ? `
     <div class="modal-description">
       ${project.description.replace(/\n/g, '<br>')}
-    </div>
-    ` : ''}
-    
-    ${project.gallery && project.gallery.length > 0 ? `
-    <div class="modal-gallery">
-      ${project.gallery.map(item => {
-        if (item.type === 'video') {
-          return `
-            <div class="gallery-item">
-              <video controls>
-                <source src="${item.src}" type="video/webm">
-                お使いのブラウザは動画タグをサポートしていません。
-              </video>
-              ${item.caption ? `<div class="gallery-caption">${item.caption}</div>` : ''}
-            </div>
-          `;
-        } else {
-          return `
-            <div class="gallery-item">
-              <img src="${item.src || 'https://assets.shuntofujii.com/other/placeholder-image.jpg'}" alt="${item.caption || ''}" 
-                   onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'800\\' height=\\'600\\'%3E%3Crect fill=\\'%23111\\' width=\\'800\\' height=\\'600\\'/%3E%3Ctext x=\\'400\\' y=\\'300\\' text-anchor=\\'middle\\' dy=\\'.3em\\' fill=\\'%23444\\' font-size=\\'24\\'%3EPlaceholder Image%3C/text%3E%3C/svg%3E'">
-              ${item.caption ? `<div class="gallery-caption">${item.caption}</div>` : ''}
-            </div>
-          `;
-        }
-      }).join('')}
-    </div>
-    ` : ''}
-    
-    ${project.links && project.links.length > 0 ? `
-    <div class="modal-links">
-      ${project.links.map(link => `
-        <a href="${link.url}" class="modal-link" target="_blank" rel="noopener noreferrer">${link.label}</a>
-      `).join('')}
     </div>
     ` : ''}
   `;
