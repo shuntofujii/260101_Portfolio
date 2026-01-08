@@ -133,6 +133,63 @@
         "label": "Web",
         "url": "#"
       }
+    ],
+    "projectSlug": "izumo",
+    "initiatives": [
+      {
+        "title": "Strategy 2024",
+        "assetPrefix": "strategy2024",
+        "hasVideo": true,
+        "images": 2
+      },
+      {
+        "title": "Ver.0.3.0 Release",
+        "assetPrefix": "release",
+        "hasVideo": true,
+        "images": 5
+      },
+      {
+        "title": "BOSO TOKYO AR POPUP",
+        "assetPrefix": "boso",
+        "hasVideo": true,
+        "images": 4
+      },
+      {
+        "title": "A.E.B. AR Shop",
+        "assetPrefix": "aeb",
+        "hasVideo": true,
+        "images": 3
+      },
+      {
+        "title": "Samurai AR Street",
+        "assetPrefix": "samurai",
+        "hasVideo": true,
+        "images": 2
+      },
+      {
+        "title": "Community",
+        "assetPrefix": "community",
+        "hasVideo": false,
+        "images": 2
+      },
+      {
+        "title": "Deck",
+        "assetPrefix": "deck",
+        "hasVideo": false,
+        "images": 4
+      },
+      {
+        "title": "Design System Ver.2",
+        "assetPrefix": "designsystem",
+        "hasVideo": false,
+        "images": 4
+      },
+      {
+        "title": "Design System Ver.1",
+        "assetPrefix": "olddesignsystem",
+        "hasVideo": false,
+        "images": 2
+      }
     ]
   },
   {

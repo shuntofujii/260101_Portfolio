@@ -15,7 +15,6 @@ const portfolioTitle = document.getElementById('portfolioTitle');
 const contextPanel = document.getElementById('contextPanel');
 const focusVisual = document.getElementById('focusVisual');
 const heroVideoBase = document.getElementById('heroVideoBase');
-const heroVideoGlass = document.getElementById('heroVideoGlass');
 const titleBackground = document.getElementById('titleBackground');
 const titleText = document.getElementById('titleText');
 const guidanceText = document.getElementById('guidanceText');
@@ -62,16 +61,9 @@ function renderInitialState() {
     heroVideoBase.currentTime = 0;
     heroVideoBase.style.opacity = '0';
   }
-  if (heroVideoGlass) {
-    heroVideoGlass.style.display = 'none';
-    heroVideoGlass.pause();
-    heroVideoGlass.currentTime = 0;
-    heroVideoGlass.style.opacity = '0';
-  }
   
   // ③ タイトル
   titleText.textContent = 'PORTFOLIO';
-  titleText.classList.remove('highlight');
   
   // State0用ガイダンステキストを表示
   guidanceText.classList.add('visible');
@@ -186,7 +178,6 @@ function handleProjectHover(project, itemElement) {
   updateHeroMedia(project.heroMedia);
   
   // ③ タイトルは非表示（hover時も表示しない）
-  titleText.classList.remove('highlight');
   
   // State0用ガイダンステキストを非表示
   guidanceText.classList.remove('visible');
@@ -210,7 +201,6 @@ function handleProjectLeave() {
   if (currentState !== 'modal' && !selectedProject) {
     // ③ タイトルを初期状態に戻す
     titleText.textContent = 'PORTFOLIO';
-    titleText.classList.remove('highlight');
     
     // 動画を停止
     if (heroVideoBase) {
@@ -218,12 +208,6 @@ function handleProjectLeave() {
       heroVideoBase.currentTime = 0;
       heroVideoBase.style.display = 'none';
       heroVideoBase.style.opacity = '0';
-    }
-    if (heroVideoGlass) {
-      heroVideoGlass.pause();
-      heroVideoGlass.currentTime = 0;
-      heroVideoGlass.style.display = 'none';
-      heroVideoGlass.style.opacity = '0';
     }
     
     // ① コンテキストパネルを非表示にする
@@ -275,8 +259,8 @@ function updateHeroMedia(heroMedia) {
       return;
     }
     
-    // 2つの動画を同期して更新する関数
-    const updateVideo = (video, isBase) => {
+    // 動画を更新する関数
+    const updateVideo = (video) => {
       if (!video) return;
       
       // フェードアウト
@@ -369,12 +353,11 @@ function updateHeroMedia(heroMedia) {
         setTimeout(() => {
           video.classList.remove('fade-in');
         }, 700);
-      }, isBase ? 100 : 100);
+      }, 100);
     };
     
-    // BaseとGlassの両方を更新
-    updateVideo(heroVideoBase, true);
-    updateVideo(heroVideoGlass, false);
+    // 動画を更新
+    updateVideo(heroVideoBase);
   }
 }
 
@@ -454,16 +437,9 @@ function resetToInitialState() {
     heroVideoBase.style.display = 'none';
     heroVideoBase.style.opacity = '0';
   }
-  if (heroVideoGlass) {
-    heroVideoGlass.pause();
-    heroVideoGlass.currentTime = 0;
-    heroVideoGlass.style.display = 'none';
-    heroVideoGlass.style.opacity = '0';
-  }
   
   // ③ タイトルを初期状態に
   titleText.textContent = 'PORTFOLIO';
-  titleText.classList.remove('highlight');
   
   // State0用ガイダンステキストを表示
   guidanceText.classList.add('visible');
@@ -475,9 +451,295 @@ function resetToInitialState() {
 }
 
 // ============================================
+// アセットURL組み立て関数
+// ============================================
+const baseAssetsUrl = "https://assets.shuntofujii.com";
+
+function buildImageUrl(projectSlug, prefix, n) {
+  return `${baseAssetsUrl}/${projectSlug}/${prefix}_${n}.webp`;
+}
+
+function buildVideoUrl(projectSlug, prefix) {
+  return `${baseAssetsUrl}/${projectSlug}/${prefix}.webm`;
+}
+
+// ============================================
+// 動画再生制御（インライン再生）
+// ============================================
+function cleanupVideoObservers() {
+  // 現在は使用していないが、互換性のため残す
+}
+
+// 現在再生中の動画を管理
+let currentPlayingVideo = null;
+
+// 全てのインライン動画を停止してposterに戻す
+function stopAllInlineVideos() {
+  const allVideos = document.querySelectorAll('.video');
+  allVideos.forEach(video => {
+    video.pause();
+    video.currentTime = 0;
+    const videoShell = video.closest('.video-shell');
+    if (videoShell) {
+      const overlayPlay = videoShell.querySelector('.video-overlay-play');
+      if (overlayPlay) {
+        overlayPlay.style.display = 'grid';
+        overlayPlay.style.opacity = '1';
+        overlayPlay.style.pointerEvents = 'auto';
+      }
+    }
+  });
+  currentPlayingVideo = null;
+}
+
+// ============================================
+// 動画プレイヤーの初期化と制御（1クリック再生）
+// ============================================
+function initVideoPlayer(videoShell) {
+  const video = videoShell.querySelector('.video');
+  const overlayPlay = videoShell.querySelector('.video-overlay-play');
+  const controls = videoShell.querySelector('.video-controls');
+  const playPauseBtn = controls.querySelector('.btn-playpause');
+  const seekBar = controls.querySelector('.seek');
+  const muteBtn = controls.querySelector('.btn-mute');
+  
+  if (!video || !overlayPlay || !controls) return;
+  
+  // 再生/停止ボタン更新
+  function updatePlayButton() {
+    if (video.paused) {
+      playPauseBtn.setAttribute('aria-label', 'Play');
+      playPauseBtn.classList.remove('playing');
+      overlayPlay.style.display = 'grid';
+      overlayPlay.style.opacity = '1';
+      overlayPlay.style.pointerEvents = 'auto';
+    } else {
+      playPauseBtn.setAttribute('aria-label', 'Pause');
+      playPauseBtn.classList.add('playing');
+      overlayPlay.style.display = 'none';
+      overlayPlay.style.opacity = '0';
+      overlayPlay.style.pointerEvents = 'none';
+    }
+  }
+  
+  // シークバー更新
+  function updateSeekBar() {
+    if (video.duration) {
+      const percent = (video.currentTime / video.duration) * 100;
+      seekBar.value = percent;
+    }
+  }
+  
+  // ミュートボタン更新
+  function updateMuteButton() {
+    if (video.muted) {
+      muteBtn.setAttribute('aria-label', 'Unmute');
+      muteBtn.classList.add('muted');
+    } else {
+      muteBtn.setAttribute('aria-label', 'Mute');
+      muteBtn.classList.remove('muted');
+    }
+  }
+  
+  // 再生/一時停止
+  function togglePlay() {
+    if (video.paused) {
+      // 他の動画を停止
+      stopAllInlineVideos();
+      video.play().catch(e => {
+        console.warn('Video play error:', e);
+        updatePlayButton();
+      });
+      currentPlayingVideo = video;
+    } else {
+      video.pause();
+    }
+  }
+  
+  // イベントリスナー
+  video.addEventListener('loadedmetadata', () => {
+    seekBar.max = 100;
+    updateSeekBar();
+  });
+  
+  video.addEventListener('timeupdate', updateSeekBar);
+  video.addEventListener('play', updatePlayButton);
+  video.addEventListener('pause', updatePlayButton);
+  video.addEventListener('ended', () => {
+    video.currentTime = 0;
+    updatePlayButton();
+  });
+  
+  // オーバーレイプレイボタン（クリック1回で即再生）
+  overlayPlay.addEventListener('click', (e) => {
+    e.stopPropagation();
+    togglePlay();
+  });
+  
+  // 動画クリック（再生/一時停止）
+  video.addEventListener('click', (e) => {
+    e.stopPropagation();
+    togglePlay();
+  });
+  
+  // プレイ/一時停止ボタン
+  playPauseBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    togglePlay();
+  });
+  
+  // シークバー
+  seekBar.addEventListener('input', (e) => {
+    e.stopPropagation();
+    const percent = seekBar.value / 100;
+    video.currentTime = video.duration * percent;
+  });
+  
+  // ミュートボタン
+  muteBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    video.muted = !video.muted;
+    updateMuteButton();
+  });
+  
+  // エラーハンドリング
+  video.addEventListener('error', (e) => {
+    console.warn('Video load error:', video.src);
+    updatePlayButton();
+  });
+  
+  // 初期状態
+  updatePlayButton();
+  updateMuteButton();
+}
+
+// ============================================
+// 施策カードを生成
+// ============================================
+function createInitiativeCard(initiative, projectSlug) {
+  const card = document.createElement('div');
+  card.className = 'initiative-card';
+  
+  // ヘッダー
+  const head = document.createElement('div');
+  head.className = 'initiative-head';
+  const name = document.createElement('h4');
+  name.className = 'initiative-name';
+  name.textContent = initiative.title;
+  head.appendChild(name);
+  card.appendChild(head);
+  
+  // 動画（hasVideo=trueの場合のみ）
+  if (initiative.hasVideo) {
+    const videoShell = document.createElement('div');
+    videoShell.className = 'video-shell';
+    
+    // video要素
+    const video = document.createElement('video');
+    video.className = 'video';
+    video.src = buildVideoUrl(projectSlug, initiative.assetPrefix);
+    video.playsInline = true;
+    video.setAttribute('playsinline', 'true');
+    video.setAttribute('webkit-playsinline', 'true');
+    video.preload = 'metadata';
+    video.poster = buildImageUrl(projectSlug, initiative.assetPrefix, 1);
+    video.muted = true;
+    video.loop = true;
+    video.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
+    video.setAttribute('disablepictureinpicture', 'true');
+    
+    // オーバーレイプレイボタン（初期のみ表示）
+    const overlayPlay = document.createElement('button');
+    overlayPlay.className = 'video-overlay-play';
+    overlayPlay.type = 'button';
+    overlayPlay.setAttribute('aria-label', 'Play');
+    
+    const playIcon = document.createElement('span');
+    playIcon.className = 'icon-play';
+    
+    overlayPlay.appendChild(playIcon);
+    
+    // コントロールバー（動画内下部にオーバーレイ）
+    const controls = document.createElement('div');
+    controls.className = 'video-controls';
+    
+    const playPauseBtn = document.createElement('button');
+    playPauseBtn.className = 'btn-playpause';
+    playPauseBtn.type = 'button';
+    playPauseBtn.setAttribute('aria-label', 'Play');
+    
+    const seekBar = document.createElement('input');
+    seekBar.className = 'seek';
+    seekBar.type = 'range';
+    seekBar.min = '0';
+    seekBar.max = '100';
+    seekBar.value = '0';
+    seekBar.setAttribute('aria-label', 'Seek');
+    
+    const muteBtn = document.createElement('button');
+    muteBtn.className = 'btn-mute';
+    muteBtn.type = 'button';
+    muteBtn.setAttribute('aria-label', 'Mute');
+    
+    controls.appendChild(playPauseBtn);
+    controls.appendChild(seekBar);
+    controls.appendChild(muteBtn);
+    
+    videoShell.appendChild(video);
+    videoShell.appendChild(overlayPlay);
+    videoShell.appendChild(controls);
+    
+    // プレイヤーを初期化
+    initVideoPlayer(videoShell);
+    
+    card.appendChild(videoShell);
+  }
+  
+  // 画像グリッド（images > 0の場合のみ）
+  if (initiative.images > 0) {
+    const grid = document.createElement('div');
+    grid.className = 'initiative-grid';
+    
+    for (let i = 1; i <= initiative.images; i++) {
+      const thumbBtn = document.createElement('button');
+      thumbBtn.className = 'initiative-thumb';
+      thumbBtn.type = 'button';
+      thumbBtn.setAttribute('aria-label', `Open image ${i} of ${initiative.title}`);
+      
+      const img = document.createElement('img');
+      const imageUrl = buildImageUrl(projectSlug, initiative.assetPrefix, i);
+      img.src = imageUrl;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      
+      // エラーハンドリング
+      img.addEventListener('error', (e) => {
+        console.warn('Image load error:', imageUrl);
+        thumbBtn.style.display = 'none';
+      });
+      
+      // クリックで新規タブで開く
+      thumbBtn.addEventListener('click', () => {
+        window.open(imageUrl, '_blank', 'noopener,noreferrer');
+      });
+      
+      thumbBtn.appendChild(img);
+      grid.appendChild(thumbBtn);
+    }
+    
+    card.appendChild(grid);
+  }
+  
+  return card;
+}
+
+// ============================================
 // モーダルを開く
 // ============================================
 function openModal(project) {
+  // 既存の動画オブザーバーをクリーンアップ
+  cleanupVideoObservers();
+  
   // Focusを構築（role + scope）
   let focusValue = project.role || '';
   if (project.scope) {
@@ -488,6 +750,7 @@ function openModal(project) {
     }
   }
   
+  // モーダルコンテンツを構築
   modalContent.innerHTML = `
     <div class="modal-header">
       <h2 class="modal-title">${project.title}</h2>
@@ -523,6 +786,24 @@ function openModal(project) {
     ` : ''}
   `;
   
+  // initiativesセクションの生成（DOM要素を直接追加）
+  if (project.initiatives && project.initiatives.length > 0 && project.projectSlug) {
+    const initiativesSection = document.createElement('section');
+    initiativesSection.className = 'modal-initiatives';
+    
+    const initiativeList = document.createElement('div');
+    initiativeList.className = 'initiative-list';
+    
+    project.initiatives.forEach(initiative => {
+      const card = createInitiativeCard(initiative, project.projectSlug);
+      initiativeList.appendChild(card);
+    });
+    
+    initiativesSection.appendChild(initiativeList);
+    modalContent.appendChild(initiativesSection);
+  }
+  
+  
   // モーダルを表示（hidden解除）
   if (modalOverlay && modalContainer) {
     modalOverlay.hidden = false;
@@ -536,6 +817,7 @@ function openModal(project) {
     requestAnimationFrame(() => {
       document.body.classList.add('modal-open');
       modalContainer.dataset.state = 'open';
+      
     });
   }
   
@@ -552,6 +834,12 @@ function openModal(project) {
 // モーダルを閉じる
 // ============================================
 function closeModal() {
+  // 全てのインライン動画を停止してposterに戻す
+  stopAllInlineVideos();
+  
+  // 動画を停止してオブザーバーをクリーンアップ
+  cleanupVideoObservers();
+  
   if (!modalOverlay || !modalContainer) return;
   if (isClosing) return;
   isClosing = true;
@@ -605,11 +893,6 @@ function showErrorState() {
   `;
   titleText.textContent = 'ERROR';
 }
-
-// ============================================
-// ドットアニメーション（State0用ガイダンステキスト）
-// ============================================
-// ドットアニメーションは削除（CSSアニメーションに置き換え）
 
 // ============================================
 // 初期化実行
