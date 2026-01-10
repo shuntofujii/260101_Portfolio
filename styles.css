@@ -282,6 +282,32 @@ body.modal-open .context-panel {
   z-index: 0;
 }
 
+/* ============================================
+   オートフォーカス風ブラー演出
+   ============================================ */
+#bgLayer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 420ms ease;
+  will-change: opacity;
+}
+
+#bgVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* 初期値：JSで上書きされる */
+  filter: blur(8px) brightness(0.9) saturate(1.05);
+  transform: scale(1.03); /* 端のブラー欠け防止 */
+  will-change: filter, transform;
+}
+
+#bgLayer.isFading {
+  opacity: 0;
+}
+
 .hero-media {
   width: 100%;
   height: 100%;
@@ -599,7 +625,7 @@ body.modal-open .project-navigation {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: clamp(16px, 4vmin, 2rem);
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--modal-dur) var(--modal-ease);
@@ -759,27 +785,19 @@ body.modal-open .modal-overlay {
 .modal-initiatives {
   margin-top: 3rem;
   padding-top: 3rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .initiative-list {
   display: flex;
   flex-direction: column;
-  gap: 3rem;
 }
 
 .initiative-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 1.5rem;
-  transition: background 0.3s ease, border-color 0.3s ease;
+  margin-bottom: 2rem;
 }
 
-.initiative-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.15);
+.initiative-card:last-child {
+  margin-bottom: 0;
 }
 
 .initiative-head {
@@ -955,6 +973,14 @@ body.modal-open .modal-overlay {
   align-items: center;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
   z-index: 3;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.video-controls.visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .btn-playpause {
@@ -1119,49 +1145,128 @@ body.modal-open .modal-overlay {
   line-height: 1;
 }
 
-.initiative-grid {
+/* ============================================
+   画像グリッド（固定ルールレイアウト）
+   ============================================ */
+:root {
+  --img-gap-pc: 12px;
+  --img-gap-sp: 10px;
+  --img-radius: 14px;
+}
+
+/* wrap */
+.mediaGrid {
   display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(3, 1fr);
+  gap: var(--img-gap-sp);
   width: 100%;
 }
 
-.initiative-thumb {
+/* 画像 */
+.mediaGrid .mediaItem {
   position: relative;
-  width: 100%;
-  padding: 0;
-  margin: 0;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 12px;
   overflow: hidden;
-  aspect-ratio: 16 / 9;
+  border-radius: var(--img-radius);
+  background: #000;
+  cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border: 2px solid transparent;
-  display: block;
+  aspect-ratio: 16 / 9;
+  width: 100%;
 }
 
-.initiative-thumb:hover {
+.mediaGrid .mediaItem:hover {
   transform: scale(1.02);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-.initiative-thumb img {
+.mediaGrid .mediaItem img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  border-radius: 10px;
   display: block;
+  object-fit: cover;
   transition: opacity 0.3s ease;
-  margin: 0;
-  padding: 0;
 }
 
-
-.initiative-thumb:hover img {
+.mediaGrid .mediaItem:hover img {
   opacity: 0.9;
+}
+
+/* ===== SP (default) ===== */
+/* 1枚の場合のデフォルト（1列） */
+.mediaGrid[data-count="1"] {
+  grid-template-columns: 1fr;
+}
+
+.mediaGrid[data-count="2"] {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.mediaGrid[data-count="3"] {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.mediaGrid[data-count="3"] .mediaItem:nth-child(3) {
+  grid-column: 1 / -1; /* 2+1 */
+}
+
+.mediaGrid[data-count="4"] {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.mediaGrid[data-count="5"] {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.mediaGrid[data-count="5"] .mediaItem:nth-child(5) {
+  grid-column: 1 / -1; /* 2+2+1 */
+}
+
+/* ===== PC ===== */
+@media (min-width: 900px) {
+  .mediaGrid {
+    gap: var(--img-gap-pc);
+  }
+
+  /* 1枚の場合のデフォルト（1列） */
+  .mediaGrid[data-count="1"] {
+    grid-template-columns: 1fr;
+  }
+
+  .mediaGrid[data-count="2"] {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .mediaGrid[data-count="3"] {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* PC版では3枚目も通常のグリッドアイテムとして表示（SP版のgrid-column指定をリセット） */
+  .mediaGrid[data-count="3"] .mediaItem:nth-child(3) {
+    grid-column: auto;
+  }
+
+  .mediaGrid[data-count="4"] {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* 5枚: 3+2（2行目を2列にするため、2行目の各カードを span してバランスを取る） */
+  .mediaGrid[data-count="5"] {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .mediaGrid[data-count="5"] .mediaItem:nth-child(-n+3) {
+    grid-column: span 2; /* 1〜3枚目：2/6ずつ = 3列 */
+  }
+
+  .mediaGrid[data-count="5"] .mediaItem:nth-child(n+4) {
+    grid-column: span 3; /* 4〜5枚目：3/6ずつ = 2列 */
+  }
+
+  /* PC版では5枚目も通常のグリッドアイテムとして表示（SP版のgrid-column: 1 / -1 指定をリセット） */
+  .mediaGrid[data-count="5"] .mediaItem:nth-child(5) {
+    grid-column: span 3; /* 5枚目：3/6 = 2列（SP版の全幅指定を上書き） */
+  }
 }
 
 /* ============================================
@@ -1252,37 +1357,7 @@ body.modal-open .modal-overlay {
     gap: 2rem;
   }
 
-  .initiative-card {
-    padding: 1.25rem;
-  }
 
-  .initiative-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  /* 2列の場合、画像を横幅いっぱいに拡大 */
-  .initiative-grid {
-    width: 100%;
-  }
-
-  .initiative-thumb {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    display: block;
-    margin: 0;
-    padding: 0;
-  }
-
-  .initiative-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    display: block;
-    margin: 0;
-    padding: 0;
-  }
 }
 
 @media (max-width: 480px) {
@@ -1353,12 +1428,6 @@ body.modal-open .modal-overlay {
   }
 }
 
-@media (max-width: 1024px) {
-  .initiative-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-}
 
 /* Mobileフォールバック: pointer:coarse または prefers-reduced-motion */
 /* ============================================
