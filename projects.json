@@ -207,6 +207,179 @@
       "src": "https://assets.shuntofujii.com/top/video-05.webm"
     },
     "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-05.webp",
+    "projectSlug": "deteqle",
+    "cases": [
+      {
+        "title": "ARマーダーミステリー（仮称）",
+        "initiatives": [
+          {
+            "title": "Main",
+            "videos": [
+              {
+                "type": "video",
+                "src": "https://assets.shuntofujii.com/deteqle/murder.webm"
+              }
+            ],
+            "images": [
+              {
+                "type": "image",
+                "src": "https://assets.shuntofujii.com/deteqle/murder_1.webp"
+              },
+              {
+                "type": "image",
+                "src": "https://assets.shuntofujii.com/deteqle/murder_2.webp"
+              },
+              {
+                "type": "image",
+                "src": "https://assets.shuntofujii.com/deteqle/murder_3.webp"
+              },
+              {
+                "type": "image",
+                "src": "https://assets.shuntofujii.com/deteqle/murder_4.webp"
+              },
+              {
+                "type": "image",
+                "src": "https://assets.shuntofujii.com/deteqle/murder_5.webp"
+              }
+            ]
+          },
+          {
+            "title": "Process",
+            "videos": [
+              {
+                "type": "video",
+                "src": "https://assets.shuntofujii.com/deteqle/murder_bts.webm"
+              },
+              {
+                "type": "video",
+                "src": "https://assets.shuntofujii.com/deteqle/murder_rough.webm"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "ARコンテンツ",
+        "initiatives": [
+          {
+            "title": "ダダコネおじさん",
+            "videos": [
+              {
+                "type": "video",
+                "src": "https://assets.shuntofujii.com/deteqle/dadakone.webm"
+              },
+              {
+                "type": "video",
+                "src": "https://assets.shuntofujii.com/deteqle/dadakone_1.webm"
+              },
+              {
+                "type": "video",
+                "src": "https://assets.shuntofujii.com/deteqle/dadakone_2.webm"
+              }
+            ]
+          },
+          {
+            "title": "ゾンビに襲われた",
+            "videos": [
+              {
+                "type": "video",
+                "src": "https://assets.shuntofujii.com/deteqle/zombie_1.webm"
+              },
+              {
+                "type": "video",
+                "src": "https://assets.shuntofujii.com/deteqle/zombie_2.webm"
+              }
+            ],
+            "imageGroups": [
+              {
+                "images": [
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/deteqle/zombie_1.webp"
+                  },
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/deteqle/zombie_2.webp"
+                  },
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/deteqle/zombie_3.webp"
+                  },
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/deteqle/zombie_4.webp"
+                  },
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/deteqle/zombie_5.webp"
+                  }
+                ]
+              },
+              {
+                "images": [
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/deteqle/zombie_6.webp"
+                  },
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/deteqle/zombie_7.webp"
+                  },
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/deteqle/zombie_8.webp"
+                  },
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/deteqle/zombie_9.webp"
+                  },
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/deteqle/zombie_10.webp"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Cafe Mai:lish",
+        "initiatives": [
+          {
+            "title": "Main",
+            "images": [
+              {
+                "type": "image",
+                "src": "https://assets.shuntofujii.com/deteqle/mailish_1.webp"
+              },
+              {
+                "type": "image",
+                "src": "https://assets.shuntofujii.com/deteqle/mailish_2.webp"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Design System",
+        "initiatives": [
+          {
+            "title": "Main",
+            "images": [
+              {
+                "type": "image",
+                "src": "https://assets.shuntofujii.com/deteqle/designsystem_1.webp"
+              },
+              {
+                "type": "image",
+                "src": "https://assets.shuntofujii.com/deteqle/designsystem_2.webp"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "gallery": [
       {
         "type": "video",

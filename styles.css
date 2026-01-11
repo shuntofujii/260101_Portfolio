@@ -830,9 +830,9 @@ body.modal-open .modal-overlay {
 }
 
 .initiative-name {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -866,8 +866,8 @@ body.modal-open .modal-overlay {
   width: 100%;
   height: auto;
   display: block;
-  object-fit: cover;
-  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background: #000;
 }
 
 .video-playBadge {
@@ -929,7 +929,8 @@ body.modal-open .modal-overlay {
   overflow: hidden;
   background: #000;
   border-radius: 16px;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: var(--ar, 4/3);
+  max-height: 52vh;
 }
 
 .video {
@@ -1195,8 +1196,9 @@ body.modal-open .modal-overlay {
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border: 2px solid transparent;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: var(--ar, 4/3);
   width: 100%;
+  max-height: 52vh;
 }
 
 .mediaGrid .mediaItem:hover {
@@ -1209,7 +1211,8 @@ body.modal-open .modal-overlay {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
+  background: #000;
   transition: opacity 0.3s ease;
 }
 
@@ -1227,11 +1230,11 @@ body.modal-open .modal-overlay {
   grid-template-columns: repeat(2, 1fr);
 }
 
-.mediaGrid[data-count="3"] {
+.mediaGrid[data-count="3"]:not([data-force-horizontal="true"]) {
   grid-template-columns: repeat(2, 1fr);
 }
 
-.mediaGrid[data-count="3"] .mediaItem:nth-child(3) {
+.mediaGrid[data-count="3"]:not([data-force-horizontal="true"]) .mediaItem:nth-child(3) {
   grid-column: 1 / -1; /* 2+1 */
 }
 
@@ -1239,11 +1242,11 @@ body.modal-open .modal-overlay {
   grid-template-columns: repeat(2, 1fr);
 }
 
-.mediaGrid[data-count="5"] {
+.mediaGrid[data-count="5"]:not([data-force-horizontal="true"]) {
   grid-template-columns: repeat(2, 1fr);
 }
 
-.mediaGrid[data-count="5"] .mediaItem:nth-child(5) {
+.mediaGrid[data-count="5"]:not([data-force-horizontal="true"]) .mediaItem:nth-child(5) {
   grid-column: 1 / -1; /* 2+2+1 */
 }
 
@@ -1266,12 +1269,12 @@ body.modal-open .modal-overlay {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .mediaGrid[data-count="3"] {
+  .mediaGrid[data-count="3"]:not([data-force-horizontal="true"]) {
     grid-template-columns: repeat(3, 1fr);
   }
 
   /* PC版では3枚目も通常のグリッドアイテムとして表示（SP版のgrid-column指定をリセット） */
-  .mediaGrid[data-count="3"] .mediaItem:nth-child(3) {
+  .mediaGrid[data-count="3"]:not([data-force-horizontal="true"]) .mediaItem:nth-child(3) {
     grid-column: auto;
   }
 
@@ -1280,21 +1283,92 @@ body.modal-open .modal-overlay {
   }
 
   /* 5枚: 3+2（2行目を2列にするため、2行目の各カードを span してバランスを取る） */
-  .mediaGrid[data-count="5"] {
+  /* forceHorizontalが設定されている場合は除外 */
+  .mediaGrid[data-count="5"]:not([data-force-horizontal="true"]) {
     grid-template-columns: repeat(6, 1fr);
   }
 
-  .mediaGrid[data-count="5"] .mediaItem:nth-child(-n+3) {
+  .mediaGrid[data-count="5"]:not([data-force-horizontal="true"]) .mediaItem:nth-child(-n+3) {
     grid-column: span 2; /* 1〜3枚目：2/6ずつ = 3列 */
   }
 
-  .mediaGrid[data-count="5"] .mediaItem:nth-child(n+4) {
+  .mediaGrid[data-count="5"]:not([data-force-horizontal="true"]) .mediaItem:nth-child(n+4) {
     grid-column: span 3; /* 4〜5枚目：3/6ずつ = 2列 */
   }
 
   /* PC版では5枚目も通常のグリッドアイテムとして表示（SP版のgrid-column: 1 / -1 指定をリセット） */
-  .mediaGrid[data-count="5"] .mediaItem:nth-child(5) {
+  .mediaGrid[data-count="5"]:not([data-force-horizontal="true"]) .mediaItem:nth-child(5) {
     grid-column: span 3; /* 5枚目：3/6 = 2列（SP版の全幅指定を上書き） */
+  }
+}
+
+/* ============================================
+   案件セクション（cases構造用）
+   ============================================ */
+.case-section {
+  margin-bottom: 3rem;
+}
+
+.case-section:last-child {
+  margin-bottom: 0;
+}
+
+.case-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1.5rem 0;
+}
+
+.initiative-section {
+  margin-bottom: 2rem;
+}
+
+.initiative-section:last-child {
+  margin-bottom: 0;
+}
+
+.initiative-section .initiative-name {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem 0;
+}
+
+/* ============================================
+   動画グリッド（横並び2本〜5本）
+   ============================================ */
+.video-grid {
+  display: grid;
+  gap: var(--img-gap-sp);
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.video-grid[data-count="2"] {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.video-grid[data-count="3"] {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.video-grid[data-count="4"] {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.video-grid[data-count="5"] {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.video-grid .video-shell {
+  margin-bottom: 0;
+}
+
+/* PC版 */
+@media (min-width: 900px) {
+  .video-grid {
+    gap: var(--img-gap-pc);
   }
 }
 

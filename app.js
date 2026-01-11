@@ -486,6 +486,47 @@ function buildVideoUrl(projectSlug, prefix) {
 }
 
 // ============================================
+// 画像グリッドレイアウト（PC/SP判定）
+// ============================================
+function getImageGridLayout(count, isMobile) {
+  if (isMobile) {
+    // SP版
+    switch (count) {
+      case 2:
+        return { columns: 2, spans: [] };
+      case 3:
+        return { columns: 2, spans: [{ index: 2, span: 2 }] }; // 3枚目をfull width
+      case 4:
+        return { columns: 2, spans: [] };
+      case 5:
+        return { columns: 2, spans: [{ index: 4, span: 2 }] }; // 5枚目をfull width
+      default:
+        return { columns: 1, spans: [] };
+    }
+  } else {
+    // PC版
+    switch (count) {
+      case 2:
+        return { columns: 2, spans: [] };
+      case 3:
+        return { columns: 3, spans: [] };
+      case 4:
+        return { columns: 2, spans: [] };
+      case 5:
+        return { columns: 6, spans: [
+          { index: 0, span: 2 }, // 1-3枚目：各2/6 = 3列
+          { index: 1, span: 2 },
+          { index: 2, span: 2 },
+          { index: 3, span: 3 }, // 4-5枚目：各3/6 = 2列
+          { index: 4, span: 3 }
+        ]};
+      default:
+        return { columns: 1, spans: [] };
+    }
+  }
+}
+
+// ============================================
 // 動画再生制御（インライン再生）
 // ============================================
 function cleanupVideoObservers() {
@@ -729,6 +770,13 @@ function createInitiativeCard(initiative, projectSlug) {
     video.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
     video.setAttribute('disablepictureinpicture', 'true');
     
+    // 動画のアスペクト比を取得して設定
+    video.addEventListener('loadedmetadata', () => {
+      if (video.videoWidth && video.videoHeight) {
+        videoShell.style.setProperty('--ar', `${video.videoWidth} / ${video.videoHeight}`);
+      }
+    }, { once: true });
+    
     // オーバーレイプレイボタン（初期のみ表示）
     const overlayPlay = document.createElement('button');
     overlayPlay.className = 'video-overlay-play';
@@ -796,6 +844,13 @@ function createInitiativeCard(initiative, projectSlug) {
       img.decoding = 'async';
       img.alt = '';
       
+      // 画像のアスペクト比を取得して設定
+      img.addEventListener('load', () => {
+        if (img.naturalWidth && img.naturalHeight) {
+          item.style.setProperty('--ar', `${img.naturalWidth} / ${img.naturalHeight}`);
+        }
+      });
+      
       // エラーハンドリング
       img.addEventListener('error', (e) => {
         console.warn('Image load error:', imageUrl);
@@ -823,6 +878,238 @@ function createInitiativeCard(initiative, projectSlug) {
   }
   
   return card;
+}
+
+// ============================================
+// 動画グリッドの作成（横並び2本〜5本）
+// ============================================
+function createVideoGrid(videos, projectSlug) {
+  const grid = document.createElement('div');
+  grid.className = 'video-grid';
+  grid.dataset.count = String(videos.length);
+  
+  videos.forEach((videoData, index) => {
+    const videoShell = document.createElement('div');
+    videoShell.className = 'video-shell';
+    
+    const video = document.createElement('video');
+    video.className = 'video';
+    video.src = videoData.src;
+    video.playsInline = true;
+    video.setAttribute('playsinline', 'true');
+    video.setAttribute('webkit-playsinline', 'true');
+    video.preload = 'metadata';
+    video.muted = true;
+    video.loop = true;
+    video.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
+    video.setAttribute('disablepictureinpicture', 'true');
+    
+    // 動画のアスペクト比を取得して設定
+    video.addEventListener('loadedmetadata', () => {
+      if (video.videoWidth && video.videoHeight) {
+        videoShell.style.setProperty('--ar', `${video.videoWidth} / ${video.videoHeight}`);
+      }
+    }, { once: true });
+    
+    // オーバーレイプレイボタン
+    const overlayPlay = document.createElement('button');
+    overlayPlay.className = 'video-overlay-play';
+    overlayPlay.type = 'button';
+    overlayPlay.setAttribute('aria-label', 'Play');
+    
+    const playIcon = document.createElement('span');
+    playIcon.className = 'icon-play';
+    overlayPlay.appendChild(playIcon);
+    
+    // コントロールバー
+    const controls = document.createElement('div');
+    controls.className = 'video-controls';
+    
+    const playPauseBtn = document.createElement('button');
+    playPauseBtn.className = 'btn-playpause';
+    playPauseBtn.type = 'button';
+    playPauseBtn.setAttribute('aria-label', 'Play');
+    
+    const seekBar = document.createElement('input');
+    seekBar.className = 'seek';
+    seekBar.type = 'range';
+    seekBar.min = '0';
+    seekBar.max = '100';
+    seekBar.value = '0';
+    seekBar.setAttribute('aria-label', 'Seek');
+    
+    const muteBtn = document.createElement('button');
+    muteBtn.className = 'btn-mute';
+    muteBtn.type = 'button';
+    muteBtn.setAttribute('aria-label', 'Mute');
+    
+    controls.appendChild(playPauseBtn);
+    controls.appendChild(seekBar);
+    controls.appendChild(muteBtn);
+    
+    videoShell.appendChild(video);
+    videoShell.appendChild(overlayPlay);
+    videoShell.appendChild(controls);
+    
+    initVideoPlayer(videoShell);
+    grid.appendChild(videoShell);
+  });
+  
+  return grid;
+}
+
+// ============================================
+// 画像グリッドの作成
+// ============================================
+function createImageGrid(images, projectSlug, forceHorizontal = false) {
+  if (!images || images.length === 0) return null;
+  
+  const grid = document.createElement('div');
+  grid.className = 'mediaGrid';
+  grid.dataset.count = String(images.length);
+  
+  let layout = null;
+  
+  // imageGroupsの場合は横並び（画像数分の列）
+  if (forceHorizontal) {
+    grid.dataset.forceHorizontal = 'true';
+    grid.style.gridTemplateColumns = `repeat(${images.length}, 1fr)`;
+  } else {
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    layout = getImageGridLayout(images.length, isMobile);
+    
+    // grid-template-columnsを設定
+    if (layout.columns > 0) {
+      grid.style.gridTemplateColumns = `repeat(${layout.columns}, 1fr)`;
+    }
+  }
+  
+  images.forEach((imageData, index) => {
+    const item = document.createElement('div');
+    item.className = 'mediaItem';
+    item.setAttribute('role', 'button');
+    item.setAttribute('tabindex', '0');
+    item.setAttribute('aria-label', `Image ${index + 1}`);
+    
+    // span設定（forceHorizontalの場合は不要）
+    if (!forceHorizontal && layout) {
+      const span = layout.spans.find(s => s.index === index);
+      if (span) {
+        item.style.gridColumn = `span ${span.span}`;
+      }
+    }
+    
+    const img = document.createElement('img');
+    img.src = imageData.src;
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.alt = '';
+    
+    // 画像のアスペクト比を取得して設定
+    img.addEventListener('load', () => {
+      if (img.naturalWidth && img.naturalHeight) {
+        const aspectRatio = img.naturalWidth / img.naturalHeight;
+        item.style.setProperty('--ar', `${img.naturalWidth} / ${img.naturalHeight}`);
+      }
+    });
+    
+    img.addEventListener('error', () => {
+      console.warn('Image load error:', imageData.src);
+      item.style.display = 'none';
+    });
+    
+    // クリックで新規タブで開く（拡大しない）
+    item.addEventListener('click', () => {
+      window.open(imageData.src, '_blank', 'noopener,noreferrer');
+    });
+    
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        window.open(imageData.src, '_blank', 'noopener,noreferrer');
+      }
+    });
+    
+    item.appendChild(img);
+    grid.appendChild(item);
+  });
+  
+  return grid;
+}
+
+// ============================================
+// 施策セクションの作成（cases構造用）
+// ============================================
+function createInitiativeSection(initiative, projectSlug) {
+  const section = document.createElement('div');
+  section.className = 'initiative-section';
+  
+  // 施策名（"Main"の場合は表示しない）
+  if (initiative.title && initiative.title !== 'Main') {
+    const heading = document.createElement('h4');
+    heading.className = 'initiative-name';
+    heading.textContent = initiative.title;
+    section.appendChild(heading);
+  }
+  
+  // 動画（videos配列がある場合）
+  if (initiative.videos && initiative.videos.length > 0) {
+    const videoGrid = createVideoGrid(initiative.videos, projectSlug);
+    section.appendChild(videoGrid);
+  }
+  
+  // 画像（images配列がある場合）
+  if (initiative.images && initiative.images.length > 0) {
+    const imageGrid = createImageGrid(initiative.images, projectSlug);
+    if (imageGrid) {
+      section.appendChild(imageGrid);
+    }
+  }
+  
+  // 画像グループ（imageGroups配列がある場合）
+  // imageGroupsの場合は横並びで表示（例外措置）
+  if (initiative.imageGroups && initiative.imageGroups.length > 0) {
+    initiative.imageGroups.forEach((group, groupIndex) => {
+      if (group.images && group.images.length > 0) {
+        const imageGrid = createImageGrid(group.images, projectSlug, true);
+        if (imageGrid) {
+          // imageGroups同士の間隔を設定（最後のグループ以外）
+          if (groupIndex < initiative.imageGroups.length - 1) {
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
+            const gap = isMobile ? 'var(--img-gap-sp)' : 'var(--img-gap-pc)';
+            imageGrid.style.marginBottom = gap;
+          }
+          section.appendChild(imageGrid);
+        }
+      }
+    });
+  }
+  
+  return section;
+}
+
+// ============================================
+// 案件セクションの作成（cases構造用）
+// ============================================
+function createCaseSection(caseData, projectSlug) {
+  const section = document.createElement('section');
+  section.className = 'case-section';
+  
+  // 案件名
+  const heading = document.createElement('h3');
+  heading.className = 'case-title';
+  heading.textContent = caseData.title;
+  section.appendChild(heading);
+  
+  // 施策リスト
+  if (caseData.initiatives && caseData.initiatives.length > 0) {
+    caseData.initiatives.forEach(initiative => {
+      const initiativeSection = createInitiativeSection(initiative, projectSlug);
+      section.appendChild(initiativeSection);
+    });
+  }
+  
+  return section;
 }
 
 // ============================================
@@ -890,8 +1177,20 @@ function openModal(project) {
     ` : ''}
   `;
   
-  // initiativesセクションの生成（DOM要素を直接追加）
-  if (project.initiatives && project.initiatives.length > 0 && project.projectSlug) {
+  // casesセクションの生成（cases構造がある場合）
+  if (project.cases && project.cases.length > 0) {
+    const casesSection = document.createElement('section');
+    casesSection.className = 'modal-initiatives';
+    
+    project.cases.forEach(caseData => {
+      const caseSection = createCaseSection(caseData, project.projectSlug || 'deteqle');
+      casesSection.appendChild(caseSection);
+    });
+    
+    modalContent.appendChild(casesSection);
+  }
+  // initiativesセクションの生成（既存のinitiatives構造がある場合）
+  else if (project.initiatives && project.initiatives.length > 0 && project.projectSlug) {
     const initiativesSection = document.createElement('section');
     initiativesSection.className = 'modal-initiatives';
     
