@@ -7,27 +7,6 @@ let hoveredProject = null;
 let selectedProject = null;
 let hoverLeaveTimer = null; // hover解除時の余韻用タイマー
 
-// ============================================
-// オートフォーカス風ブラー演出の状態管理
-// ============================================
-let focusEngine = {
-  isActive: false,
-  focus: 0, // 0〜1 (0=ボケ, 1=ピント)
-  focusTarget: 0,
-  randomBase: 0,
-  randomTarget: 0,
-  randomTime: 0,
-  randomDuration: 2000, // ランダム変化の周期（ミリ秒）
-  lastRandomUpdate: 0,
-  distanceFocus: 0,
-  distanceWeight: 0.6, // 距離ベースのフォーカスの重み
-  smoothing: 0.08, // スムージング係数
-  minBlur: 0.8,
-  maxBlur: 10,
-  fadeTimeout: null,
-  rafId: null
-};
-
 
 // ============================================
 // DOM要素の取得
@@ -35,9 +14,8 @@ let focusEngine = {
 const portfolioTitle = document.getElementById('portfolioTitle');
 const contextPanel = document.getElementById('contextPanel');
 const focusVisual = document.getElementById('focusVisual');
-const heroVideoBase = document.getElementById('bgVideo'); // bgVideoに変更
+const heroVideoBase = document.getElementById('bgVideo');
 const bgLayer = document.getElementById('bgLayer');
-const bgVideo = document.getElementById('bgVideo');
 const titleBackground = document.getElementById('titleBackground');
 const titleText = document.getElementById('titleText');
 const guidanceText = document.getElementById('guidanceText');
@@ -200,20 +178,17 @@ function handleProjectHover(project, itemElement) {
     hoverLeaveTimer = null;
   }
   
-  // フェードアウトをキャンセル
-  if (focusEngine.fadeTimeout) {
-    clearTimeout(focusEngine.fadeTimeout);
-    focusEngine.fadeTimeout = null;
-  }
-  
   currentState = 'hover';
   hoveredProject = project;
   
-  // フォーカスエンジンを開始
-  startFocusEngine();
-  
   // ② 動画背景レイヤーを更新（動画を自動再生）
   updateHeroMedia(project.heroMedia);
+  
+  // bgLayerを表示
+  if (bgLayer) {
+    bgLayer.classList.remove('isFading');
+    bgLayer.style.opacity = '1';
+  }
   
   // ③ タイトルは非表示（hover時も表示しない）
   
@@ -235,25 +210,33 @@ function handleProjectLeave() {
     hoverLeaveTimer = null;
   }
   
-  // フォーカスエンジンを停止（フェードアウトを開始）
-  stopFocusEngine();
-  
-  // 即座に初期状態に戻す（ただし、フォーカスエンジンのフェードアウト完了後に待機画面に戻る）
+  // 即座に初期状態に戻す
   if (currentState !== 'modal' && !selectedProject) {
     // ③ タイトルを初期状態に戻す
     titleText.textContent = 'PORTFOLIO';
     
-    // 動画を停止（フェードアウトと同時に）
+    // 動画を停止
     if (heroVideoBase) {
       heroVideoBase.pause();
       heroVideoBase.currentTime = 0;
-      // フェードアウト完了後に非表示にする（enterIdleState内で処理）
+      heroVideoBase.style.display = 'none';
+      heroVideoBase.style.opacity = '0';
+    }
+    
+    // bgLayerをフェードアウト
+    if (bgLayer) {
+      bgLayer.classList.add('isFading');
+      bgLayer.addEventListener('transitionend', function fadeComplete() {
+        bgLayer.classList.remove('isFading');
+        bgLayer.removeEventListener('transitionend', fadeComplete);
+        renderInitialState();
+      }, { once: true });
+    } else {
+      renderInitialState();
     }
     
     // ① コンテキストパネルを非表示にする
     contextPanel.classList.remove('visible');
-    
-    // State0用ガイダンステキストはenterIdleState内で表示
     
     // ④ 選択状態を解除
     document.querySelectorAll('.project-item').forEach(item => {
@@ -866,23 +849,35 @@ function openModal(project) {
       ${project.tagline ? `<p class="modal-tagline">${project.tagline}</p>` : ''}
       <div class="modal-meta">
         <div class="modal-meta-item">
-          <span class="modal-meta-label">Domain</span>
-          <span class="modal-meta-value">${project.category}</span>
+          <img src="https://assets.shuntofujii.com/icons/domain.svg" alt="Domain" class="modal-meta-icon" />
+          <div class="modal-meta-content">
+            <span class="modal-meta-label">Domain</span>
+            <span class="modal-meta-value">${project.category}</span>
+          </div>
+        </div>
+        <div class="modal-meta-item">
+          <img src="https://assets.shuntofujii.com/icons/year.svg" alt="Year" class="modal-meta-icon" />
+          <div class="modal-meta-content">
+            <span class="modal-meta-label">Year</span>
+            <span class="modal-meta-value">${project.year}</span>
+          </div>
         </div>
         ${focusValue ? `
         <div class="modal-meta-item">
-          <span class="modal-meta-label">Focus</span>
-          <span class="modal-meta-value">${focusValue}</span>
+          <img src="https://assets.shuntofujii.com/icons/focus.svg" alt="Focus" class="modal-meta-icon" />
+          <div class="modal-meta-content">
+            <span class="modal-meta-label">Focus</span>
+            <span class="modal-meta-value">${focusValue}</span>
+          </div>
         </div>
         ` : ''}
-        <div class="modal-meta-item">
-          <span class="modal-meta-label">Year</span>
-          <span class="modal-meta-value">${project.year}</span>
-        </div>
         ${project.tools && project.tools.length > 0 ? `
         <div class="modal-meta-item">
-          <span class="modal-meta-label">Toolkit</span>
-          <span class="modal-meta-value">${project.tools.join(' / ')}</span>
+          <img src="https://assets.shuntofujii.com/icons/toolkits.svg" alt="Toolkits" class="modal-meta-icon" />
+          <div class="modal-meta-content">
+            <span class="modal-meta-label">Toolkits</span>
+            <span class="modal-meta-value">${project.tools.join(' / ')}</span>
+          </div>
         </div>
         ` : ''}
       </div>
@@ -1002,169 +997,6 @@ function showErrorState() {
   `;
   titleText.textContent = 'ERROR';
 }
-
-// ============================================
-// ============================================
-// オートフォーカス風ブラー演出：補間関数
-// ============================================
-function lerp(start, end, t) {
-  return start + (end - start) * t;
-}
-
-function mix(a, b, t) {
-  return lerp(a, b, t);
-}
-
-function easeInOutQuad(t) {
-  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-}
-
-// ============================================
-// オートフォーカス風ブラー演出：距離計算
-// ============================================
-function getDistanceToNearestThumbnail(mouseX, mouseY) {
-  const thumbnails = document.querySelectorAll('.project-item');
-  let minDistance = Infinity;
-  
-  thumbnails.forEach(thumb => {
-    const rect = thumb.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const dx = mouseX - centerX;
-    const dy = mouseY - centerY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    minDistance = Math.min(minDistance, distance);
-  });
-  
-  // 距離を0〜1の範囲に正規化（200px以内ならピントが合いやすい）
-  const maxInfluence = 300;
-  const normalized = Math.max(0, 1 - (minDistance / maxInfluence));
-  return normalized;
-}
-
-// ============================================
-// オートフォーカス風ブラー演出：フォーカスエンジン
-// ============================================
-function updateFocusEngine() {
-  if (!bgVideo || !bgLayer) return;
-  
-  const now = Date.now();
-  
-  // ランダムフォーカスの更新
-  if (now - focusEngine.lastRandomUpdate > focusEngine.randomDuration) {
-    focusEngine.randomTarget = Math.random() * 0.5 + 0.5; // 0.5〜1.0の範囲
-    focusEngine.randomDuration = 800 + Math.random() * 1400; // 0.8〜2.2秒
-    focusEngine.lastRandomUpdate = now;
-    focusEngine.randomTime = 0;
-  }
-  
-  focusEngine.randomTime += 16; // 約60fps想定
-  const randomT = Math.min(1, focusEngine.randomTime / focusEngine.randomDuration);
-  focusEngine.randomBase = lerp(focusEngine.randomBase, focusEngine.randomTarget, easeInOutQuad(randomT));
-  
-  // 距離ベースのフォーカス（マウス位置に基づく）
-  if (focusEngine.isActive) {
-    // マウス位置から距離フォーカスを計算
-    // 実際のマウス位置はイベントリスナーで更新される
-    focusEngine.distanceFocus = focusEngine.currentDistanceFocus || 0;
-  } else {
-    focusEngine.distanceFocus = 0;
-  }
-  
-  // フォーカスターゲットの計算
-  if (focusEngine.isActive) {
-    // hover中：ランダムと距離をミックス
-    focusEngine.focusTarget = mix(
-      focusEngine.randomBase,
-      focusEngine.distanceFocus,
-      focusEngine.distanceWeight
-    );
-  } else {
-    // hover外：フォーカスを0に
-    focusEngine.focusTarget = 0;
-  }
-  
-  // スムージング
-  focusEngine.focus = lerp(focusEngine.focus, focusEngine.focusTarget, focusEngine.smoothing);
-  
-  // ブラーの計算と適用
-  const blurPx = lerp(focusEngine.maxBlur, focusEngine.minBlur, focusEngine.focus);
-  bgVideo.style.filter = `blur(${blurPx}px) brightness(0.9) saturate(1.05)`;
-  
-  focusEngine.rafId = requestAnimationFrame(updateFocusEngine);
-}
-
-// ============================================
-// オートフォーカス風ブラー演出：開始
-// ============================================
-function startFocusEngine() {
-  if (focusEngine.isActive) return;
-  focusEngine.isActive = true;
-  focusEngine.focus = 0;
-  focusEngine.focusTarget = 0;
-  focusEngine.randomBase = 0.5;
-  focusEngine.randomTarget = 0.5;
-  focusEngine.randomTime = 0;
-  focusEngine.lastRandomUpdate = Date.now();
-  
-  if (bgLayer) {
-    bgLayer.classList.remove('isFading');
-    bgLayer.style.opacity = '1';
-  }
-  
-  updateFocusEngine();
-}
-
-// ============================================
-// オートフォーカス風ブラー演出：停止
-// ============================================
-function stopFocusEngine() {
-  if (!focusEngine.isActive) return;
-  focusEngine.isActive = false;
-  
-  if (focusEngine.rafId) {
-    cancelAnimationFrame(focusEngine.rafId);
-    focusEngine.rafId = null;
-  }
-  
-  // フェードアウト処理
-  if (bgLayer) {
-    bgLayer.classList.add('isFading');
-    
-    // フェード完了後に待機画面に戻る
-    focusEngine.fadeTimeout = setTimeout(() => {
-      enterIdleState();
-      if (bgLayer) {
-        bgLayer.classList.remove('isFading');
-      }
-    }, 420); // transition時間に合わせる
-  }
-}
-
-// ============================================
-// 待機画面に戻る関数
-// ============================================
-function enterIdleState() {
-  if (currentState === 'modal') return; // モーダル中は何もしない
-  
-  // 既存のrenderInitialState()を呼ぶ
-  renderInitialState();
-}
-
-// ============================================
-// マウス位置の追跡
-// ============================================
-let mouseX = 0;
-let mouseY = 0;
-
-document.addEventListener('mousemove', (e) => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-  
-  if (focusEngine.isActive) {
-    focusEngine.currentDistanceFocus = getDistanceToNearestThumbnail(mouseX, mouseY);
-  }
-});
 
 // 初期化実行
 // ============================================
