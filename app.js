@@ -132,24 +132,14 @@ function setupProjectItemListeners() {
       }
     });
     
-    // スマホ向け：touchstartでhover状態、touchcancel/touchendで非hover状態
+    // スマホ向け：touchstartでhover状態、touchcancel/touchendでは背景動画を継続
     item.addEventListener('touchstart', (e) => {
       if (currentState !== 'modal') {
         handleProjectHover(project, item);
       }
     }, { passive: true });
     
-    item.addEventListener('touchcancel', (e) => {
-      if (currentState !== 'modal') {
-        handleProjectLeave();
-      }
-    }, { passive: true });
-    
-    item.addEventListener('touchend', (e) => {
-      if (currentState !== 'modal') {
-        handleProjectLeave();
-      }
-    }, { passive: true });
+    // touchcancel/touchendでは背景動画を継続（handleProjectLeaveを呼ばない）
     
     item.addEventListener('click', () => {
       handleProjectClick(project, item);
@@ -199,6 +189,26 @@ function setupEventListeners() {
   portfolioTitle.addEventListener('click', () => {
     resetToInitialState();
   });
+  
+  // SP向け：背景領域をタッチした時に背景動画を停止して待機画面に戻す
+  if (focusVisual) {
+    focusVisual.addEventListener('touchstart', (e) => {
+      // プロジェクトアイテムをタッチした場合は何もしない（handleProjectHoverが処理する）
+      if (e.target.closest('.project-item')) {
+        return;
+      }
+      
+      // モーダルが開いている場合は何もしない
+      if (currentState === 'modal') {
+        return;
+      }
+      
+      // 背景動画が流れている状態の場合のみ停止して待機画面に戻す
+      if (currentState === 'hover' && heroVideoBase && !heroVideoBase.paused) {
+        resetToInitialState();
+      }
+    }, { passive: true });
+  }
 }
 
 // ============================================
