@@ -24,6 +24,10 @@ const modalOverlay = document.getElementById('modalOverlay');
 const modalContainer = document.querySelector('.modal-container');
 const modalClose = document.getElementById('modalClose');
 const modalContent = document.getElementById('modalContent');
+const lightboxOverlay = document.getElementById('lightboxOverlay');
+const lightboxImage = document.getElementById('lightboxImage');
+const lightboxVideo = document.getElementById('lightboxVideo');
+const lightboxClose = document.getElementById('lightboxClose');
 let isClosing = false;
 
 // ============================================
@@ -39,7 +43,7 @@ async function init() {
     renderInitialState();
     renderProjectNavigation();
     
-    // イベントリスナーを設定
+    // イベントリスナーを設定（プロジェクトアイテムが生成された後）
     setupEventListeners();
   } catch (error) {
     console.error('Error loading projects:', error);
@@ -99,17 +103,22 @@ function renderProjectNavigation() {
     item.appendChild(thumbnail);
     projectNavigation.appendChild(item);
   });
+  
+  // プロジェクトアイテムのイベントリスナーを設定
+  setupProjectItemListeners();
 }
 
 // ============================================
-// イベントリスナーの設定
+// プロジェクトアイテムのイベントリスナー設定
 // ============================================
-function setupEventListeners() {
+function setupProjectItemListeners() {
   // プロジェクトアイテムのhover
   const projectItems = document.querySelectorAll('.project-item');
   projectItems.forEach(item => {
     const projectIndex = parseInt(item.dataset.projectIndex);
     const project = projects[projectIndex];
+    
+    if (!project) return;
     
     item.addEventListener('mouseenter', () => {
       if (currentState !== 'modal') {
@@ -146,6 +155,14 @@ function setupEventListeners() {
       handleProjectClick(project, item);
     });
   });
+}
+
+// ============================================
+// イベントリスナーの設定
+// ============================================
+function setupEventListeners() {
+  // プロジェクトアイテムのイベントリスナーを設定
+  setupProjectItemListeners();
   
   // モーダルを閉じる
   modalClose.addEventListener('click', closeModal);
@@ -155,12 +172,28 @@ function setupEventListeners() {
     }
   });
   
-  // ESCキーでモーダルを閉じる
+  // ESCキーでモーダル/ライトボックスを閉じる
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && currentState === 'modal') {
-      closeModal();
+    if (e.key === 'Escape') {
+      if (!lightboxOverlay.hidden) {
+        closeLightbox();
+      } else if (currentState === 'modal') {
+        closeModal();
+      }
     }
   });
+  
+  // ライトボックスのイベントリスナー
+  if (lightboxClose) {
+    lightboxClose.addEventListener('click', closeLightbox);
+  }
+  if (lightboxOverlay) {
+    lightboxOverlay.addEventListener('click', (e) => {
+      if (e.target === lightboxOverlay) {
+        closeLightbox();
+      }
+    });
+  }
   
   // ポートフォリオ名をクリックでState0に戻る
   portfolioTitle.addEventListener('click', () => {
@@ -656,16 +689,20 @@ function initVideoPlayer(videoShell) {
     updatePlayButton();
   });
   
-  // オーバーレイプレイボタン（クリック1回で即再生）
+  // オーバーレイプレイボタン（クリックでライトボックスを開く）
   overlayPlay.addEventListener('click', (e) => {
     e.stopPropagation();
-    togglePlay();
+    openLightboxVideo(video.src, videoShell);
   });
   
-  // 動画クリック（再生/一時停止）
+  // 動画クリック（ライトボックスを開く）
   video.addEventListener('click', (e) => {
     e.stopPropagation();
-    togglePlay();
+    if (video.paused) {
+      openLightboxVideo(video.src, videoShell);
+    } else {
+      togglePlay();
+    }
   });
   
   // プレイ/一時停止ボタン
@@ -807,16 +844,16 @@ function createInitiativeCard(initiative, projectSlug) {
         item.style.display = 'none';
       });
       
-      // クリックで新規タブで開く
+      // クリックでライトボックスを開く
       item.addEventListener('click', () => {
-        window.open(imageUrl, '_blank', 'noopener,noreferrer');
+        openLightbox(imageUrl, item);
       });
       
       // キーボードアクセス対応
       item.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          window.open(imageUrl, '_blank', 'noopener,noreferrer');
+          openLightbox(imageUrl, item);
         }
       });
       
@@ -963,15 +1000,15 @@ function createImageGrid(images, projectSlug, forceHorizontal = false) {
       item.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
     });
     
-    // クリックで新規タブで開く（拡大しない）
+    // クリックでライトボックスを開く
     item.addEventListener('click', () => {
-      window.open(imageData.src, '_blank', 'noopener,noreferrer');
+      openLightbox(imageData.src, item);
     });
     
     item.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        window.open(imageData.src, '_blank', 'noopener,noreferrer');
+        openLightbox(imageData.src, item);
       }
     });
     
@@ -1179,9 +1216,363 @@ function openModal(project) {
 }
 
 // ============================================
+// ライトボックスの開閉
+// ============================================
+let lightboxOriginRect = null;
+let lightboxType = 'image'; // 'image' or 'video'
+
+function openLightboxVideo(videoSrc, originElement) {
+  if (!lightboxOverlay || !lightboxVideo) return;
+  
+  lightboxType = 'video';
+  
+  // 元の動画要素の位置とサイズを取得
+  if (originElement) {
+    const rect = originElement.getBoundingClientRect();
+    lightboxOriginRect = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      width: rect.width,
+      height: rect.height
+    };
+  } else {
+    lightboxOriginRect = null;
+  }
+  
+  // 画像を非表示、動画を表示
+  if (lightboxImage) {
+    lightboxImage.style.display = 'none';
+  }
+  lightboxVideo.style.display = 'block';
+  lightboxVideo.src = videoSrc;
+  lightboxVideo.muted = true;
+  lightboxVideo.playsInline = true;
+  lightboxVideo.setAttribute('playsinline', 'true');
+  lightboxVideo.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
+  lightboxVideo.setAttribute('disablepictureinpicture', 'true');
+  lightboxOverlay.removeAttribute('hidden');
+  lightboxOverlay.classList.remove('closing');
+  
+  // 動画が読み込まれるまで待つ
+  const handleVideoLoad = () => {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    if (lightboxOriginRect) {
+      // 元の位置から開始
+      const originX = lightboxOriginRect.x;
+      const originY = lightboxOriginRect.y;
+      const originWidth = lightboxOriginRect.width;
+      const originHeight = lightboxOriginRect.height;
+      
+      // 最終的な位置（中央）
+      const finalX = viewportWidth / 2;
+      const finalY = viewportHeight / 2;
+      
+      // 最終的なサイズ（アスペクト比を維持）
+      const videoAspectRatio = lightboxVideo.videoWidth / lightboxVideo.videoHeight;
+      let finalWidth = viewportWidth * 0.9;
+      let finalHeight = finalWidth / videoAspectRatio;
+      
+      if (finalHeight > viewportHeight * 0.9) {
+        finalHeight = viewportHeight * 0.9;
+        finalWidth = finalHeight * videoAspectRatio;
+      }
+      
+      // 初期状態を設定（元の位置とサイズ）
+      lightboxVideo.style.position = 'fixed';
+      lightboxVideo.style.left = `${originX}px`;
+      lightboxVideo.style.top = `${originY}px`;
+      lightboxVideo.style.width = `${originWidth}px`;
+      lightboxVideo.style.height = `${originHeight}px`;
+      lightboxVideo.style.transform = 'translate(-50%, -50%)';
+      lightboxVideo.style.transformOrigin = 'center center';
+      lightboxVideo.style.opacity = '1';
+      lightboxVideo.style.transition = 'none';
+      lightboxVideo.style.objectFit = 'cover';
+      
+      // 次のフレームでアニメーション開始
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          lightboxVideo.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+          lightboxVideo.style.left = `${finalX}px`;
+          lightboxVideo.style.top = `${finalY}px`;
+          lightboxVideo.style.width = `${finalWidth}px`;
+          lightboxVideo.style.height = `${finalHeight}px`;
+          lightboxVideo.style.objectFit = 'contain';
+          
+          // アニメーション完了後に自動再生
+          setTimeout(() => {
+            lightboxVideo.play().catch(e => {
+              console.warn('Video autoplay prevented:', e);
+            });
+          }, 500);
+        });
+      });
+    } else {
+      // 元の位置情報がない場合
+      lightboxVideo.style.position = '';
+      lightboxVideo.style.left = '';
+      lightboxVideo.style.top = '';
+      lightboxVideo.style.width = '';
+      lightboxVideo.style.height = '';
+      lightboxVideo.style.opacity = '1';
+      lightboxVideo.style.transform = 'translate(-50%, -50%) scale(1)';
+      lightboxVideo.style.transition = 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+    }
+  };
+  
+  lightboxVideo.addEventListener('loadedmetadata', handleVideoLoad, { once: true });
+  
+  // 既に読み込まれている場合
+  if (lightboxVideo.readyState >= 1) {
+    handleVideoLoad();
+  }
+}
+
+function openLightbox(imageSrc, originElement) {
+  if (!lightboxOverlay || !lightboxImage) return;
+  
+  lightboxType = 'image';
+  
+  // 元の画像の位置とサイズを取得
+  if (originElement) {
+    const rect = originElement.getBoundingClientRect();
+    lightboxOriginRect = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      width: rect.width,
+      height: rect.height
+    };
+  } else {
+    lightboxOriginRect = null;
+  }
+  
+  // 動画を非表示、画像を表示
+  if (lightboxVideo) {
+    lightboxVideo.style.display = 'none';
+    lightboxVideo.pause();
+    lightboxVideo.src = '';
+  }
+  if (lightboxImage) {
+    lightboxImage.style.display = 'block';
+  }
+  
+  lightboxImage.src = imageSrc;
+  lightboxOverlay.removeAttribute('hidden');
+  lightboxOverlay.classList.remove('closing');
+  
+  // 画像が読み込まれるまで待つ
+  const handleImageLoad = () => {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    if (lightboxOriginRect) {
+      // 元の位置から開始
+      const originX = lightboxOriginRect.x;
+      const originY = lightboxOriginRect.y;
+      const originWidth = lightboxOriginRect.width;
+      const originHeight = lightboxOriginRect.height;
+      
+      // 最終的な位置（中央）
+      const finalX = viewportWidth / 2;
+      const finalY = viewportHeight / 2;
+      
+      // 最終的なサイズ（アスペクト比を維持）
+      const imageAspectRatio = lightboxImage.naturalWidth / lightboxImage.naturalHeight;
+      let finalWidth = viewportWidth * 0.9;
+      let finalHeight = finalWidth / imageAspectRatio;
+      
+      if (finalHeight > viewportHeight * 0.9) {
+        finalHeight = viewportHeight * 0.9;
+        finalWidth = finalHeight * imageAspectRatio;
+      }
+      
+      // 初期状態を設定（元の位置とサイズ）
+      lightboxImage.style.position = 'fixed';
+      lightboxImage.style.left = `${originX}px`;
+      lightboxImage.style.top = `${originY}px`;
+      lightboxImage.style.width = `${originWidth}px`;
+      lightboxImage.style.height = `${originHeight}px`;
+      lightboxImage.style.transform = 'translate(-50%, -50%)';
+      lightboxImage.style.transformOrigin = 'center center';
+      lightboxImage.style.opacity = '1';
+      lightboxImage.style.transition = 'none';
+      lightboxImage.style.objectFit = 'cover';
+      
+      // 次のフレームでアニメーション開始
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          lightboxImage.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+          lightboxImage.style.left = `${finalX}px`;
+          lightboxImage.style.top = `${finalY}px`;
+          lightboxImage.style.width = `${finalWidth}px`;
+          lightboxImage.style.height = `${finalHeight}px`;
+          lightboxImage.style.objectFit = 'contain';
+        });
+      });
+    } else {
+      // 元の位置情報がない場合は従来のアニメーション
+      lightboxImage.style.position = '';
+      lightboxImage.style.left = '';
+      lightboxImage.style.top = '';
+      lightboxImage.style.width = '';
+      lightboxImage.style.height = '';
+      lightboxImage.style.opacity = '1';
+      lightboxImage.style.transform = 'translate(-50%, -50%) scale(1)';
+      lightboxImage.style.transition = 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+    }
+  };
+  
+  lightboxImage.onload = handleImageLoad;
+  
+  // 既に読み込まれている場合
+  if (lightboxImage.complete && lightboxImage.naturalWidth > 0) {
+    handleImageLoad();
+  }
+}
+
+function closeLightbox() {
+  if (!lightboxOverlay) return;
+  
+  // 閉じるアニメーション開始：背景を透明にする
+  lightboxOverlay.classList.add('closing');
+  
+  if (lightboxType === 'video' && lightboxVideo) {
+    // 動画を閉じる
+    if (lightboxOriginRect) {
+      // 元の位置に戻るアニメーション
+      const originX = lightboxOriginRect.x;
+      const originY = lightboxOriginRect.y;
+      const originWidth = lightboxOriginRect.width;
+      const originHeight = lightboxOriginRect.height;
+      
+      // 動画を先に停止
+      lightboxVideo.pause();
+      
+      lightboxVideo.style.transition = 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+      lightboxVideo.style.left = `${originX}px`;
+      lightboxVideo.style.top = `${originY}px`;
+      lightboxVideo.style.width = `${originWidth}px`;
+      lightboxVideo.style.height = `${originHeight}px`;
+      lightboxVideo.style.opacity = '0';
+      lightboxVideo.style.objectFit = 'cover';
+      
+      setTimeout(() => {
+        // まず動画のsrcをクリア（動画を非表示にする）
+        lightboxVideo.src = '';
+        lightboxVideo.style.display = 'none';
+        
+        // 次にhidden属性を設定
+        lightboxOverlay.setAttribute('hidden', '');
+        
+        // 最後にclosingクラスを削除してスタイルをクリーンアップ
+        lightboxOverlay.classList.remove('closing');
+        lightboxVideo.style.position = '';
+        lightboxVideo.style.left = '';
+        lightboxVideo.style.top = '';
+        lightboxVideo.style.width = '';
+        lightboxVideo.style.height = '';
+        lightboxVideo.style.transform = '';
+        lightboxVideo.style.transformOrigin = '';
+        lightboxVideo.style.transition = '';
+        lightboxVideo.style.objectFit = '';
+        lightboxOriginRect = null;
+      }, 400);
+    } else {
+      // 動画を先に停止
+      lightboxVideo.pause();
+      
+      lightboxVideo.style.opacity = '0';
+      lightboxVideo.style.transform = 'translate(-50%, -50%) scale(0.9)';
+      
+      setTimeout(() => {
+        // まず動画のsrcをクリア（動画を非表示にする）
+        lightboxVideo.src = '';
+        lightboxVideo.style.display = 'none';
+        
+        // 次にhidden属性を設定
+        lightboxOverlay.setAttribute('hidden', '');
+        
+        // 最後にclosingクラスを削除してスタイルをクリーンアップ
+        lightboxOverlay.classList.remove('closing');
+        lightboxVideo.style.position = '';
+        lightboxVideo.style.left = '';
+        lightboxVideo.style.top = '';
+        lightboxVideo.style.width = '';
+        lightboxVideo.style.height = '';
+        lightboxVideo.style.transform = '';
+        lightboxVideo.style.transformOrigin = '';
+        lightboxVideo.style.transition = '';
+        lightboxVideo.style.objectFit = '';
+      }, 400);
+    }
+    return;
+  }
+  
+  // 画像を閉じる
+  if (!lightboxImage) return;
+  
+  if (lightboxOriginRect) {
+    // 元の位置に戻るアニメーション
+    const originX = lightboxOriginRect.x;
+    const originY = lightboxOriginRect.y;
+    const originWidth = lightboxOriginRect.width;
+    const originHeight = lightboxOriginRect.height;
+    
+    lightboxImage.style.transition = 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+    lightboxImage.style.left = `${originX}px`;
+    lightboxImage.style.top = `${originY}px`;
+    lightboxImage.style.width = `${originWidth}px`;
+    lightboxImage.style.height = `${originHeight}px`;
+    lightboxImage.style.opacity = '0';
+    
+    setTimeout(() => {
+      lightboxOverlay.setAttribute('hidden', '');
+      lightboxOverlay.classList.remove('closing');
+      lightboxImage.src = '';
+      lightboxImage.style.position = '';
+      lightboxImage.style.left = '';
+      lightboxImage.style.top = '';
+      lightboxImage.style.width = '';
+      lightboxImage.style.height = '';
+      lightboxImage.style.transform = '';
+      lightboxImage.style.transformOrigin = '';
+      lightboxImage.style.transition = '';
+      lightboxImage.style.objectFit = '';
+      lightboxOriginRect = null;
+    }, 400);
+  } else {
+    // 従来のアニメーション
+    lightboxImage.style.opacity = '0';
+    lightboxImage.style.transform = 'translate(-50%, -50%) scale(0.9)';
+    
+    setTimeout(() => {
+      lightboxOverlay.setAttribute('hidden', '');
+      lightboxOverlay.classList.remove('closing');
+      lightboxImage.src = '';
+      lightboxImage.style.position = '';
+      lightboxImage.style.left = '';
+      lightboxImage.style.top = '';
+      lightboxImage.style.width = '';
+      lightboxImage.style.height = '';
+      lightboxImage.style.transform = '';
+      lightboxImage.style.transformOrigin = '';
+      lightboxImage.style.transition = '';
+      lightboxImage.style.objectFit = '';
+    }, 400);
+  }
+}
+
+// ============================================
 // モーダルを閉じる
 // ============================================
 function closeModal() {
+  // ライトボックスが開いている場合は閉じる
+  if (lightboxOverlay && !lightboxOverlay.hidden) {
+    closeLightbox();
+  }
+  
   // 全てのインライン動画を停止してposterに戻す
   stopAllInlineVideos();
   

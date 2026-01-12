@@ -71,6 +71,20 @@
       </div>
     </div>
 
+    <!-- ライトボックス（画像・動画拡大表示） -->
+    <div class="lightbox-overlay" id="lightboxOverlay" hidden>
+      <button class="lightbox-close" id="lightboxClose" aria-label="Close">
+        ×
+      </button>
+      <img class="lightbox-image" id="lightboxImage" alt="Enlarged image" />
+      <video
+        class="lightbox-video"
+        id="lightboxVideo"
+        controls
+        playsinline
+      ></video>
+    </div>
+
     <script src="app.js"></script>
   </body>
 </html>
