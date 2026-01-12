@@ -266,15 +266,15 @@
             "videos": [
               {
                 "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/dadakone.webm"
-              },
-              {
-                "type": "video",
                 "src": "https://assets.shuntofujii.com/deteqle/dadakone_1.webm"
               },
               {
                 "type": "video",
                 "src": "https://assets.shuntofujii.com/deteqle/dadakone_2.webm"
+              },
+              {
+                "type": "video",
+                "src": "https://assets.shuntofujii.com/deteqle/dadakone_3.webm"
               }
             ]
           },

@@ -538,17 +538,21 @@ let currentPlayingVideo = null;
 
 // 全てのインライン動画を停止してposterに戻す
 function stopAllInlineVideos() {
-  const allVideos = document.querySelectorAll('.video');
+  const allVideos = document.querySelectorAll('.video-shell .video');
   allVideos.forEach(video => {
     video.pause();
     video.currentTime = 0;
     const videoShell = video.closest('.video-shell');
     if (videoShell) {
+      videoShell.classList.remove('playing');
       const overlayPlay = videoShell.querySelector('.video-overlay-play');
+      const controls = videoShell.querySelector('.video-controls');
       if (overlayPlay) {
-        overlayPlay.style.display = 'grid';
         overlayPlay.style.opacity = '1';
         overlayPlay.style.pointerEvents = 'auto';
+      }
+      if (controls) {
+        controls.classList.remove('visible');
       }
     }
   });
@@ -568,49 +572,34 @@ function initVideoPlayer(videoShell) {
   
   if (!video || !overlayPlay || !controls) return;
   
-  // コントロールバーの表示/非表示を制御
-  let controlsTimeout = null;
-  const CONTROLS_HIDE_DELAY = 2000; // 2秒後に非表示
-
-  function showControls() {
+  // 再生状態を管理
+  function enterPlayingState() {
+    videoShell.classList.add('playing');
+    overlayPlay.style.opacity = '0';
+    overlayPlay.style.pointerEvents = 'none';
     controls.classList.add('visible');
-    if (controlsTimeout) {
-      clearTimeout(controlsTimeout);
-    }
-    // 再生中の場合のみ、一定時間後に非表示
-    if (!video.paused) {
-      controlsTimeout = setTimeout(() => {
-        hideControls();
-      }, CONTROLS_HIDE_DELAY);
-    }
+    playPauseBtn.setAttribute('aria-label', 'Pause');
+    playPauseBtn.classList.add('playing');
   }
 
-  function hideControls() {
+  function enterPausedState() {
+    videoShell.classList.remove('playing');
+    overlayPlay.style.opacity = '1';
+    overlayPlay.style.pointerEvents = 'auto';
     controls.classList.remove('visible');
-    if (controlsTimeout) {
-      clearTimeout(controlsTimeout);
-      controlsTimeout = null;
-    }
+    playPauseBtn.setAttribute('aria-label', 'Play');
+    playPauseBtn.classList.remove('playing');
   }
-
-  // 再生/停止ボタン更新
+  
+  // 再生/停止ボタン更新（イベント用、状態は変更しない）
   function updatePlayButton() {
+    // ボタンの見た目のみ更新（状態変更はtogglePlay内で行う）
     if (video.paused) {
       playPauseBtn.setAttribute('aria-label', 'Play');
       playPauseBtn.classList.remove('playing');
-      overlayPlay.style.display = 'grid';
-      overlayPlay.style.opacity = '1';
-      overlayPlay.style.pointerEvents = 'auto';
-      // 一時停止時はコントロールバーを表示
-      showControls();
     } else {
       playPauseBtn.setAttribute('aria-label', 'Pause');
       playPauseBtn.classList.add('playing');
-      overlayPlay.style.display = 'none';
-      overlayPlay.style.opacity = '0';
-      overlayPlay.style.pointerEvents = 'none';
-      // 再生開始時はコントロールバーを非表示
-      hideControls();
     }
   }
   
@@ -638,12 +627,17 @@ function initVideoPlayer(videoShell) {
     if (video.paused) {
       // 他の動画を停止
       stopAllInlineVideos();
+      // 再生ボタンのクリックをトリガーに全画面表示
+      enterPlayingState();
       video.play().catch(e => {
         console.warn('Video play error:', e);
-        updatePlayButton();
+        // エラー時は停止状態に戻す
+        enterPausedState();
       });
       currentPlayingVideo = video;
     } else {
+      // 停止ボタンのクリックをトリガーに縮小表示
+      enterPausedState();
       video.pause();
     }
   }
@@ -673,33 +667,11 @@ function initVideoPlayer(videoShell) {
     e.stopPropagation();
     togglePlay();
   });
-
-  // マウスムーブでコントロールバーを表示
-  videoShell.addEventListener('mousemove', (e) => {
-    if (!video.paused) {
-      showControls();
-    }
-  });
-
-  // マウスが動画の外に出たら非表示
-  videoShell.addEventListener('mouseleave', () => {
-    if (!video.paused) {
-      hideControls();
-    }
-  });
   
   // プレイ/一時停止ボタン
   playPauseBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     togglePlay();
-  });
-
-  // コントロールバー上でマウスを動かしたときも表示を維持
-  controls.addEventListener('mousemove', (e) => {
-    e.stopPropagation();
-    if (!video.paused) {
-      showControls();
-    }
   });
   
   // シークバー
@@ -707,10 +679,6 @@ function initVideoPlayer(videoShell) {
     e.stopPropagation();
     const percent = seekBar.value / 100;
     video.currentTime = video.duration * percent;
-    // シーク操作時はコントロールバーを表示
-    if (!video.paused) {
-      showControls();
-    }
   });
   
   // ミュートボタン
@@ -718,10 +686,6 @@ function initVideoPlayer(videoShell) {
     e.stopPropagation();
     video.muted = !video.muted;
     updateMuteButton();
-    // ミュート操作時はコントロールバーを表示
-    if (!video.paused) {
-      showControls();
-    }
   });
   
   // エラーハンドリング
@@ -769,13 +733,6 @@ function createInitiativeCard(initiative, projectSlug) {
     video.loop = true;
     video.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
     video.setAttribute('disablepictureinpicture', 'true');
-    
-    // 動画のアスペクト比を取得して設定
-    video.addEventListener('loadedmetadata', () => {
-      if (video.videoWidth && video.videoHeight) {
-        videoShell.style.setProperty('--ar', `${video.videoWidth} / ${video.videoHeight}`);
-      }
-    }, { once: true });
     
     // オーバーレイプレイボタン（初期のみ表示）
     const overlayPlay = document.createElement('button');
@@ -844,13 +801,6 @@ function createInitiativeCard(initiative, projectSlug) {
       img.decoding = 'async';
       img.alt = '';
       
-      // 画像のアスペクト比を取得して設定
-      img.addEventListener('load', () => {
-        if (img.naturalWidth && img.naturalHeight) {
-          item.style.setProperty('--ar', `${img.naturalWidth} / ${img.naturalHeight}`);
-        }
-      });
-      
       // エラーハンドリング
       img.addEventListener('error', (e) => {
         console.warn('Image load error:', imageUrl);
@@ -904,12 +854,10 @@ function createVideoGrid(videos, projectSlug) {
     video.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
     video.setAttribute('disablepictureinpicture', 'true');
     
-    // 動画のアスペクト比を取得して設定
+    // メディアのアスペクト比に従って枠の縦幅を決定
     video.addEventListener('loadedmetadata', () => {
-      if (video.videoWidth && video.videoHeight) {
-        videoShell.style.setProperty('--ar', `${video.videoWidth} / ${video.videoHeight}`);
-      }
-    }, { once: true });
+      videoShell.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+    });
     
     // オーバーレイプレイボタン
     const overlayPlay = document.createElement('button');
@@ -1005,17 +953,14 @@ function createImageGrid(images, projectSlug, forceHorizontal = false) {
     img.decoding = 'async';
     img.alt = '';
     
-    // 画像のアスペクト比を取得して設定
-    img.addEventListener('load', () => {
-      if (img.naturalWidth && img.naturalHeight) {
-        const aspectRatio = img.naturalWidth / img.naturalHeight;
-        item.style.setProperty('--ar', `${img.naturalWidth} / ${img.naturalHeight}`);
-      }
-    });
-    
     img.addEventListener('error', () => {
       console.warn('Image load error:', imageData.src);
       item.style.display = 'none';
+    });
+    
+    // メディアのアスペクト比に従って枠の縦幅を決定
+    img.addEventListener('load', () => {
+      item.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
     });
     
     // クリックで新規タブで開く（拡大しない）

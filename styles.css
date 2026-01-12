@@ -476,7 +476,7 @@ body.modal-open .project-navigation {
   border-radius: 50%;
   display: block;
   box-sizing: border-box;
-  transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out;
+  transition: filter 0.3s ease-in-out;
   transform: scale(1);
   filter: brightness(1);
   position: relative;
@@ -578,22 +578,31 @@ body.modal-open .project-navigation {
   margin-right: 8px;
 }
 
-/* Selected状態（状態保持・2重枠） */
+/* Selected状態（凹みアニメーション） */
 .project-item.selected {
   opacity: 1;
-  border-color: var(--accent-color);
-  border-width: 2px;
+}
+
+.project-item.selected .project-thumbnail {
+  animation: pressIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  filter: brightness(0.85);
 }
 
 .project-item.selected::before {
-  opacity: 1;
-  border-width: 3px;
-  inset: -5px;
-  /* 2重枠の外側 */
+  opacity: 0;
 }
 
 .project-item.selected::after {
-  opacity: 0.6;
+  opacity: 0;
+}
+
+@keyframes pressIn {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(0.97);
+  }
 }
 
 /* hover時、非hover項目を減衰 */
@@ -929,17 +938,20 @@ body.modal-open .modal-overlay {
   overflow: hidden;
   background: #000;
   border-radius: 16px;
-  aspect-ratio: var(--ar, 4/3);
-  max-height: 52vh;
+  transition: border-radius 0.3s ease;
+}
+
+.video-shell.playing {
+  border-radius: 0;
 }
 
 .video {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  background: #000;
+  object-fit: cover;
   display: block;
   cursor: pointer;
+  background: #000;
 }
 
 .video-overlay-play {
@@ -1196,9 +1208,7 @@ body.modal-open .modal-overlay {
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border: 2px solid transparent;
-  aspect-ratio: var(--ar, 4/3);
   width: 100%;
-  max-height: 52vh;
 }
 
 .mediaGrid .mediaItem:hover {
@@ -1210,8 +1220,8 @@ body.modal-open .modal-overlay {
 .mediaGrid .mediaItem img {
   width: 100%;
   height: 100%;
+  object-fit: cover;
   display: block;
-  object-fit: contain;
   background: #000;
   transition: opacity 0.3s ease;
 }
@@ -1314,10 +1324,10 @@ body.modal-open .modal-overlay {
 }
 
 .case-title {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 0.75rem 0;
 }
 
 .initiative-section {
@@ -1332,7 +1342,7 @@ body.modal-open .modal-overlay {
   font-size: 1rem;
   font-weight: 500;
   color: var(--text-secondary);
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 1rem 0;
 }
 
 /* ============================================
