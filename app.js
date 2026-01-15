@@ -896,6 +896,12 @@ function createVideoGrid(videos, projectSlug) {
     video.setAttribute('playsinline', 'true');
     video.setAttribute('webkit-playsinline', 'true');
     video.preload = 'metadata';
+    
+    // ポスター画像を設定（動画URLから生成）
+    // 例: https://assets.shuntofujii.com/deteqle/dadakone_1.webm -> https://assets.shuntofujii.com/deteqle/dadakone_1.webp
+    const posterUrl = videoData.src.replace(/\.webm$/, '.webp');
+    video.poster = posterUrl;
+    
     video.muted = true;
     video.loop = true;
     video.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
