@@ -3,80 +3,120 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SHUNTO FUJII｜藤井 洵斗</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>SHUNTO FUJII | Creative Director & Service Designer Portfolio</title>
     <meta
       name="description"
-      content="藤井洵斗のポートフォリオサイト｜Creative Direction / Service Design / Marketing Strategy / Business Dev"
+      content="藤井洵斗（SHUNTO FUJII）のポートフォリオサイト。Creative Direction, Service Design, Marketing Strategy, Business Devの領域で、本質的な課題解決と価値創造を行うプロジェクト実績を紹介します。"
     />
+    <meta name="keywords" content="藤井洵斗, SHUNTO FUJII, クリエイティブディレクター, サービスデザイン, マーケティング戦略, ポートフォリオ" />
+    
+    <link rel="canonical" href="https://your-domain.com/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="SHUNTO FUJII | Portfolio" />
+    <meta property="og:description" content="藤井洵斗のポートフォリオ。Creative Direction / Service Design / Strategy" />
+    <meta property="og:url" content="https://shuntofujii.com/" />
+    <meta property="og:site_name" content="SHUNTO FUJII Portfolio" />
+    <meta property="og:image" content="https://assets.shuntofujii.com/top/ogp.webp" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SHUNTO FUJII | Portfolio" />
+    <meta name="twitter:description" content="藤井洵斗のポートフォリオサイト。" />
+
+    <link rel="icon" href="https://assets.shuntofujii.com/top/favicon.ico" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
+
     <link rel="stylesheet" href="styles.css" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      "mainEntity": {
+        "@type": "Person",
+        "name": "SHUNTO FUJII",
+        "alternateName": "藤井 洵斗",
+        "jobTitle": ["Creative Director", "Service Designer", "Marketing Strategist"],
+        "url": "https://shuntofujii.com/",
+        "image": "https://assets.shuntofujii.com/top/ogp.webp",
+        "description": "Creative Direction, Service Design, Marketing Strategy, Business Devを横断するクリエイター。",
+        "sameAs": [
+          "https://x.com/shuntofujii",
+          "https://www.facebook.com/shuntofujii/",
+          "https://www.linkedin.com/in/shuntofujii/",
+          "https://shuntofujii.myportfolio.com/"
+        ]
+      }
+    }
+    </script>
   </head>
   <body>
-    <!-- ポートフォリオ名（左上・常時表示） -->
-    <div class="portfolio-title" id="portfolioTitle">
-      <h2 class="portfolio-title-text">SHUNTO FUJII</h2>
-    </div>
+    <header class="portfolio-title" id="portfolioTitle">
+      <h1 class="portfolio-title-text">SHUNTO FUJII</h1>
+    </header>
 
-    <!-- ① プロジェクト情報パネル（左上） -->
-    <div class="context-panel hover-card" id="contextPanel">
-      <div class="context-content">
-        <p class="context-text">
-          ポートフォリオにようこそ。プロジェクトを選択してください。
-        </p>
-      </div>
-    </div>
-
-    <!-- ② 象徴的ビジュアル（中央・空間） -->
-    <div class="focus-visual" id="focusVisual">
-      <div id="bgLayer" class="visual-container bg">
-        <video
-          id="bgVideo"
-          class="bg__video bg__video--base hero-media"
-          muted
-          loop
-          playsinline
-          style="display: none"
-        ></video>
-      </div>
-    </div>
-
-    <!-- ③ プロジェクト名（巨大な背景タイポ） -->
-    <div class="title-background" id="titleBackground">
-      <h1 class="title-text" id="titleText">PORTFOLIO</h1>
-    </div>
-
-    <!-- State0用ガイダンステキスト（非選択時のみ表示） -->
-    <div class="guidance-text" id="guidanceText">
-      <span class="guidance-main">Please select a project</span
-      ><span class="guidance-cursor">_</span>
-    </div>
-
-    <!-- ④ プロジェクト選択UI（画面下中央） -->
-    <nav class="project-navigation" id="projectNavigation">
-      <!-- JSで動的に生成 -->
-    </nav>
-
-    <!-- モーダル（プロジェクト詳細） -->
-    <div class="modal-overlay" id="modalOverlay" hidden>
-      <div class="modal-container" data-state="closed" hidden>
-        <button class="modal-close" id="modalClose">×</button>
-        <div class="modal-content" id="modalContent">
-          <!-- JSで動的に生成 -->
+    <main>
+      <section class="context-panel hover-card" id="contextPanel" aria-label="Project Context">
+        <div class="context-content">
         </div>
+      </section>
+
+      <div class="focus-visual" id="focusVisual" aria-hidden="true">
+        <div id="bgLayer" class="visual-container bg">
+          <video
+            id="bgVideo"
+            class="bg__video bg__video--base hero-media"
+            muted
+            loop
+            playsinline
+            style="display: none"
+            preload="none"
+            poster="path/to/poster-image.jpg" 
+          ></video>
+          </div>
+      </div>
+
+      <div class="title-background" id="titleBackground">
+        <div class="title-text" id="titleText">PORTFOLIO</div>
+      </div>
+
+      <div class="guidance-text" id="guidanceText">
+        <span class="guidance-main">Please select a project</span>
+        <span class="guidance-cursor">_</span>
+      </div>
+
+      <nav class="project-navigation" id="projectNavigation" aria-label="Project Selection">
+        </nav>
+
+      <noscript>
+        <div style="padding: 20px; color: #fff; position: absolute; bottom: 20px;">
+          <p>藤井洵斗のポートフォリオサイトをご覧いただくにはJavaScriptを有効にしてください。</p>
+          <p>主な実績:グーチョキデッド,SEPILA,デテクル,DATEs,Microsoft,IVS,EarnPoker,IZUMOar</p>
+        </div>
+      </noscript>
+    </main>
+
+    <div class="modal-overlay" id="modalOverlay" hidden aria-hidden="true">
+      <div class="modal-container" data-state="closed" hidden role="dialog" aria-modal="true" aria-labelledby="modalContent">
+        <button class="modal-close" id="modalClose" aria-label="Close details">×</button>
+        <div class="modal-content" id="modalContent">
+          </div>
       </div>
     </div>
 
-    <!-- ライトボックス（画像・動画拡大表示） -->
-    <div class="lightbox-overlay" id="lightboxOverlay" hidden>
-      <button class="lightbox-close" id="lightboxClose" aria-label="Close">
+    <div class="lightbox-overlay" id="lightboxOverlay" hidden aria-hidden="true">
+      <button class="lightbox-close" id="lightboxClose" aria-label="Close image view">
         ×
       </button>
-      <img class="lightbox-image" id="lightboxImage" alt="Enlarged image" />
+      <img class="lightbox-image" id="lightboxImage" alt="Enlarged view" />
       <video
         class="lightbox-video"
         id="lightboxVideo"
@@ -85,6 +125,6 @@
       ></video>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js" defer></script>
   </body>
 </html>
