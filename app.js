@@ -759,18 +759,20 @@ function initVideoPlayer(videoShell) {
 // ============================================
 // 施策カードを生成
 // ============================================
-function createInitiativeCard(initiative, projectSlug) {
+function createInitiativeCard(initiative, projectSlug, showTitle = true) {
   const card = document.createElement('div');
   card.className = 'initiative-card';
 
-  // ヘッダー
-  const head = document.createElement('div');
-  head.className = 'initiative-head';
-  const name = document.createElement('h4');
-  name.className = 'initiative-name';
-  name.textContent = initiative.title;
-  head.appendChild(name);
-  card.appendChild(head);
+  // ヘッダー（showTitleがtrueの場合のみ表示）
+  if (showTitle) {
+    const head = document.createElement('div');
+    head.className = 'initiative-head';
+    const name = document.createElement('h4');
+    name.className = 'initiative-name';
+    name.textContent = initiative.title;
+    head.appendChild(name);
+    card.appendChild(head);
+  }
 
   // 動画（hasVideo=trueの場合のみ）
   if (initiative.hasVideo) {
@@ -1095,6 +1097,19 @@ function createInitiativeSection(initiative, projectSlug, initiativeName = null,
     section.appendChild(heading);
   }
 
+  // IZUMOプロジェクト用：assetPrefix構造（assetPrefix、hasVideo、images数値）を処理
+  if (initiative.assetPrefix) {
+    // createInitiativeCardを使用してIZUMO構造を処理
+    // createInitiativeSectionで既にtitleを表示している（"Main"以外の場合）ので、
+    // createInitiativeCardでは表示しない
+    // "Main"の場合も表示しない
+    const showTitleInCard = false;
+    const card = createInitiativeCard(initiative, projectSlug, showTitleInCard);
+    section.appendChild(card);
+    return section;
+  }
+
+  // デテクルプロジェクト用：videos配列、images配列構造を処理
   // 動画（videos配列がある場合）
   if (initiative.videos && initiative.videos.length > 0) {
     const videoGrid = createVideoGrid(initiative.videos, projectSlug, initiativeName, caseName);
