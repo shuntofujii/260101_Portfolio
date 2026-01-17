@@ -817,7 +817,7 @@ body.modal-open .modal-overlay {
    モーダル施策一覧（Works）
    ============================================ */
 .modal-initiatives {
-  margin-top: 3rem;
+  margin-top: 0px;
   padding-top: 3rem;
 }
 
@@ -1460,7 +1460,7 @@ body.modal-open .modal-overlay {
   }
 
   .modal-initiatives {
-    margin-top: 2rem;
+    margin-top: 0px;
     padding-top: 2rem;
   }
 

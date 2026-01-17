@@ -38,11 +38,11 @@ async function init() {
     // projects.jsonを読み込む
     const response = await fetch('projects.json');
     projects = await response.json();
-    
+
     // 初期状態を設定
     renderInitialState();
     renderProjectNavigation();
-    
+
     // イベントリスナーを設定（プロジェクトアイテムが生成された後）
     setupEventListeners();
   } catch (error) {
@@ -58,7 +58,7 @@ async function init() {
 function renderInitialState() {
   // ① コンテキストパネルを非表示にする
   contextPanel.classList.remove('visible');
-  
+
   // ② 動画背景レイヤー（初期状態では何も表示しない）
   if (heroVideoBase) {
     heroVideoBase.style.display = 'none';
@@ -66,16 +66,16 @@ function renderInitialState() {
     heroVideoBase.currentTime = 0;
     heroVideoBase.style.opacity = '0';
   }
-  
+
   // bgLayerも非表示
   if (bgLayer) {
     bgLayer.style.opacity = '0';
     bgLayer.classList.remove('isFading');
   }
-  
+
   // ③ タイトル
   titleText.textContent = 'PORTFOLIO';
-  
+
   // State0用ガイダンステキストを表示
   guidanceText.classList.add('visible');
 }
@@ -85,25 +85,25 @@ function renderInitialState() {
 // ============================================
 function renderProjectNavigation() {
   projectNavigation.innerHTML = '';
-  
+
   projects.forEach((project, index) => {
     const item = document.createElement('div');
     item.className = 'project-item';
     item.dataset.projectId = project.id;
     item.dataset.projectIndex = index;
-    
+
     const thumbnail = document.createElement('img');
     thumbnail.className = 'project-thumbnail';
     thumbnail.src = project.thumbnail || 'https://assets.shuntofujii.com/top/placeholder-image.jpg';
     thumbnail.alt = project.title;
-    thumbnail.onerror = function() {
+    thumbnail.onerror = function () {
       this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23333" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="%23999" font-size="12"%3E' + project.title.substring(0, 2) + '%3C/text%3E%3C/svg%3E';
     };
-    
+
     item.appendChild(thumbnail);
     projectNavigation.appendChild(item);
   });
-  
+
   // プロジェクトアイテムのイベントリスナーを設定
   setupProjectItemListeners();
 }
@@ -117,30 +117,30 @@ function setupProjectItemListeners() {
   projectItems.forEach(item => {
     const projectIndex = parseInt(item.dataset.projectIndex);
     const project = projects[projectIndex];
-    
+
     if (!project) return;
-    
+
     item.addEventListener('mouseenter', () => {
       if (currentState !== 'modal') {
         handleProjectHover(project, item);
       }
     });
-    
+
     item.addEventListener('mouseleave', () => {
       if (currentState !== 'modal') {
         handleProjectLeave();
       }
     });
-    
+
     // スマホ向け：touchstartでhover状態、touchcancel/touchendでは背景動画を継続
     item.addEventListener('touchstart', (e) => {
       if (currentState !== 'modal') {
         handleProjectHover(project, item);
       }
     }, { passive: true });
-    
+
     // touchcancel/touchendでは背景動画を継続（handleProjectLeaveを呼ばない）
-    
+
     item.addEventListener('click', () => {
       handleProjectClick(project, item);
     });
@@ -153,7 +153,7 @@ function setupProjectItemListeners() {
 function setupEventListeners() {
   // プロジェクトアイテムのイベントリスナーを設定
   setupProjectItemListeners();
-  
+
   // モーダルを閉じる
   modalClose.addEventListener('click', closeModal);
   modalOverlay.addEventListener('click', (e) => {
@@ -161,7 +161,7 @@ function setupEventListeners() {
       closeModal();
     }
   });
-  
+
   // ESCキーでモーダル/ライトボックスを閉じる
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
@@ -172,7 +172,7 @@ function setupEventListeners() {
       }
     }
   });
-  
+
   // ライトボックスのイベントリスナー
   if (lightboxClose) {
     lightboxClose.addEventListener('click', closeLightbox);
@@ -184,12 +184,12 @@ function setupEventListeners() {
       }
     });
   }
-  
+
   // ポートフォリオ名をクリックでState0に戻る
   portfolioTitle.addEventListener('click', () => {
     resetToInitialState();
   });
-  
+
   // SP向け：背景領域をタッチした時に背景動画を停止して待機画面に戻す
   if (focusVisual) {
     focusVisual.addEventListener('touchstart', (e) => {
@@ -197,12 +197,12 @@ function setupEventListeners() {
       if (e.target.closest('.project-item')) {
         return;
       }
-      
+
       // モーダルが開いている場合は何もしない
       if (currentState === 'modal') {
         return;
       }
-      
+
       // 背景動画が流れている状態の場合のみ停止して待機画面に戻す
       if (currentState === 'hover' && heroVideoBase && !heroVideoBase.paused) {
         resetToInitialState();
@@ -220,24 +220,24 @@ function handleProjectHover(project, itemElement) {
     clearTimeout(hoverLeaveTimer);
     hoverLeaveTimer = null;
   }
-  
+
   currentState = 'hover';
   hoveredProject = project;
-  
+
   // ② 動画背景レイヤーを更新（動画を自動再生）
   updateHeroMedia(project.heroMedia);
-  
+
   // bgLayerを表示
   if (bgLayer) {
     bgLayer.classList.remove('isFading');
     bgLayer.style.opacity = '1';
   }
-  
+
   // ③ タイトルは非表示（hover時も表示しない）
-  
+
   // State0用ガイダンステキストを非表示
   guidanceText.classList.remove('visible');
-  
+
   // ① コンテキストパネルを表示・更新
   contextPanel.classList.add('visible');
   updateContextPanel(project);
@@ -252,12 +252,12 @@ function handleProjectLeave() {
     clearTimeout(hoverLeaveTimer);
     hoverLeaveTimer = null;
   }
-  
+
   // 即座に初期状態に戻す
   if (currentState !== 'modal' && !selectedProject) {
     // ③ タイトルを初期状態に戻す
     titleText.textContent = 'PORTFOLIO';
-    
+
     // 動画を停止
     if (heroVideoBase) {
       heroVideoBase.pause();
@@ -265,7 +265,7 @@ function handleProjectLeave() {
       heroVideoBase.style.display = 'none';
       heroVideoBase.style.opacity = '0';
     }
-    
+
     // bgLayerをフェードアウト
     if (bgLayer) {
       bgLayer.classList.add('isFading');
@@ -277,10 +277,10 @@ function handleProjectLeave() {
     } else {
       renderInitialState();
     }
-    
+
     // ① コンテキストパネルを非表示にする
     contextPanel.classList.remove('visible');
-    
+
     // ④ 選択状態を解除
     document.querySelectorAll('.project-item').forEach(item => {
       item.classList.remove('selected');
@@ -294,19 +294,19 @@ function handleProjectLeave() {
 function handleProjectClick(project, itemElement) {
   currentState = 'modal';
   selectedProject = project;
-  
+
   // hover解除タイマーをクリア
   if (hoverLeaveTimer) {
     clearTimeout(hoverLeaveTimer);
     hoverLeaveTimer = null;
   }
-  
+
   // 選択状態を保持（selectedクラスを使用）
   document.querySelectorAll('.project-item').forEach(item => {
     item.classList.remove('selected');
   });
   itemElement.classList.add('selected');
-  
+
   // モーダルを開く
   openModal(project);
 }
@@ -316,21 +316,21 @@ function handleProjectClick(project, itemElement) {
 // ============================================
 function updateHeroMedia(heroMedia) {
   if (!heroMedia) return;
-  
+
   // ②は動画のみ表示（静止画は表示しない）
   if (heroMedia.type === 'video') {
     // 現在再生中の動画と同じ場合はスキップ
     if (heroVideoBase && heroVideoBase.src && heroVideoBase.src.endsWith(heroMedia.src)) {
       return;
     }
-    
+
     // 動画を更新する関数
     const updateVideo = (video) => {
       if (!video) return;
-      
+
       // フェードアウト
       video.style.opacity = '0';
-      
+
       setTimeout(() => {
         // 既存のイベントリスナーをクリーンアップ
         const existingListeners = ['loadeddata', 'canplay', 'canplaythrough', 'error'];
@@ -340,7 +340,7 @@ function updateHeroMedia(heroMedia) {
         });
         video._playHandler = null;
         video._errorHandler = null;
-        
+
         video.src = heroMedia.src;
         video.muted = true;
         video.loop = true;
@@ -350,9 +350,9 @@ function updateHeroMedia(heroMedia) {
         video.setAttribute('muted', 'true');
         video.setAttribute('playsinline', 'true');
         video.style.display = 'block';
-        
+
         // 動画が終了したときに再再生（ループのフォールバック）
-        const loopHandler = function() {
+        const loopHandler = function () {
           video.currentTime = 0;
           video.play().catch(e => {
             console.log('Video replay error:', e);
@@ -360,7 +360,7 @@ function updateHeroMedia(heroMedia) {
         };
         video.removeEventListener('ended', loopHandler);
         video.addEventListener('ended', loopHandler);
-        
+
         // 再生を試行する関数
         const attemptPlay = () => {
           if (video.readyState >= 2) { // HAVE_CURRENT_DATA以上
@@ -368,7 +368,7 @@ function updateHeroMedia(heroMedia) {
               console.log('Video autoplay prevented:', e);
               // ユーザー操作で再試行するためのガード
               const retryPlay = () => {
-                video.play().catch(() => {});
+                video.play().catch(() => { });
                 document.removeEventListener('pointerdown', retryPlay);
                 document.removeEventListener('touchstart', retryPlay);
                 document.removeEventListener('click', retryPlay);
@@ -379,7 +379,7 @@ function updateHeroMedia(heroMedia) {
             });
           }
         };
-        
+
         // 複数のイベントで再生を試行（フォールバック）
         const playHandler = () => {
           attemptPlay();
@@ -388,7 +388,7 @@ function updateHeroMedia(heroMedia) {
           video.removeEventListener('canplaythrough', playHandler);
         };
         video._playHandler = playHandler;
-        
+
         // エラーハンドリング
         const errorHandler = (e) => {
           console.error('Video load error:', e, heroMedia.src);
@@ -396,31 +396,31 @@ function updateHeroMedia(heroMedia) {
         };
         video._errorHandler = errorHandler;
         video.addEventListener('error', errorHandler);
-        
+
         // 複数のイベントリスナーを設定（最初に発火したもので再生）
         video.addEventListener('loadeddata', playHandler, { once: true });
         video.addEventListener('canplay', playHandler, { once: true });
         video.addEventListener('canplaythrough', playHandler, { once: true });
-        
+
         // 動画を読み込む
         video.load();
-        
+
         // 既に読み込み済みの場合のフォールバック
         if (video.readyState >= 2) {
           attemptPlay();
         }
-        
+
         // フェードイン
         video.style.opacity = '1';
         video.classList.add('fade-in');
-        
+
         // アニメーションクラスをリセット
         setTimeout(() => {
           video.classList.remove('fade-in');
         }, 700);
       }, 100);
     };
-    
+
     // 動画を更新
     updateVideo(heroVideoBase);
   }
@@ -431,7 +431,7 @@ function updateHeroMedia(heroMedia) {
 // ============================================
 function updateContextPanel(project) {
   const tools = project.tools ? project.tools.join(' / ') : null;
-  
+
   // Category (Year) を表示（project-08は特別処理）
   let categoryYear = '';
   if (project.id === 'project-08') {
@@ -439,10 +439,10 @@ function updateContextPanel(project) {
   } else {
     categoryYear = `${project.category} (${project.year})`;
   }
-  
+
   // RoleとScopeを結合（Roleを適切な形式に変換、Scopeも調整）
   let roleScope = '';
-  
+
   // プロジェクトIDに基づいて表示内容を決定
   const displayMap = {
     'project-01': 'Founding / Service Design / UIUX Design / Business Dev',
@@ -455,9 +455,9 @@ function updateContextPanel(project) {
     'project-08': 'Co-Founding',
     'project-09': 'Graphic Design / Videography / Photography'
   };
-  
+
   roleScope = displayMap[project.id] || (project.role && project.scope ? `${project.role} / ${project.scope}` : project.role || project.scope || '');
-  
+
   contextPanel.innerHTML = `
     <div class="context-content">
       <div class="context-info">
@@ -487,14 +487,14 @@ function resetToInitialState() {
     clearTimeout(hoverLeaveTimer);
     hoverLeaveTimer = null;
   }
-  
+
   currentState = 'initial';
   hoveredProject = null;
   selectedProject = null;
-  
+
   // ① コンテキストパネルを非表示にする
   contextPanel.classList.remove('visible');
-  
+
   // ② 動画背景レイヤーを停止
   if (heroVideoBase) {
     heroVideoBase.pause();
@@ -502,13 +502,13 @@ function resetToInitialState() {
     heroVideoBase.style.display = 'none';
     heroVideoBase.style.opacity = '0';
   }
-  
+
   // ③ タイトルを初期状態に
   titleText.textContent = 'PORTFOLIO';
-  
+
   // State0用ガイダンステキストを表示
   guidanceText.classList.add('visible');
-  
+
   // ④ 選択状態を解除
   document.querySelectorAll('.project-item').forEach(item => {
     item.classList.remove('selected');
@@ -520,12 +520,26 @@ function resetToInitialState() {
 // ============================================
 const baseAssetsUrl = "https://assets.shuntofujii.com";
 
-function buildImageUrl(projectSlug, prefix, n) {
-  return `${baseAssetsUrl}/${projectSlug}/${prefix}_${n}.webp`;
+// 新しい命名規則: 施策コードネーム_案件コードネーム_動画ならm、画像ならp_通番
+// 案件名がない場合はスキップ
+function buildImageUrl(projectSlug, initiativeName, caseName = null, number = 1) {
+  let filename;
+  if (caseName) {
+    filename = `${initiativeName}_${caseName}_p_${number}.webp`;
+  } else {
+    filename = `${initiativeName}_p_${number}.webp`;
+  }
+  return `${baseAssetsUrl}/${projectSlug}/${filename}`;
 }
 
-function buildVideoUrl(projectSlug, prefix) {
-  return `${baseAssetsUrl}/${projectSlug}/${prefix}.webm`;
+function buildVideoUrl(projectSlug, initiativeName, caseName = null, number = 1) {
+  let filename;
+  if (caseName) {
+    filename = `${initiativeName}_${caseName}_m_${number}.webm`;
+  } else {
+    filename = `${initiativeName}_m_${number}.webm`;
+  }
+  return `${baseAssetsUrl}/${projectSlug}/${filename}`;
 }
 
 // ============================================
@@ -556,25 +570,21 @@ function getImageGridLayout(count, isMobile) {
       case 4:
         return { columns: 2, spans: [] };
       case 5:
-        return { columns: 6, spans: [
-          { index: 0, span: 2 }, // 1-3枚目：各2/6 = 3列
-          { index: 1, span: 2 },
-          { index: 2, span: 2 },
-          { index: 3, span: 3 }, // 4-5枚目：各3/6 = 2列
-          { index: 4, span: 3 }
-        ]};
+        return {
+          columns: 6, spans: [
+            { index: 0, span: 2 }, // 1-3枚目：各2/6 = 3列
+            { index: 1, span: 2 },
+            { index: 2, span: 2 },
+            { index: 3, span: 3 }, // 4-5枚目：各3/6 = 2列
+            { index: 4, span: 3 }
+          ]
+        };
       default:
         return { columns: 1, spans: [] };
     }
   }
 }
 
-// ============================================
-// 動画再生制御（インライン再生）
-// ============================================
-function cleanupVideoObservers() {
-  // 現在は使用していないが、互換性のため残す
-}
 
 // 現在再生中の動画を管理
 let currentPlayingVideo = null;
@@ -612,9 +622,9 @@ function initVideoPlayer(videoShell) {
   const playPauseBtn = controls.querySelector('.btn-playpause');
   const seekBar = controls.querySelector('.seek');
   const muteBtn = controls.querySelector('.btn-mute');
-  
+
   if (!video || !overlayPlay || !controls) return;
-  
+
   // 再生状態を管理
   function enterPlayingState() {
     videoShell.classList.add('playing');
@@ -633,7 +643,7 @@ function initVideoPlayer(videoShell) {
     playPauseBtn.setAttribute('aria-label', 'Play');
     playPauseBtn.classList.remove('playing');
   }
-  
+
   // 再生/停止ボタン更新（イベント用、状態は変更しない）
   function updatePlayButton() {
     // ボタンの見た目のみ更新（状態変更はtogglePlay内で行う）
@@ -645,7 +655,7 @@ function initVideoPlayer(videoShell) {
       playPauseBtn.classList.add('playing');
     }
   }
-  
+
   // シークバー更新
   function updateSeekBar() {
     if (video.duration) {
@@ -653,7 +663,7 @@ function initVideoPlayer(videoShell) {
       seekBar.value = percent;
     }
   }
-  
+
   // ミュートボタン更新
   function updateMuteButton() {
     if (video.muted) {
@@ -664,7 +674,7 @@ function initVideoPlayer(videoShell) {
       muteBtn.classList.remove('muted');
     }
   }
-  
+
   // 再生/一時停止
   function togglePlay() {
     if (video.paused) {
@@ -684,13 +694,13 @@ function initVideoPlayer(videoShell) {
       video.pause();
     }
   }
-  
+
   // イベントリスナー
   video.addEventListener('loadedmetadata', () => {
     seekBar.max = 100;
     updateSeekBar();
   });
-  
+
   video.addEventListener('timeupdate', updateSeekBar);
   video.addEventListener('play', updatePlayButton);
   video.addEventListener('pause', updatePlayButton);
@@ -698,13 +708,13 @@ function initVideoPlayer(videoShell) {
     video.currentTime = 0;
     updatePlayButton();
   });
-  
+
   // オーバーレイプレイボタン（クリックでライトボックスを開く）
   overlayPlay.addEventListener('click', (e) => {
     e.stopPropagation();
     openLightboxVideo(video.src, videoShell);
   });
-  
+
   // 動画クリック（ライトボックスを開く）
   video.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -714,33 +724,33 @@ function initVideoPlayer(videoShell) {
       togglePlay();
     }
   });
-  
+
   // プレイ/一時停止ボタン
   playPauseBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     togglePlay();
   });
-  
+
   // シークバー
   seekBar.addEventListener('input', (e) => {
     e.stopPropagation();
     const percent = seekBar.value / 100;
     video.currentTime = video.duration * percent;
   });
-  
+
   // ミュートボタン
   muteBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     video.muted = !video.muted;
     updateMuteButton();
   });
-  
+
   // エラーハンドリング
   video.addEventListener('error', (e) => {
     console.warn('Video load error:', video.src);
     updatePlayButton();
   });
-  
+
   // 初期状態
   updatePlayButton();
   updateMuteButton();
@@ -752,7 +762,7 @@ function initVideoPlayer(videoShell) {
 function createInitiativeCard(initiative, projectSlug) {
   const card = document.createElement('div');
   card.className = 'initiative-card';
-  
+
   // ヘッダー
   const head = document.createElement('div');
   head.className = 'initiative-head';
@@ -761,46 +771,49 @@ function createInitiativeCard(initiative, projectSlug) {
   name.textContent = initiative.title;
   head.appendChild(name);
   card.appendChild(head);
-  
+
   // 動画（hasVideo=trueの場合のみ）
   if (initiative.hasVideo) {
     const videoShell = document.createElement('div');
     videoShell.className = 'video-shell';
-    
+
     // video要素
     const video = document.createElement('video');
     video.className = 'video';
-    video.src = buildVideoUrl(projectSlug, initiative.assetPrefix);
+    // assetPrefixを施策コードネームとして扱い、案件名は無し
+    const videoSrc = buildVideoUrl(projectSlug, initiative.assetPrefix, null, 1);
+    video.src = videoSrc;
     video.playsInline = true;
     video.setAttribute('playsinline', 'true');
     video.setAttribute('webkit-playsinline', 'true');
     video.preload = 'metadata';
-    video.poster = buildImageUrl(projectSlug, initiative.assetPrefix, 1);
+    // ポスター画像は動画と同じ命名規則（_m_を含む）で拡張子だけ.webpに変更
+    video.poster = videoSrc.replace(/\.webm$/, '.webp');
     video.muted = true;
     video.loop = true;
     video.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
     video.setAttribute('disablepictureinpicture', 'true');
-    
+
     // オーバーレイプレイボタン（初期のみ表示）
     const overlayPlay = document.createElement('button');
     overlayPlay.className = 'video-overlay-play';
     overlayPlay.type = 'button';
     overlayPlay.setAttribute('aria-label', 'Play');
-    
+
     const playIcon = document.createElement('span');
     playIcon.className = 'icon-play';
-    
+
     overlayPlay.appendChild(playIcon);
-    
+
     // コントロールバー（動画内下部にオーバーレイ）
     const controls = document.createElement('div');
     controls.className = 'video-controls';
-    
+
     const playPauseBtn = document.createElement('button');
     playPauseBtn.className = 'btn-playpause';
     playPauseBtn.type = 'button';
     playPauseBtn.setAttribute('aria-label', 'Play');
-    
+
     const seekBar = document.createElement('input');
     seekBar.className = 'seek';
     seekBar.type = 'range';
@@ -808,57 +821,58 @@ function createInitiativeCard(initiative, projectSlug) {
     seekBar.max = '100';
     seekBar.value = '0';
     seekBar.setAttribute('aria-label', 'Seek');
-    
+
     const muteBtn = document.createElement('button');
     muteBtn.className = 'btn-mute';
     muteBtn.type = 'button';
     muteBtn.setAttribute('aria-label', 'Mute');
-    
+
     controls.appendChild(playPauseBtn);
     controls.appendChild(seekBar);
     controls.appendChild(muteBtn);
-    
+
     videoShell.appendChild(video);
     videoShell.appendChild(overlayPlay);
     videoShell.appendChild(controls);
-    
+
     // プレイヤーを初期化
     initVideoPlayer(videoShell);
-    
+
     card.appendChild(videoShell);
   }
-  
+
   // 画像グリッド（images > 0の場合のみ）
   if (initiative.images > 0) {
     const grid = document.createElement('div');
     grid.className = 'mediaGrid';
     grid.dataset.count = String(initiative.images);
-    
+
     for (let i = 1; i <= initiative.images; i++) {
       const item = document.createElement('div');
       item.className = 'mediaItem';
       item.setAttribute('role', 'button');
       item.setAttribute('tabindex', '0');
       item.setAttribute('aria-label', `Open image ${i} of ${initiative.title}`);
-      
+
       const img = document.createElement('img');
-      const imageUrl = buildImageUrl(projectSlug, initiative.assetPrefix, i);
+      // assetPrefixを施策コードネームとして扱い、案件名は無し
+      const imageUrl = buildImageUrl(projectSlug, initiative.assetPrefix, null, i);
       img.src = imageUrl;
       img.loading = 'lazy';
       img.decoding = 'async';
       img.alt = '';
-      
+
       // エラーハンドリング
       img.addEventListener('error', (e) => {
         console.warn('Image load error:', imageUrl);
         item.style.display = 'none';
       });
-      
+
       // クリックでライトボックスを開く
       item.addEventListener('click', () => {
         openLightbox(imageUrl, item);
       });
-      
+
       // キーボードアクセス対応
       item.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -866,65 +880,92 @@ function createInitiativeCard(initiative, projectSlug) {
           openLightbox(imageUrl, item);
         }
       });
-      
+
       item.appendChild(img);
       grid.appendChild(item);
     }
-    
+
     card.appendChild(grid);
   }
-  
+
   return card;
 }
 
 // ============================================
 // 動画グリッドの作成（横並び2本〜5本）
 // ============================================
-function createVideoGrid(videos, projectSlug) {
+function createVideoGrid(videos, projectSlug, initiativeName = null, caseName = null) {
   const grid = document.createElement('div');
   grid.className = 'video-grid';
   grid.dataset.count = String(videos.length);
-  
+
   videos.forEach((videoData, index) => {
     const videoShell = document.createElement('div');
     videoShell.className = 'video-shell';
-    
+
     const video = document.createElement('video');
     video.className = 'video';
-    video.src = videoData.src;
+
+    // 新しい命名規則に基づいてURLを生成（initiativeNameとcaseNameが指定されている場合）
+    let videoSrc;
+    let posterUrl;
+    if (initiativeName) {
+      const number = index + 1;
+      videoSrc = buildVideoUrl(projectSlug, initiativeName, caseName, number);
+      // ポスター画像は動画と同じ命名規則（_m_を含む）で拡張子だけ.webpに変更
+      posterUrl = videoSrc.replace(/\.webm$/, '.webp');
+    } else {
+      // 既存のURLを使用（後方互換性）
+      videoSrc = videoData.src;
+      posterUrl = videoData.src.replace(/\.webm$/, '.webp');
+    }
+
+    video.src = videoSrc;
     video.playsInline = true;
     video.setAttribute('playsinline', 'true');
     video.setAttribute('webkit-playsinline', 'true');
     video.preload = 'metadata';
+    video.poster = posterUrl;
     video.muted = true;
     video.loop = true;
     video.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
     video.setAttribute('disablepictureinpicture', 'true');
-    
+
     // メディアのアスペクト比に従って枠の縦幅を決定
-    video.addEventListener('loadedmetadata', () => {
-      videoShell.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
-    });
-    
+    // まずポスター画像のアスペクト比を試す（IZUMOと同じ方式）
+    const posterImg = new Image();
+    posterImg.onload = () => {
+      videoShell.style.aspectRatio = `${posterImg.naturalWidth} / ${posterImg.naturalHeight}`;
+    };
+    posterImg.onerror = () => {
+      // ポスター画像が存在しない場合は、動画のメタデータ読み込みを待つ
+      video.addEventListener('loadedmetadata', () => {
+        if (video.videoWidth && video.videoHeight) {
+          videoShell.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+        }
+      }, { once: true });
+    };
+    posterImg.src = posterUrl;
+
     // オーバーレイプレイボタン
     const overlayPlay = document.createElement('button');
     overlayPlay.className = 'video-overlay-play';
     overlayPlay.type = 'button';
     overlayPlay.setAttribute('aria-label', 'Play');
-    
+
     const playIcon = document.createElement('span');
     playIcon.className = 'icon-play';
     overlayPlay.appendChild(playIcon);
-    
+
     // コントロールバー
     const controls = document.createElement('div');
     controls.className = 'video-controls';
-    
+
     const playPauseBtn = document.createElement('button');
     playPauseBtn.className = 'btn-playpause';
     playPauseBtn.type = 'button';
     playPauseBtn.setAttribute('aria-label', 'Play');
-    
+
     const seekBar = document.createElement('input');
     seekBar.className = 'seek';
     seekBar.type = 'range';
@@ -932,39 +973,39 @@ function createVideoGrid(videos, projectSlug) {
     seekBar.max = '100';
     seekBar.value = '0';
     seekBar.setAttribute('aria-label', 'Seek');
-    
+
     const muteBtn = document.createElement('button');
     muteBtn.className = 'btn-mute';
     muteBtn.type = 'button';
     muteBtn.setAttribute('aria-label', 'Mute');
-    
+
     controls.appendChild(playPauseBtn);
     controls.appendChild(seekBar);
     controls.appendChild(muteBtn);
-    
+
     videoShell.appendChild(video);
     videoShell.appendChild(overlayPlay);
     videoShell.appendChild(controls);
-    
+
     initVideoPlayer(videoShell);
     grid.appendChild(videoShell);
   });
-  
+
   return grid;
 }
 
 // ============================================
 // 画像グリッドの作成
 // ============================================
-function createImageGrid(images, projectSlug, forceHorizontal = false) {
+function createImageGrid(images, projectSlug, forceHorizontal = false, initiativeName = null, caseName = null) {
   if (!images || images.length === 0) return null;
-  
+
   const grid = document.createElement('div');
   grid.className = 'mediaGrid';
   grid.dataset.count = String(images.length);
-  
+
   let layout = null;
-  
+
   // imageGroupsの場合は横並び（画像数分の列）
   if (forceHorizontal) {
     grid.dataset.forceHorizontal = 'true';
@@ -972,20 +1013,20 @@ function createImageGrid(images, projectSlug, forceHorizontal = false) {
   } else {
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
     layout = getImageGridLayout(images.length, isMobile);
-    
+
     // grid-template-columnsを設定
     if (layout.columns > 0) {
       grid.style.gridTemplateColumns = `repeat(${layout.columns}, 1fr)`;
     }
   }
-  
+
   images.forEach((imageData, index) => {
     const item = document.createElement('div');
     item.className = 'mediaItem';
     item.setAttribute('role', 'button');
     item.setAttribute('tabindex', '0');
     item.setAttribute('aria-label', `Image ${index + 1}`);
-    
+
     // span設定（forceHorizontalの場合は不要）
     if (!forceHorizontal && layout) {
       const span = layout.spans.find(s => s.index === index);
@@ -993,49 +1034,59 @@ function createImageGrid(images, projectSlug, forceHorizontal = false) {
         item.style.gridColumn = `span ${span.span}`;
       }
     }
-    
+
     const img = document.createElement('img');
-    img.src = imageData.src;
+    // 新しい命名規則に基づいてURLを生成（initiativeNameが指定されている場合）
+    let imageUrl;
+    if (initiativeName) {
+      const number = index + 1;
+      imageUrl = buildImageUrl(projectSlug, initiativeName, caseName, number);
+    } else {
+      // 既存のURLを使用（後方互換性）
+      imageUrl = imageData.src || imageData;
+    }
+
+    img.src = imageUrl;
     img.loading = 'lazy';
     img.decoding = 'async';
     img.alt = '';
-    
+
     img.addEventListener('error', () => {
-      console.warn('Image load error:', imageData.src);
+      console.warn('Image load error:', imageUrl);
       item.style.display = 'none';
     });
-    
+
     // メディアのアスペクト比に従って枠の縦幅を決定
     img.addEventListener('load', () => {
       item.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
     });
-    
+
     // クリックでライトボックスを開く
     item.addEventListener('click', () => {
-      openLightbox(imageData.src, item);
+      openLightbox(imageUrl, item);
     });
-    
+
     item.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        openLightbox(imageData.src, item);
+        openLightbox(imageUrl, item);
       }
     });
-    
+
     item.appendChild(img);
     grid.appendChild(item);
   });
-  
+
   return grid;
 }
 
 // ============================================
 // 施策セクションの作成（cases構造用）
 // ============================================
-function createInitiativeSection(initiative, projectSlug) {
+function createInitiativeSection(initiative, projectSlug, initiativeName = null, caseName = null) {
   const section = document.createElement('div');
   section.className = 'initiative-section';
-  
+
   // 施策名（"Main"の場合は表示しない）
   if (initiative.title && initiative.title !== 'Main') {
     const heading = document.createElement('h4');
@@ -1043,27 +1094,27 @@ function createInitiativeSection(initiative, projectSlug) {
     heading.textContent = initiative.title;
     section.appendChild(heading);
   }
-  
+
   // 動画（videos配列がある場合）
   if (initiative.videos && initiative.videos.length > 0) {
-    const videoGrid = createVideoGrid(initiative.videos, projectSlug);
+    const videoGrid = createVideoGrid(initiative.videos, projectSlug, initiativeName, caseName);
     section.appendChild(videoGrid);
   }
-  
+
   // 画像（images配列がある場合）
   if (initiative.images && initiative.images.length > 0) {
-    const imageGrid = createImageGrid(initiative.images, projectSlug);
+    const imageGrid = createImageGrid(initiative.images, projectSlug, false, initiativeName, caseName);
     if (imageGrid) {
       section.appendChild(imageGrid);
     }
   }
-  
+
   // 画像グループ（imageGroups配列がある場合）
   // imageGroupsの場合は横並びで表示（例外措置）
   if (initiative.imageGroups && initiative.imageGroups.length > 0) {
     initiative.imageGroups.forEach((group, groupIndex) => {
       if (group.images && group.images.length > 0) {
-        const imageGrid = createImageGrid(group.images, projectSlug, true);
+        const imageGrid = createImageGrid(group.images, projectSlug, true, initiativeName, caseName);
         if (imageGrid) {
           // imageGroups同士の間隔を設定（最後のグループ以外）
           if (groupIndex < initiative.imageGroups.length - 1) {
@@ -1076,7 +1127,7 @@ function createInitiativeSection(initiative, projectSlug) {
       }
     });
   }
-  
+
   return section;
 }
 
@@ -1086,21 +1137,58 @@ function createInitiativeSection(initiative, projectSlug) {
 function createCaseSection(caseData, projectSlug) {
   const section = document.createElement('section');
   section.className = 'case-section';
-  
+
   // 案件名
   const heading = document.createElement('h3');
   heading.className = 'case-title';
   heading.textContent = caseData.title;
   section.appendChild(heading);
-  
+
   // 施策リスト
   if (caseData.initiatives && caseData.initiatives.length > 0) {
     caseData.initiatives.forEach(initiative => {
-      const initiativeSection = createInitiativeSection(initiative, projectSlug);
+      // 案件名と施策名を取得（タイトルから推測、または明示的に指定）
+      // projects.jsonにinitiativeSlugやcaseSlugがあれば使用、なければタイトルから推測
+      let initiativeName = null;
+      let caseName = null;
+
+      if (initiative.initiativeSlug) {
+        // 明示的に指定されている場合
+        initiativeName = initiative.initiativeSlug;
+        caseName = initiative.caseSlug || null;
+      } else if (projectSlug === 'deteqle') {
+        // デテクルプロジェクト用のマッピング（タイトルから推測）
+        // 案件名と施策名の組み合わせで判断
+        if (caseData.title === 'ARマーダーミステリー（仮称）') {
+          if (initiative.title === 'Main') {
+            initiativeName = 'murder';
+            caseName = null;
+          } else if (initiative.title === 'Process') {
+            initiativeName = 'murder';
+            caseName = 'process';
+          }
+        } else if (caseData.title === 'ARコンテンツ') {
+          if (initiative.title === 'ダダコネおじさん') {
+            initiativeName = 'content';
+            caseName = 'dadakone';
+          } else if (initiative.title === 'ゾンビに襲われた') {
+            initiativeName = 'content';
+            caseName = 'zombie';
+          }
+        } else if (caseData.title === 'Cafe Mai:lish' && initiative.title === 'Main') {
+          initiativeName = 'mailish';
+          caseName = null;
+        } else if (caseData.title === 'Design System' && initiative.title === 'Main') {
+          initiativeName = 'designsystem';
+          caseName = null;
+        }
+      }
+
+      const initiativeSection = createInitiativeSection(initiative, projectSlug, initiativeName, caseName);
       section.appendChild(initiativeSection);
     });
   }
-  
+
   return section;
 }
 
@@ -1108,9 +1196,7 @@ function createCaseSection(caseData, projectSlug) {
 // モーダルを開く
 // ============================================
 function openModal(project) {
-  // 既存の動画オブザーバーをクリーンアップ
-  cleanupVideoObservers();
-  
+
   // Focusを構築（role + scope）
   let focusValue = project.role || '';
   if (project.scope) {
@@ -1120,7 +1206,7 @@ function openModal(project) {
       focusValue = project.scope;
     }
   }
-  
+
   // モーダルコンテンツを構築
   modalContent.innerHTML = `
     <div class="modal-header">
@@ -1168,56 +1254,56 @@ function openModal(project) {
     </div>
     ` : ''}
   `;
-  
+
   // casesセクションの生成（cases構造がある場合）
   if (project.cases && project.cases.length > 0) {
     const casesSection = document.createElement('section');
     casesSection.className = 'modal-initiatives';
-    
+
     project.cases.forEach(caseData => {
       const caseSection = createCaseSection(caseData, project.projectSlug || 'deteqle');
       casesSection.appendChild(caseSection);
     });
-    
+
     modalContent.appendChild(casesSection);
   }
   // initiativesセクションの生成（既存のinitiatives構造がある場合）
   else if (project.initiatives && project.initiatives.length > 0 && project.projectSlug) {
     const initiativesSection = document.createElement('section');
     initiativesSection.className = 'modal-initiatives';
-    
+
     const initiativeList = document.createElement('div');
     initiativeList.className = 'initiative-list';
-    
+
     project.initiatives.forEach(initiative => {
       const card = createInitiativeCard(initiative, project.projectSlug);
       initiativeList.appendChild(card);
     });
-    
+
     initiativesSection.appendChild(initiativeList);
     modalContent.appendChild(initiativesSection);
   }
-  
-  
+
+
   // モーダルを表示（hidden解除）
   if (modalOverlay && modalContainer) {
     modalOverlay.hidden = false;
     modalContainer.hidden = false;
     isClosing = false;
-    
+
     // 初期状態を設定
     modalContainer.dataset.state = 'closed';
-    
+
     // 次フレームでstateをopenに（transition発火）
     requestAnimationFrame(() => {
       document.body.classList.add('modal-open');
       modalContainer.dataset.state = 'open';
-      
+
     });
   }
-  
+
   document.body.style.overflow = 'hidden';
-  
+
   // 背景要素を後退させる（既存のmodal-backgroundクラスも維持）
   focusVisual.classList.add('modal-background');
   titleBackground.classList.add('modal-background');
@@ -1233,9 +1319,9 @@ let lightboxType = 'image'; // 'image' or 'video'
 
 function openLightboxVideo(videoSrc, originElement) {
   if (!lightboxOverlay || !lightboxVideo) return;
-  
+
   lightboxType = 'video';
-  
+
   // 元の動画要素の位置とサイズを取得
   if (originElement) {
     const rect = originElement.getBoundingClientRect();
@@ -1248,7 +1334,7 @@ function openLightboxVideo(videoSrc, originElement) {
   } else {
     lightboxOriginRect = null;
   }
-  
+
   // 画像を非表示、動画を表示
   if (lightboxImage) {
     lightboxImage.style.display = 'none';
@@ -1262,33 +1348,33 @@ function openLightboxVideo(videoSrc, originElement) {
   lightboxVideo.setAttribute('disablepictureinpicture', 'true');
   lightboxOverlay.removeAttribute('hidden');
   lightboxOverlay.classList.remove('closing');
-  
+
   // 動画が読み込まれるまで待つ
   const handleVideoLoad = () => {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    
+
     if (lightboxOriginRect) {
       // 元の位置から開始
       const originX = lightboxOriginRect.x;
       const originY = lightboxOriginRect.y;
       const originWidth = lightboxOriginRect.width;
       const originHeight = lightboxOriginRect.height;
-      
+
       // 最終的な位置（中央）
       const finalX = viewportWidth / 2;
       const finalY = viewportHeight / 2;
-      
+
       // 最終的なサイズ（アスペクト比を維持）
       const videoAspectRatio = lightboxVideo.videoWidth / lightboxVideo.videoHeight;
       let finalWidth = viewportWidth * 0.9;
       let finalHeight = finalWidth / videoAspectRatio;
-      
+
       if (finalHeight > viewportHeight * 0.9) {
         finalHeight = viewportHeight * 0.9;
         finalWidth = finalHeight * videoAspectRatio;
       }
-      
+
       // 初期状態を設定（元の位置とサイズ）
       lightboxVideo.style.position = 'fixed';
       lightboxVideo.style.left = `${originX}px`;
@@ -1300,7 +1386,7 @@ function openLightboxVideo(videoSrc, originElement) {
       lightboxVideo.style.opacity = '1';
       lightboxVideo.style.transition = 'none';
       lightboxVideo.style.objectFit = 'cover';
-      
+
       // 次のフレームでアニメーション開始
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -1310,7 +1396,7 @@ function openLightboxVideo(videoSrc, originElement) {
           lightboxVideo.style.width = `${finalWidth}px`;
           lightboxVideo.style.height = `${finalHeight}px`;
           lightboxVideo.style.objectFit = 'contain';
-          
+
           // アニメーション完了後に自動再生
           setTimeout(() => {
             lightboxVideo.play().catch(e => {
@@ -1331,9 +1417,9 @@ function openLightboxVideo(videoSrc, originElement) {
       lightboxVideo.style.transition = 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
     }
   };
-  
+
   lightboxVideo.addEventListener('loadedmetadata', handleVideoLoad, { once: true });
-  
+
   // 既に読み込まれている場合
   if (lightboxVideo.readyState >= 1) {
     handleVideoLoad();
@@ -1342,9 +1428,9 @@ function openLightboxVideo(videoSrc, originElement) {
 
 function openLightbox(imageSrc, originElement) {
   if (!lightboxOverlay || !lightboxImage) return;
-  
+
   lightboxType = 'image';
-  
+
   // 元の画像の位置とサイズを取得
   if (originElement) {
     const rect = originElement.getBoundingClientRect();
@@ -1357,7 +1443,7 @@ function openLightbox(imageSrc, originElement) {
   } else {
     lightboxOriginRect = null;
   }
-  
+
   // 動画を非表示、画像を表示
   if (lightboxVideo) {
     lightboxVideo.style.display = 'none';
@@ -1367,37 +1453,37 @@ function openLightbox(imageSrc, originElement) {
   if (lightboxImage) {
     lightboxImage.style.display = 'block';
   }
-  
+
   lightboxImage.src = imageSrc;
   lightboxOverlay.removeAttribute('hidden');
   lightboxOverlay.classList.remove('closing');
-  
+
   // 画像が読み込まれるまで待つ
   const handleImageLoad = () => {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    
+
     if (lightboxOriginRect) {
       // 元の位置から開始
       const originX = lightboxOriginRect.x;
       const originY = lightboxOriginRect.y;
       const originWidth = lightboxOriginRect.width;
       const originHeight = lightboxOriginRect.height;
-      
+
       // 最終的な位置（中央）
       const finalX = viewportWidth / 2;
       const finalY = viewportHeight / 2;
-      
+
       // 最終的なサイズ（アスペクト比を維持）
       const imageAspectRatio = lightboxImage.naturalWidth / lightboxImage.naturalHeight;
       let finalWidth = viewportWidth * 0.9;
       let finalHeight = finalWidth / imageAspectRatio;
-      
+
       if (finalHeight > viewportHeight * 0.9) {
         finalHeight = viewportHeight * 0.9;
         finalWidth = finalHeight * imageAspectRatio;
       }
-      
+
       // 初期状態を設定（元の位置とサイズ）
       lightboxImage.style.position = 'fixed';
       lightboxImage.style.left = `${originX}px`;
@@ -1409,7 +1495,7 @@ function openLightbox(imageSrc, originElement) {
       lightboxImage.style.opacity = '1';
       lightboxImage.style.transition = 'none';
       lightboxImage.style.objectFit = 'cover';
-      
+
       // 次のフレームでアニメーション開始
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -1433,9 +1519,9 @@ function openLightbox(imageSrc, originElement) {
       lightboxImage.style.transition = 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
     }
   };
-  
+
   lightboxImage.onload = handleImageLoad;
-  
+
   // 既に読み込まれている場合
   if (lightboxImage.complete && lightboxImage.naturalWidth > 0) {
     handleImageLoad();
@@ -1444,10 +1530,10 @@ function openLightbox(imageSrc, originElement) {
 
 function closeLightbox() {
   if (!lightboxOverlay) return;
-  
+
   // 閉じるアニメーション開始：背景を透明にする
   lightboxOverlay.classList.add('closing');
-  
+
   if (lightboxType === 'video' && lightboxVideo) {
     // 動画を閉じる
     if (lightboxOriginRect) {
@@ -1456,10 +1542,10 @@ function closeLightbox() {
       const originY = lightboxOriginRect.y;
       const originWidth = lightboxOriginRect.width;
       const originHeight = lightboxOriginRect.height;
-      
+
       // 動画を先に停止
       lightboxVideo.pause();
-      
+
       lightboxVideo.style.transition = 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
       lightboxVideo.style.left = `${originX}px`;
       lightboxVideo.style.top = `${originY}px`;
@@ -1467,15 +1553,15 @@ function closeLightbox() {
       lightboxVideo.style.height = `${originHeight}px`;
       lightboxVideo.style.opacity = '0';
       lightboxVideo.style.objectFit = 'cover';
-      
+
       setTimeout(() => {
         // まず動画のsrcをクリア（動画を非表示にする）
         lightboxVideo.src = '';
         lightboxVideo.style.display = 'none';
-        
+
         // 次にhidden属性を設定
         lightboxOverlay.setAttribute('hidden', '');
-        
+
         // 最後にclosingクラスを削除してスタイルをクリーンアップ
         lightboxOverlay.classList.remove('closing');
         lightboxVideo.style.position = '';
@@ -1492,18 +1578,18 @@ function closeLightbox() {
     } else {
       // 動画を先に停止
       lightboxVideo.pause();
-      
+
       lightboxVideo.style.opacity = '0';
       lightboxVideo.style.transform = 'translate(-50%, -50%) scale(0.9)';
-      
+
       setTimeout(() => {
         // まず動画のsrcをクリア（動画を非表示にする）
         lightboxVideo.src = '';
         lightboxVideo.style.display = 'none';
-        
+
         // 次にhidden属性を設定
         lightboxOverlay.setAttribute('hidden', '');
-        
+
         // 最後にclosingクラスを削除してスタイルをクリーンアップ
         lightboxOverlay.classList.remove('closing');
         lightboxVideo.style.position = '';
@@ -1519,24 +1605,24 @@ function closeLightbox() {
     }
     return;
   }
-  
+
   // 画像を閉じる
   if (!lightboxImage) return;
-  
+
   if (lightboxOriginRect) {
     // 元の位置に戻るアニメーション
     const originX = lightboxOriginRect.x;
     const originY = lightboxOriginRect.y;
     const originWidth = lightboxOriginRect.width;
     const originHeight = lightboxOriginRect.height;
-    
+
     lightboxImage.style.transition = 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
     lightboxImage.style.left = `${originX}px`;
     lightboxImage.style.top = `${originY}px`;
     lightboxImage.style.width = `${originWidth}px`;
     lightboxImage.style.height = `${originHeight}px`;
     lightboxImage.style.opacity = '0';
-    
+
     setTimeout(() => {
       lightboxOverlay.setAttribute('hidden', '');
       lightboxOverlay.classList.remove('closing');
@@ -1556,7 +1642,7 @@ function closeLightbox() {
     // 従来のアニメーション
     lightboxImage.style.opacity = '0';
     lightboxImage.style.transform = 'translate(-50%, -50%) scale(0.9)';
-    
+
     setTimeout(() => {
       lightboxOverlay.setAttribute('hidden', '');
       lightboxOverlay.classList.remove('closing');
@@ -1582,21 +1668,18 @@ function closeModal() {
   if (lightboxOverlay && !lightboxOverlay.hidden) {
     closeLightbox();
   }
-  
+
   // 全てのインライン動画を停止してposterに戻す
   stopAllInlineVideos();
-  
-  // 動画を停止してオブザーバーをクリーンアップ
-  cleanupVideoObservers();
-  
+
   if (!modalOverlay || !modalContainer) return;
   if (isClosing) return;
   isClosing = true;
-  
+
   // closing状態に設定
   modalContainer.dataset.state = 'closing';
   document.body.classList.remove('modal-open');
-  
+
   // transitionendを待ってから非表示にする
   const onEnd = (e) => {
     // transformのtransitionが終わったら処理
@@ -1605,28 +1688,34 @@ function closeModal() {
     modalContainer.dataset.state = 'closed';
     modalOverlay.hidden = true;
     modalContainer.hidden = true;
+
+    // モーダルコンテンツをクリアして、すべてのDOM要素とイベントリスナーを削除
+    if (modalContent) {
+      modalContent.innerHTML = '';
+    }
+
     isClosing = false;
   };
   modalContainer.addEventListener('transitionend', onEnd);
-  
+
   document.body.style.overflow = '';
-  
+
   // 背景要素を元に戻す
   focusVisual.classList.remove('modal-background');
   titleBackground.classList.remove('modal-background');
   contextPanel.classList.remove('modal-background');
   projectNavigation.classList.remove('modal-background');
-  
+
   // 選択状態をクリアして初期状態に戻す
   selectedProject = null;
   hoveredProject = null;
   currentState = 'initial';
-  
+
   // すべてのサムネイルからselectedクラスを削除
   document.querySelectorAll('.project-item').forEach(item => {
     item.classList.remove('selected');
   });
-  
+
   // 初期状態にリセット
   resetToInitialState();
 }
