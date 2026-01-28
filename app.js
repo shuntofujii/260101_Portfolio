@@ -371,6 +371,7 @@ function createCustomCursorEffect(THREE, initialColor) {
   // マウスがブラウザ内にあるかどうかを追跡（threejs-toysと同じ実装）
   // 初期状態ではfalseにして、マウスが動いたときにtrueにする
   let isMouseActive = false;
+  let isTouchDevice = false; // タッチデバイスかどうかを判定
 
   // 待機時の円の半径（レスポンシブ対応）
   // 「Please select a project_」の文字サイズに比例するように計算
@@ -379,8 +380,19 @@ function createCustomCursorEffect(THREE, initialColor) {
   let currentSleepRadiusX = 150; // 初期値
   let currentSleepRadiusY = 150; // 初期値
 
-  // マウスイベント（threejs-toysと同じ実装）
+  // タッチデバイスの検出（一度でもタッチイベントが発生したらタッチデバイスと判定）
+  const detectTouchDevice = () => {
+    isTouchDevice = true;
+    console.log('[Cursor Effect] Touch device detected');
+  };
+
+  // マウスイベント（PC版用）
   const handleMouseMove = (e) => {
+    // タッチデバイスの場合はマウスイベントを無視（タッチイベントが優先）
+    if (isTouchDevice) {
+      return;
+    }
+
     // 画面座標を正規化デバイス座標（NDC）に変換（-1から1の範囲）
     // threejs-toysでは、nPositionとして-1から1の範囲で処理される
     const rect = renderer.domElement.getBoundingClientRect();
@@ -404,25 +416,47 @@ function createCustomCursorEffect(THREE, initialColor) {
   };
 
   const handleMouseLeave = (e) => {
+    // タッチデバイスの場合はマウスイベントを無視
+    if (isTouchDevice) {
+      return;
+    }
+
     // マウスがブラウザウィンドウから出た場合のみfalseにする
-    if (!e.relatedTarget && e.target === document) {
+    // mouseleaveイベントは、マウスがブラウザウィンドウから出た時に発火
+    if (!e.relatedTarget || e.relatedTarget === null) {
       isMouseActive = false;
       console.log('[Cursor Effect] Mouse left browser window, isMouseActive:', isMouseActive);
     }
   };
 
-  // タッチイベントハンドラー（スマホ版対応）
+  // タッチイベントハンドラー（SP版用）
   const handleTouchStart = (e) => {
+    // タッチデバイスとして検出
+    detectTouchDevice();
+
     // タッチ開始時：タッチ位置をカーソル位置として設定
     if (e.touches.length > 0) {
-      handleMouseMove(e.touches[0]);
+      const touch = e.touches[0];
+      const rect = renderer.domElement.getBoundingClientRect();
+      const x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+
+      target.set(x, y);
+      isMouseActive = true;
+      console.log('[Cursor Effect] Touch start:', { clientX: touch.clientX, clientY: touch.clientY, x, y });
     }
   };
 
   const handleTouchMove = (e) => {
     // タッチ移動時：タッチ位置をカーソル位置として更新
     if (e.touches.length > 0) {
-      handleMouseMove(e.touches[0]);
+      const touch = e.touches[0];
+      const rect = renderer.domElement.getBoundingClientRect();
+      const x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+
+      target.set(x, y);
+      isMouseActive = true;
     }
   };
 
