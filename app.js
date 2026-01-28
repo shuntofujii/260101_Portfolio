@@ -31,6 +31,706 @@ const lightboxClose = document.getElementById('lightboxClose');
 let isClosing = false;
 
 // ============================================
+// カーソルエフェクト管理（自前実装）
+// ============================================
+let cursorEffectInstance = null;
+let colorAnimationFrameId = null;
+let colorTransitionStartTime = null;
+let cursorAnimationFrameId = null;
+
+// 色の移り変わり設定
+const COLOR_TRANSITION_DURATION = 60000; // 60秒で1周（360度）- よりゆっくりとした色の変化
+
+// カーソルエフェクトの設定（threejs-toysのデフォルト設定）
+const CURSOR_CONFIG = {
+  shaderPoints: 16, // CodePenの例に合わせて変更（滑らかさ向上）
+  curvePoints: 80, // threejs-toysのデフォルト
+  curveLerp: 0.5, // CodePenの例に合わせて変更
+  radius1: 3, // threejs-toysのデフォルト
+  radius2: 5, // threejs-toysのデフォルト
+  velocityTreshold: 10, // threejs-toysのデフォルト
+  sleepRadiusX: 150, // threejs-toysのデフォルト
+  sleepRadiusY: 150, // threejs-toysのデフォルト
+  sleepTimeCoefX: 1.0, // 円を描くための係数（1秒で約1ラジアン回転）
+  sleepTimeCoefY: 1.0, // 円を描くための係数（1秒で約1ラジアン回転）
+};
+
+// ============================================
+// 色相を回るプログラム（共通の色管理）
+// ============================================
+// 現在の色を保持する変数（カーソルとサムネイルの両方が参照）
+let currentAccentColor = null;
+
+// 色相を回るプログラム（全色相を回る）
+function getCurrentAccentColor() {
+  if (colorTransitionStartTime === null) {
+    // 初期化されていない場合は初期色を返す
+    return getColorFromHue(0);
+  }
+
+  const currentTime = performance.now();
+  const elapsed = currentTime - colorTransitionStartTime;
+
+  // 色相（0-360度）を計算（時間に基づいて循環）
+  const hue = (elapsed / COLOR_TRANSITION_DURATION) * 360 % 360;
+
+  // HSV色空間からRGBに変換
+  return getColorFromHue(hue);
+}
+
+// 色を更新する関数（カーソルとサムネイルの両方に適用）
+function updateAccentColor() {
+  // 色相を回るプログラムから現在の色を取得
+  const color = getCurrentAccentColor();
+
+  // 現在の色を保持
+  currentAccentColor = color;
+
+  // テーマカラー（--accent-color）を更新（サムネイルhover時の囲いが参照）
+  document.documentElement.style.setProperty('--accent-color', color);
+
+  // カーソルエフェクトの色を更新（カーソルの軌跡が参照）
+  updateCursorEffectColor(color);
+
+  return color;
+}
+
+// ============================================
+// カーソルエフェクトの初期化（自前実装）
+// ============================================
+async function initCursorEffect() {
+  try {
+    console.log('[Cursor Effect] Initializing custom cursor effect...');
+
+    // Three.jsをインポート
+    const THREE = await import('https://unpkg.com/three@0.160.0/build/three.module.js');
+
+    // 既存のインスタンスを破棄
+    if (cursorEffectInstance) {
+      destroyCursorEffect();
+    }
+
+    // 初期色を設定
+    const initialColor = getColorFromHue(0);
+    currentAccentColor = initialColor;
+
+    // カーソルエフェクトを初期化
+    cursorEffectInstance = createCustomCursorEffect(THREE, initialColor);
+
+    // 色をテーマカラーに設定
+    document.documentElement.style.setProperty('--accent-color', initialColor);
+
+    // 色の移り変わりを開始
+    startColorTransition();
+
+    console.log('[Cursor Effect] Custom cursor effect initialized successfully');
+  } catch (error) {
+    console.error('[Cursor Effect] Failed to initialize cursor effect:', error);
+  }
+}
+
+// ============================================
+// 色の移り変わり機能（常にゆっくりと移り変わり続ける）
+// ============================================
+function startColorTransition() {
+  // 既存のアニメーションフレームをキャンセル
+  if (colorAnimationFrameId) {
+    cancelAnimationFrame(colorAnimationFrameId);
+  }
+
+  // 開始時間を記録
+  colorTransitionStartTime = performance.now();
+
+  // アニメーションループ
+  function animateColor() {
+    // 色相を回るプログラムから現在の色を取得し、カーソルとサムネイルの両方に適用
+    updateAccentColor();
+
+    // 次のフレームをリクエスト
+    colorAnimationFrameId = requestAnimationFrame(animateColor);
+  }
+
+  // アニメーションを開始
+  animateColor();
+}
+
+// ============================================
+// HSV色空間からRGBに変換（色相のみ変化、彩度と明度は固定）
+// ============================================
+function getColorFromHue(hue) {
+  // 彩度（Saturation）と明度（Value）を固定
+  const saturation = 100; // 100%の彩度（鮮やかな色）
+  const value = 100; // 100%の明度（明るい色）
+
+  // HSVからRGBに変換
+  const c = (value / 100) * (saturation / 100);
+  const x = c * (1 - Math.abs((hue / 60) % 2 - 1));
+  const m = (value / 100) - c;
+
+  let r, g, b;
+
+  if (hue < 60) {
+    r = c; g = x; b = 0;
+  } else if (hue < 120) {
+    r = x; g = c; b = 0;
+  } else if (hue < 180) {
+    r = 0; g = c; b = x;
+  } else if (hue < 240) {
+    r = 0; g = x; b = c;
+  } else if (hue < 300) {
+    r = x; g = 0; b = c;
+  } else {
+    r = c; g = 0; b = x;
+  }
+
+  // RGB値を0-255の範囲に変換して16進数に
+  const red = Math.round((r + m) * 255);
+  const green = Math.round((g + m) * 255);
+  const blue = Math.round((b + m) * 255);
+
+  return `#${red.toString(16).padStart(2, '0')}${green.toString(16).padStart(2, '0')}${blue.toString(16).padStart(2, '0')}`;
+}
+
+// ============================================
+// 自前のカーソルエフェクトを作成（threejs-toysのneonCursorを参考）
+// ============================================
+function createCustomCursorEffect(THREE, initialColor) {
+  console.log('[Cursor Effect] Creating custom cursor effect with color:', initialColor);
+
+  const el = document.body;
+  const config = { ...CURSOR_CONFIG };
+
+  // シーン、カメラ、レンダラーの作成
+  const scene = new THREE.Scene();
+  // OrthographicCameraを使用（threejs-toysと同じ）
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+  const renderer = new THREE.WebGLRenderer({
+    alpha: true,
+    antialias: true,
+    powerPreference: 'high-performance'
+  });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.domElement.style.position = 'fixed';
+  renderer.domElement.style.top = '0';
+  renderer.domElement.style.left = '0';
+  renderer.domElement.style.width = '100%';
+  renderer.domElement.style.height = '100%';
+  renderer.domElement.style.pointerEvents = 'none';
+  renderer.domElement.style.zIndex = '100'; // タイトル(250)より下、サムネイル(140)より上
+  el.appendChild(renderer.domElement);
+
+  console.log('[Cursor Effect] Renderer created, size:', window.innerWidth, 'x', window.innerHeight);
+
+  // 色をRGBに変換
+  const rgb = hexToRgb(initialColor);
+  if (!rgb) {
+    console.error('[Cursor Effect] Failed to parse color:', initialColor);
+    return null;
+  }
+  const colorVec = new THREE.Vector3(rgb.r / 255, rgb.g / 255, rgb.b / 255);
+  console.log('[Cursor Effect] Initial color RGB:', rgb, 'Vector3:', colorVec);
+
+  // threejs-toysと同じ実装：PlaneGeometryとフラグメントシェーダーでベジェ曲線を描画
+  // uPoints配列を作成（uniform配列として使用）
+  // Three.jsでは、uniform配列の各要素を個別に作成する必要がある
+  const uPointsUniform = [];
+  for (let i = 0; i < config.shaderPoints; i++) {
+    uPointsUniform.push(new THREE.Vector2());
+  }
+
+  // uRatioとuSizeのuniformを作成
+  const uRatio = new THREE.Vector2();
+  const uSize = new THREE.Vector2();
+
+  // シェーダーマテリアルを作成（threejs-toysと同じ実装）
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      uRatio: { value: uRatio },
+      uSize: { value: uSize },
+      uPoints: { value: uPointsUniform },
+      uColor: { value: colorVec },
+    },
+    defines: {
+      SHADER_POINTS: config.shaderPoints,
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      // threejs-toysと同じ実装：ベジェ曲線の距離計算
+      // https://www.shadertoy.com/view/wdy3DD
+      // https://www.shadertoy.com/view/MlKcDD
+      // Signed distance to a quadratic bezier
+      float sdBezier(vec2 pos, vec2 A, vec2 B, vec2 C) {
+        vec2 a = B - A;
+        vec2 b = A - 2.0*B + C;
+        vec2 c = a * 2.0;
+        vec2 d = A - pos;
+        float kk = 1.0 / dot(b,b);
+        float kx = kk * dot(a,b);
+        float ky = kk * (2.0*dot(a,a)+dot(d,b)) / 3.0;
+        float kz = kk * dot(d,a);
+        float res = 0.0;
+        float p = ky - kx*kx;
+        float p3 = p*p*p;
+        float q = kx*(2.0*kx*kx - 3.0*ky) + kz;
+        float h = q*q + 4.0*p3;
+        if(h >= 0.0){
+          h = sqrt(h);
+          vec2 x = (vec2(h, -h) - q) / 2.0;
+          vec2 uv = sign(x)*pow(abs(x), vec2(1.0/3.0));
+          float t = uv.x + uv.y - kx;
+          t = clamp( t, 0.0, 1.0 );
+          // 1 root
+          vec2 qos = d + (c + b*t)*t;
+          res = length(qos);
+        } else {
+          float z = sqrt(-p);
+          float v = acos( q/(p*z*2.0) ) / 3.0;
+          float m = cos(v);
+          float n = sin(v)*1.732050808;
+          vec3 t = vec3(m + m, -n - m, n - m) * z - kx;
+          t = clamp( t, 0.0, 1.0 );
+          // 3 roots
+          vec2 qos = d + (c + b*t.x)*t.x;
+          float dis = dot(qos,qos);
+          res = dis;
+          qos = d + (c + b*t.y)*t.y;
+          dis = dot(qos,qos);
+          res = min(res,dis);
+          qos = d + (c + b*t.z)*t.z;
+          dis = dot(qos,qos);
+          res = min(res,dis);
+          res = sqrt( res );
+        }
+        return res;
+      }
+
+      uniform vec2 uRatio;
+      uniform vec2 uSize;
+      uniform vec2 uPoints[SHADER_POINTS];
+      uniform vec3 uColor;
+      varying vec2 vUv;
+      void main() {
+        float intensity = 1.0;
+        float radius = 0.015;
+
+        vec2 pos = (vUv - 0.5) * uRatio;
+
+        vec2 c = (uPoints[0] + uPoints[1]) / 2.0;
+        vec2 c_prev;
+        float dist = 10000.0;
+        for(int i = 0; i < SHADER_POINTS - 1; i++){
+          c_prev = c;
+          c = (uPoints[i] + uPoints[i + 1]) / 2.0;
+          dist = min(dist, sdBezier(pos, c_prev, uPoints[i], c));
+        }
+        dist = max(0.0, dist);
+
+        float glow = pow(uSize.y / dist, intensity);
+        vec3 col = vec3(0.0);
+        col += 10.0 * vec3(smoothstep(uSize.x, 0.0, dist));
+        col += glow * uColor;
+
+        // Tone mapping
+        col = 1.0 - exp(-col);
+        col = pow(col, vec3(0.4545));
+  
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  // PlaneGeometryを作成（フルスクリーン）
+  const geometry = new THREE.PlaneGeometry(2, 2);
+  const mesh = new THREE.Mesh(geometry, material);
+  scene.add(mesh);
+
+  // マウス位置を追跡（2D座標、OrthographicCamera用）
+  const mouse = new THREE.Vector2();
+  const target = new THREE.Vector2();
+  const clock = new THREE.Clock();
+
+  // ポイントの履歴を保存（カーブを作成するため）- threejs-toysと同じ実装
+  const curvePoints = new Array(config.curvePoints).fill(0).map(() => new THREE.Vector2());
+  const maxHistoryLength = config.curvePoints;
+
+  // 初期位置を画面中央に設定
+  mouse.set(0, 0);
+  target.set(0, 0);
+
+  // マウスがブラウザ内にあるかどうかを追跡（threejs-toysと同じ実装）
+  // 初期状態ではfalseにして、マウスが動いたときにtrueにする
+  let isMouseActive = false;
+
+  // 待機時の円の半径（レスポンシブ対応）
+  // 「Please select a project_」の文字サイズに比例するように計算
+  // フォントサイズの倍数で半径を決定（例：フォントサイズの10倍など）
+  const SLEEP_RADIUS_FONT_MULTIPLIER = 10; // フォントサイズに対する倍率
+  let currentSleepRadiusX = 150; // 初期値
+  let currentSleepRadiusY = 150; // 初期値
+
+  // マウスイベント（threejs-toysと同じ実装）
+  const handleMouseMove = (e) => {
+    // 画面座標を正規化デバイス座標（NDC）に変換（-1から1の範囲）
+    // threejs-toysでは、nPositionとして-1から1の範囲で処理される
+    const rect = renderer.domElement.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    target.set(x, y);
+    isMouseActive = true;
+
+    if (!window._mouseMoveLogged) {
+      console.log('[Cursor Effect] Mouse move:', {
+        clientX: e.clientX,
+        clientY: e.clientY,
+        rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+        x,
+        y,
+        target: target.clone()
+      });
+      window._mouseMoveLogged = true;
+    }
+  };
+
+  const handleMouseLeave = (e) => {
+    // マウスがブラウザウィンドウから出た場合のみfalseにする
+    if (!e.relatedTarget && e.target === document) {
+      isMouseActive = false;
+      console.log('[Cursor Effect] Mouse left browser window, isMouseActive:', isMouseActive);
+    }
+  };
+
+  // タッチイベントハンドラー（スマホ版対応）
+  const handleTouchStart = (e) => {
+    // タッチ開始時：タッチ位置をカーソル位置として設定
+    if (e.touches.length > 0) {
+      handleMouseMove(e.touches[0]);
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    // タッチ移動時：タッチ位置をカーソル位置として更新
+    if (e.touches.length > 0) {
+      handleMouseMove(e.touches[0]);
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    // タッチ終了時：sleep modeに移行（画面中央で円を描く）
+    isMouseActive = false;
+    console.log('[Cursor Effect] Touch ended, isMouseActive:', isMouseActive);
+  };
+
+  const handleTouchCancel = (e) => {
+    // タッチキャンセル時：sleep modeに移行（画面中央で円を描く）
+    isMouseActive = false;
+    console.log('[Cursor Effect] Touch cancelled, isMouseActive:', isMouseActive);
+  };
+
+  // threejs-toysと同じ実装：documentに対してイベントリスナーを設定
+  // renderer.domElementはpointer-events: noneのため、documentに設定
+  document.addEventListener('mousemove', handleMouseMove);
+  // mouseleaveとmouseoutの両方を設定（ブラウザ互換性のため）
+  document.addEventListener('mouseleave', handleMouseLeave);
+  document.addEventListener('mouseout', handleMouseLeave);
+  
+  // タッチイベント（スマホ版対応）
+  document.addEventListener('touchstart', handleTouchStart, { passive: true });
+  document.addEventListener('touchmove', handleTouchMove, { passive: true });
+  document.addEventListener('touchend', handleTouchEnd, { passive: true });
+  document.addEventListener('touchcancel', handleTouchCancel, { passive: true });
+
+  // リサイズイベント（threejs-toysと同じ実装）
+  const handleResize = () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // uRatioとuSizeを更新（threejs-toysと同じ実装）
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    if (width >= height) {
+      uRatio.set(1, height / width);
+      uSize.set(config.radius1, config.radius2);
+      uSize.multiplyScalar(1 / width);
+    } else {
+      uRatio.set(width / height, 1);
+      uSize.set(config.radius1, config.radius2);
+      uSize.multiplyScalar(1 / height);
+    }
+
+    material.uniforms.uRatio.value = uRatio;
+    material.uniforms.uSize.value = uSize;
+
+    // 待機時の円の半径を「Please select a project_」の文字サイズに比例して計算
+    if (guidanceText) {
+      const computedStyle = window.getComputedStyle(guidanceText);
+      const fontSize = parseFloat(computedStyle.fontSize); // px単位で取得
+      
+      // フォントサイズに倍率を掛けて半径を計算
+      currentSleepRadiusX = fontSize * SLEEP_RADIUS_FONT_MULTIPLIER;
+      currentSleepRadiusY = fontSize * SLEEP_RADIUS_FONT_MULTIPLIER;
+      
+      console.log('[Cursor Effect] Resized to:', width, 'x', height, 'fontSize:', fontSize, 'sleepRadius:', currentSleepRadiusX);
+    } else {
+      // guidanceTextが取得できない場合のフォールバック
+      currentSleepRadiusX = 150;
+      currentSleepRadiusY = 150;
+    }
+  };
+  window.addEventListener('resize', handleResize);
+
+  // 初期リサイズを実行
+  handleResize();
+
+  // アニメーションループ
+  function animate() {
+    cursorAnimationFrameId = requestAnimationFrame(animate);
+
+    const delta = clock.getDelta();
+    const time = clock.getElapsedTime();
+
+    // threejs-toysと同じ実装：マウスがブラウザ内にある場合とない場合で処理を分岐
+    // デバッグ用：isMouseActiveの状態を定期的にログ出力
+    if (time < 2 && Math.floor(time * 10) % 10 === 0) {
+      console.log('[Cursor Effect] isMouseActive:', isMouseActive, 'time:', time);
+    }
+    
+    if (isMouseActive) {
+      // マウス位置を滑らかに追跡（threejs-toysと同じ実装：直接lerp）
+      mouse.lerp(target, config.curveLerp);
+
+      // ポイントの履歴を更新（threejs-toysと同じ実装）
+      // curvePoints配列を後ろから前に向かってlerpで更新
+      for (let i = config.curvePoints - 1; i > 0; i--) {
+        curvePoints[i].lerp(curvePoints[i - 1], config.curveLerp);
+      }
+      // 最初のポイントを現在のマウス位置に設定
+      curvePoints[0].copy(mouse);
+    } else {
+      // マウスがブラウザ外に出た場合、画面中央を回る円を描く（threejs-toysと同じ実装）
+      const sleepTimeX = time * config.sleepTimeCoefX;
+      const sleepTimeY = time * config.sleepTimeCoefY;
+      const cosX = Math.cos(sleepTimeX);
+      const sinY = Math.sin(sleepTimeY);
+
+      // 画面サイズに応じた半径を計算（threejs-toysと同じ実装）
+      // threejs-toysでは、wWidth（画面の幅）とwidth（レンダラーの幅）を使用
+      const wWidth = window.innerWidth;
+      const wHeight = window.innerHeight;
+      const width = renderer.domElement.width / renderer.getPixelRatio();
+
+      // レスポンシブ対応：SP版のサイズを起点として、画面幅に応じて拡大した半径を使用
+      // threejs-toysと同じ計算：I = sleepRadiusX * wWidth / width, F = sleepRadiusY * wWidth / width
+      const I = (currentSleepRadiusX * wWidth) / width;
+      const F = (currentSleepRadiusY * wWidth) / width;
+
+      // threejs-toysと同じ計算：D = I * N, V = F * x
+      // ここで、N = cosX, x = sinY
+      const D = I * cosX;
+      const V = F * sinY;
+
+      // threejs-toysでは、t.points[0].set(D, V)で直接ピクセル座標を設定
+      // しかし、その後uPointsに変換する際に、0.5 * point * uRatioの変換が必要
+      // そのため、まずNDC座標に変換してから、0.5 * point * uRatioの変換を行う
+      // 正規化デバイス座標（NDC）に変換（-1から1の範囲）
+      // 画面中央が(0, 0)になるように変換
+      const x = D / (wWidth / 2);
+      const y = -V / (wHeight / 2);
+
+      // threejs-toysと同じ実装：スリープモードでは、curvePoints[0]に直接設定
+      // ポイントの履歴を更新（threejs-toysと同じ実装）
+      // curvePoints配列を後ろから前に向かってlerpで更新
+      for (let i = config.curvePoints - 1; i > 0; i--) {
+        curvePoints[i].lerp(curvePoints[i - 1], config.curveLerp);
+      }
+      // 最初のポイントをスリープモードの位置に直接設定（NDC座標）
+      curvePoints[0].set(x, y);
+
+      // デバッグ用（定期的にログ出力）
+      if (time < 3 && Math.floor(time * 10) % 5 === 0) {
+        console.log('[Cursor Effect] Sleep mode active:', {
+          time,
+          isMouseActive,
+          sleepTimeCoefX: config.sleepTimeCoefX,
+          sleepTimeCoefY: config.sleepTimeCoefY,
+          sleepTimeX,
+          sleepTimeY,
+          cosX,
+          sinY,
+          I,
+          F,
+          D,
+          V,
+          x,
+          y,
+          wWidth,
+          wHeight,
+          width,
+          curvePoints0: curvePoints[0].clone()
+        });
+      }
+    }
+
+    // threejs-toysと同じ実装：SplineCurveを使用してポイントを取得
+    // SplineCurveの代わりにCatmullRomCurve3を使用（Three.jsにはSplineCurveがないため）
+    if (curvePoints.length >= 2) {
+      const curve = new THREE.CatmullRomCurve3(
+        curvePoints.map(p => new THREE.Vector3(p.x, p.y, 0)),
+        false,
+        'centripetal'
+      );
+
+      // uPoints配列を更新（threejs-toysと同じ実装）
+      // threejs-toysでは、nPosition（-1から1）を0.5 * nPosition * uRatioに変換
+      for (let i = 0; i < config.shaderPoints; i++) {
+        const t = i / (config.shaderPoints - 1);
+        const point = curve.getPoint(t);
+        // threejs-toysと同じ変換：0.5 * point * uRatio
+        uPointsUniform[i].set(
+          0.5 * point.x * uRatio.x,
+          0.5 * point.y * uRatio.y
+        );
+      }
+    } else {
+      // 履歴が少ない場合は、現在のマウス位置を使用
+      // threejs-toysと同じ変換：0.5 * mouse * uRatio
+      for (let i = 0; i < config.shaderPoints; i++) {
+        uPointsUniform[i].set(
+          0.5 * mouse.x * uRatio.x,
+          0.5 * mouse.y * uRatio.y
+        );
+      }
+    }
+
+    // uniformを更新（threejs-toysと同じ実装：配列の各要素を直接更新）
+    // Three.jsでは、uniform配列の各要素を個別に更新する必要がある
+    if (material.uniforms.uPoints && material.uniforms.uPoints.value) {
+      for (let i = 0; i < config.shaderPoints; i++) {
+        if (material.uniforms.uPoints.value[i]) {
+          material.uniforms.uPoints.value[i].copy(uPointsUniform[i]);
+        } else {
+          // 要素が存在しない場合は、新しく作成
+          material.uniforms.uPoints.value[i] = uPointsUniform[i].clone();
+        }
+      }
+      material.uniforms.uPoints.needsUpdate = true;
+    }
+
+    // デバッグ用（最初の数フレームのみ）
+    if (!window._cursorDebugLogged && curvePoints.length > 0) {
+      console.log('[Cursor Effect] Curve points length:', curvePoints.length);
+      console.log('[Cursor Effect] Mouse position:', mouse.x, mouse.y);
+      console.log('[Cursor Effect] First uPoint:', uPointsUniform[0].x, uPointsUniform[0].y);
+      window._cursorDebugLogged = true;
+    }
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+  // 破棄関数
+  function destroy() {
+    console.log('[Cursor Effect] Destroying custom cursor effect...');
+    if (cursorAnimationFrameId) {
+      cancelAnimationFrame(cursorAnimationFrameId);
+      cursorAnimationFrameId = null;
+    }
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseleave', handleMouseLeave);
+    document.removeEventListener('mouseout', handleMouseLeave);
+    // タッチイベントリスナーの削除（スマホ版対応）
+    document.removeEventListener('touchstart', handleTouchStart);
+    document.removeEventListener('touchmove', handleTouchMove);
+    document.removeEventListener('touchend', handleTouchEnd);
+    document.removeEventListener('touchcancel', handleTouchCancel);
+    window.removeEventListener('resize', handleResize);
+    if (renderer.domElement && renderer.domElement.parentNode) {
+      renderer.domElement.parentNode.removeChild(renderer.domElement);
+    }
+    renderer.dispose();
+    material.dispose();
+    geometry.dispose();
+  }
+
+  return {
+    scene,
+    camera,
+    renderer,
+    material,
+    geometry,
+    mesh,
+    destroy,
+    updateColor: (color) => {
+      const rgb = hexToRgb(color);
+      if (rgb) {
+        const colorVec = new THREE.Vector3(rgb.r / 255, rgb.g / 255, rgb.b / 255);
+        material.uniforms.uColor.value = colorVec;
+        console.log('[Cursor Effect] Color updated to:', color, 'RGB:', rgb);
+      }
+    }
+  };
+}
+
+// ============================================
+// カーソルエフェクトの色を更新
+// ============================================
+function updateCursorEffectColor(color) {
+  if (!cursorEffectInstance) {
+    console.warn('[Cursor Effect] No cursor effect instance to update');
+    return;
+  }
+
+  try {
+    cursorEffectInstance.updateColor(color);
+  } catch (error) {
+    console.error('[Cursor Effect] Failed to update color:', error);
+  }
+}
+
+// ============================================
+// カーソルエフェクトを破棄
+// ============================================
+function destroyCursorEffect() {
+  if (cursorEffectInstance) {
+    cursorEffectInstance.destroy();
+    cursorEffectInstance = null;
+  }
+}
+
+// ============================================
+// ヘルパー関数: 16進数カラーをRGBに変換
+// ============================================
+function hexToRgb(hex) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+}
+
+// ============================================
+// クリーンアップ（必要に応じて）
+// ============================================
+function stopColorTransition() {
+  if (colorAnimationFrameId) {
+    cancelAnimationFrame(colorAnimationFrameId);
+    colorAnimationFrameId = null;
+  }
+}
+
+// ============================================
 // 初期化
 // ============================================
 async function init() {
@@ -45,6 +745,9 @@ async function init() {
 
     // イベントリスナーを設定（プロジェクトアイテムが生成された後）
     setupEventListeners();
+
+    // カーソルエフェクトを初期化
+    await initCursorEffect();
   } catch (error) {
     console.error('Error loading projects:', error);
     // エラー時はプレースホルダーを表示
@@ -235,7 +938,7 @@ function handleProjectHover(project, itemElement) {
 
   // ③ タイトルは非表示（hover時も表示しない）
 
-  // State0用ガイダンステキストを非表示
+  // ガイダンステキストを非表示（サムネイルhover時のみ）
   guidanceText.classList.remove('visible');
 
   // ① コンテキストパネルを表示・更新
@@ -265,6 +968,9 @@ function handleProjectLeave() {
       heroVideoBase.style.display = 'none';
       heroVideoBase.style.opacity = '0';
     }
+
+    // ガイダンステキストを表示（hover解除時）
+    guidanceText.classList.add('visible');
 
     // bgLayerをフェードアウト
     if (bgLayer) {
@@ -1039,8 +1745,12 @@ function createImageGrid(images, projectSlug, forceHorizontal = false, initiativ
 
     const img = document.createElement('img');
     // 新しい命名規則に基づいてURLを生成（initiativeNameが指定されている場合）
+    // ただし、imageDataにsrcプロパティがある場合は、そちらを優先（imageGroupsの場合）
     let imageUrl;
-    if (initiativeName) {
+    if (imageData.src || (typeof imageData === 'string')) {
+      // 既にURLが指定されている場合（imageGroupsなど）は、そのまま使用
+      imageUrl = imageData.src || imageData;
+    } else if (initiativeName) {
       const number = index + 1;
       imageUrl = buildImageUrl(projectSlug, initiativeName, caseName, number);
     } else {
@@ -1197,6 +1907,18 @@ function createCaseSection(caseData, projectSlug) {
           initiativeName = 'designsystem';
           caseName = null;
         }
+      } else if (projectSlug === 'sepila') {
+        // SEPILAプロジェクト用のマッピング（タイトルから推測）
+        if (caseData.title === 'Lecture Video' && initiative.title === 'Main') {
+          initiativeName = 'lecture';
+          caseName = null;
+        } else if (caseData.title === 'Color' && initiative.title === 'Main') {
+          initiativeName = 'color';
+          caseName = null;
+        } else if (caseData.title === 'Process' && initiative.title === 'Main') {
+          initiativeName = 'process';
+          caseName = null;
+        }
       }
 
       const initiativeSection = createInitiativeSection(initiative, projectSlug, initiativeName, caseName);
@@ -1318,6 +2040,9 @@ function openModal(project) {
   }
 
   document.body.style.overflow = 'hidden';
+
+  // ガイダンステキストを非表示（モーダル表示時のみ）
+  guidanceText.classList.remove('visible');
 
   // 背景要素を後退させる（既存のmodal-backgroundクラスも維持）
   focusVisual.classList.add('modal-background');
@@ -1714,6 +2439,9 @@ function closeModal() {
   modalContainer.addEventListener('transitionend', onEnd);
 
   document.body.style.overflow = '';
+
+  // ガイダンステキストを表示（モーダル閉じる時）
+  guidanceText.classList.add('visible');
 
   // 背景要素を元に戻す
   focusVisual.classList.remove('modal-background');

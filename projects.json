@@ -6,7 +6,11 @@
     "role": "Founding",
     "scope": "Service Design / UIUX Design / Business Dev",
     "year": "2019-2025",
-    "tools": ["Figma", "React", "After Effects"],
+    "tools": [
+      "Figma",
+      "React",
+      "After Effects"
+    ],
     "tagline": "少子化対策 × 地域活性化 = デートプラン",
     "description": "デートプラン投稿・評価サイト「DATEs」をリリースしました。\nサービス設計〜UI/UXデザイン〜フロントコーディング、また自治体との連携など、代表として必死に手を動かしました。",
     "heroMedia": {
@@ -40,7 +44,12 @@
     "role": "Creative Direction",
     "scope": "Intro Video / Logo Design / Graphic Design",
     "year": "2021-2022",
-    "tools": ["Blender", "After Effects", "Illustrator", "XD"],
+    "tools": [
+      "Blender",
+      "After Effects",
+      "Illustrator",
+      "XD"
+    ],
     "tagline": "What's possible with Windows",
     "description": "マイクロソフト社主催の新規事業ピッチイベント「Empower Japan Intrapreneur Community」のクリエイティブディレクションを行いました。\nイベントのロゴ、発表者登壇時の事業紹介動画、Teams背景など、幅広く制作させていただきました。",
     "heroMedia": {
@@ -74,7 +83,11 @@
     "role": "Creative Direction",
     "scope": "Product Video / UIUX Design",
     "year": "2022",
-    "tools": ["After Effects", "Premiere Pro", "XD"],
+    "tools": [
+      "After Effects",
+      "Premiere Pro",
+      "XD"
+    ],
     "tagline": "サステナブル大喜利",
     "description": "国内最大級のハッカソン「東京Web3ハッカソン」に出場し、全100組の中で準グランプリを獲得しました。\n大喜利のお題とボケを投稿することにブロックチェーン技術を用いることで、トークノミクスを成立させるというサービスでした。\n1週間と短い期間の中で、UI/UXデザイン、アプリの紹介動画の制作を担当させていただきました。",
     "heroMedia": {
@@ -103,7 +116,12 @@
     "role": "Marketing Strategy",
     "scope": "Product Video",
     "year": "2022-2023",
-    "tools": ["After Effects", "DaVinci Resolve", "XD", "Illustrator"],
+    "tools": [
+      "After Effects",
+      "DaVinci Resolve",
+      "XD",
+      "Illustrator"
+    ],
     "tagline": "ARの普及を見越したSNS",
     "description": "香港に拠点を置くAR×Web3の会社IZUMOxr.Ltdにて、Marketing Managerを務めました。\n2022年6月の事業立ち上げから、2023年12月までの1年半で、コミュニティ立ち上げ(Discord登録者約1万人)やSNS立ち上げ(𝕏フォロワー約2万人)、それらに関わるキャンペーン実施やクリエイティブ制作など幅広くプロジェクトに携わりました。",
     "heroMedia": {
@@ -234,7 +252,12 @@
     "role": "Marketing Strategy",
     "scope": "Business Dev / Product Video / Graphic Design",
     "year": "2023-",
-    "tools": ["DaVinci Resolve", "After Effects", "Figma", "Illustrator"],
+    "tools": [
+      "DaVinci Resolve",
+      "After Effects",
+      "Figma",
+      "Illustrator"
+    ],
     "tagline": "AR × 人から生まれる新体験",
     "description": "国内有数のMR開発会社MuuMu社のサービス「デテクル」のマーケティング戦略策定及び、その実行を担当しております。\n戦略策定のためのリサーチ、実行に伴う制作〜商談まで全てのプロセスを担っております。",
     "heroMedia": {
@@ -252,29 +275,29 @@
             "videos": [
               {
                 "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/murder.webm"
+                "src": "https://assets.shuntofujii.com/deteqle/murder_m_1.webm"
               }
             ],
             "images": [
               {
                 "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_1.webp"
+                "src": "https://assets.shuntofujii.com/deteqle/murder_p_1.webp"
               },
               {
                 "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_2.webp"
+                "src": "https://assets.shuntofujii.com/deteqle/murder_p_2.webp"
               },
               {
                 "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_3.webp"
+                "src": "https://assets.shuntofujii.com/deteqle/murder_p_3.webp"
               },
               {
                 "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_4.webp"
+                "src": "https://assets.shuntofujii.com/deteqle/murder_p_4.webp"
               },
               {
                 "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_5.webp"
+                "src": "https://assets.shuntofujii.com/deteqle/murder_p_5.webp"
               }
             ]
           },
@@ -283,11 +306,11 @@
             "videos": [
               {
                 "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_bts.webm"
+                "src": "https://assets.shuntofujii.com/deteqle/murder_process_m_1.webm"
               },
               {
                 "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_rough.webm"
+                "src": "https://assets.shuntofujii.com/deteqle/murder_process_m_2.webm"
               }
             ]
           }
@@ -301,15 +324,15 @@
             "videos": [
               {
                 "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/dadakone_1.webm"
+                "src": "https://assets.shuntofujii.com/deteqle/content_dadakone_m_1.webm"
               },
               {
                 "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/dadakone_2.webm"
+                "src": "https://assets.shuntofujii.com/deteqle/content_dadakone_m_2.webm"
               },
               {
                 "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/dadakone_3.webm"
+                "src": "https://assets.shuntofujii.com/deteqle/content_dadakone_m_3.webm"
               }
             ]
           },
@@ -318,11 +341,11 @@
             "videos": [
               {
                 "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/zombie_1.webm"
+                "src": "https://assets.shuntofujii.com/deteqle/content_zombie_m_1.webm"
               },
               {
                 "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/zombie_2.webm"
+                "src": "https://assets.shuntofujii.com/deteqle/content_zombie_m_2.webm"
               }
             ],
             "imageGroups": [
@@ -330,23 +353,23 @@
                 "images": [
                   {
                     "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/zombie_1.webp"
+                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_1.webp"
                   },
                   {
                     "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/zombie_2.webp"
+                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_2.webp"
                   },
                   {
                     "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/zombie_3.webp"
+                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_3.webp"
                   },
                   {
                     "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/zombie_4.webp"
+                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_4.webp"
                   },
                   {
                     "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/zombie_5.webp"
+                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_5.webp"
                   }
                 ]
               },
@@ -354,23 +377,23 @@
                 "images": [
                   {
                     "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/zombie_6.webp"
+                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_6.webp"
                   },
                   {
                     "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/zombie_7.webp"
+                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_7.webp"
                   },
                   {
                     "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/zombie_8.webp"
+                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_8.webp"
                   },
                   {
                     "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/zombie_9.webp"
+                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_9.webp"
                   },
                   {
                     "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/zombie_10.webp"
+                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_10.webp"
                   }
                 ]
               }
@@ -386,11 +409,11 @@
             "images": [
               {
                 "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/mailish_1.webp"
+                "src": "https://assets.shuntofujii.com/deteqle/mailish_p_1.webp"
               },
               {
                 "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/mailish_2.webp"
+                "src": "https://assets.shuntofujii.com/deteqle/mailish_p_2.webp"
               }
             ]
           }
@@ -404,11 +427,11 @@
             "images": [
               {
                 "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/designsystem_1.webp"
+                "src": "https://assets.shuntofujii.com/deteqle/designsystem_p_1.webp"
               },
               {
                 "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/designsystem_2.webp"
+                "src": "https://assets.shuntofujii.com/deteqle/designsystem_p_2.webp"
               }
             ]
           }
@@ -431,7 +454,11 @@
     "role": "Art Direction",
     "scope": "Production Design / Costume Supervisor / Set Decorator",
     "year": "2023-",
-    "tools": ["Illustrator", "After Effects", "Figma"],
+    "tools": [
+      "Illustrator",
+      "After Effects",
+      "Figma"
+    ],
     "tagline": "国産映画を世界へ",
     "description": "全編英語長編映画「グーチョキデッド」の美術監督ならびに実行（デザイン、衣装調達、小道具など）、またマーケティングなど幅広い領域を担当しております。\n作品は \"ゆうばり国際ファンタスティック映画祭2025\" にノミネートされました。",
     "heroMedia": {
@@ -460,7 +487,11 @@
     "role": "Creative Direction",
     "scope": "Fitness Video",
     "year": "2024-",
-    "tools": ["DaVinci Resolve", "After Effects", "Figma"],
+    "tools": [
+      "DaVinci Resolve",
+      "After Effects",
+      "Figma"
+    ],
     "tagline": "完全個室セルフマシンピラティス",
     "description": "セルフでピラティスを行うためのレッスン動画のディレクションを担っております。\n撮影〜画面UI制作〜編集の全工程を行っております。",
     "heroMedia": {
@@ -468,6 +499,103 @@
       "src": "https://assets.shuntofujii.com/top/video-07.webm"
     },
     "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-07.webp",
+    "projectSlug": "sepila",
+    "cases": [
+      {
+        "title": "Lecture Video",
+        "initiatives": [
+          {
+            "title": "Main",
+            "videos": [
+              {
+                "type": "video",
+                "src": "https://assets.shuntofujii.com/sepila/lecture_m_1.webm"
+              }
+            ],
+            "images": [
+              {
+                "type": "image",
+                "src": "https://assets.shuntofujii.com/sepila/lecture_p_1.webp"
+              },
+              {
+                "type": "image",
+                "src": "https://assets.shuntofujii.com/sepila/lecture_p_2.webp"
+              },
+              {
+                "type": "image",
+                "src": "https://assets.shuntofujii.com/sepila/lecture_p_3.webp"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Color",
+        "initiatives": [
+          {
+            "title": "Main",
+            "videos": [
+              {
+                "type": "video",
+                "src": "https://assets.shuntofujii.com/sepila/color_m_1.webm"
+              }
+            ],
+            "imageGroups": [
+              {
+                "images": [
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/sepila/color_p_1.webp"
+                  },
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/sepila/color_p_2.webp"
+                  },
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/sepila/color_p_3.webp"
+                  }
+                ]
+              },
+              {
+                "images": [
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/sepila/color_p_4.webp"
+                  },
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/sepila/color_p_5.webp"
+                  },
+                  {
+                    "type": "image",
+                    "src": "https://assets.shuntofujii.com/sepila/color_p_6.webp"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Process",
+        "initiatives": [
+          {
+            "title": "Main",
+            "images": [
+              {
+                "type": "image",
+                "src": "https://assets.shuntofujii.com/sepila/process_p_1.webp"
+              },
+              {
+                "type": "image",
+                "src": "https://assets.shuntofujii.com/sepila/process_p_2.webp"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "gallery": [
       {
         "type": "video",
@@ -488,7 +616,10 @@
     "category": "Coffee Shop",
     "role": "Co-Founding",
     "year": "2025 (Opening Soon)",
-    "tools": ["Cursor", "Illustrator"],
+    "tools": [
+      "Cursor",
+      "Illustrator"
+    ],
     "tagline": "人間監査法人パイオニア",
     "description": "珈琲好きの友人と事業の立ち上げを行っております。",
     "heroMedia": {

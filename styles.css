@@ -2,11 +2,8 @@
    変数定義（アクセントカラーを変更可能）
    ============================================ */
 :root {
-  /* アクセントカラー候補（コメントアウトを切り替えて使用） */
+  /* アクセントカラー（カーソルの色と連動） */
   --accent-color: #00d9ff; /* シアン（デフォルト） */
-  /* --accent-color: #a8ff00; */ /* ライム */
-  /* --accent-color: #ffb800; */ /* アンバー */
-  /* --accent-color: #ff6b9d; */ /* ピンク */
   
   --bg-gradient-start: #0a0a0f;
   --bg-gradient-end: #1a1a2e;
@@ -22,6 +19,19 @@
   --transition-medium: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   --transition-slow: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
   --transition-video: 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* テーマカラーの移り変わりを滑らかに（アクセントカラーを使用する要素に適用） */
+.modal-tagline,
+.modal-close:hover,
+.lightbox-close:hover {
+  transition: color 1s ease-in-out, background-color 1s ease-in-out, border-color 1s ease-in-out, box-shadow 1s ease-in-out;
+}
+
+/* サムネイルhover時の囲いは、カーソルの軌跡と同じタイミングで色が変化するように、transitionを短くする */
+.project-item::before,
+.project-item::after {
+  transition: color 0.1s ease-in-out, background-color 0.1s ease-in-out, border-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
 }
 
 /* ============================================
@@ -239,7 +249,7 @@ body.modal-open .context-panel {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 10;
+  z-index: 110; /* サムネイルhover時の動画：カーソル軌跡(100)より上に表示 */
   overflow: hidden;
   transition: opacity var(--transition-video);
 }
@@ -368,7 +378,7 @@ body.modal-open .context-panel {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 180;
+  z-index: 150; /* 動画(110)とカーソル軌跡(100)より上で表示 */
   pointer-events: none;
   opacity: 0;
   transition: opacity var(--transition-slow);
@@ -416,7 +426,7 @@ body.modal-open .context-panel {
   z-index: 140;
   display: flex;
   gap: 1.5rem;
-  padding: 18px 2.5rem;
+  padding: 40px 2.5rem; /* top/bottom: 40px, left/right: 2.5rem */
   background: rgba(255, 255, 255, 0);
   backdrop-filter: none;
   border: none;
@@ -484,18 +494,28 @@ body.modal-open .project-navigation {
 }
 
 /* 疑似要素：外枠の強調（::before） */
+/* 線を少し太くする（5px → 6px） */
 .project-item::before {
   content: '';
   position: absolute;
   border-radius: 50%;
-  border: 5px solid var(--accent-color);
+  border: 3px solid var(--accent-color); /* カーソル軌跡のradius1: 3pxに合わせて細く */
   opacity: 0;
   z-index: 2;
   pointer-events: none;
   box-sizing: border-box;
   /* アニメーションの初期状態（大きい枠線） */
   inset: -15px;
-  transition: opacity 0.3s ease-in-out;
+  /* カーソルの軌跡と同じタイミングで色が変化するように、transitionを短くする */
+  /* カーソルは毎フレーム更新されるため、サムネイルも即座に追従するようにする */
+  transition: opacity 0.3s ease-in-out, border-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  /* カーソル軌跡と同じ輝き方：シェーダーの10倍の明るさとAdditiveBlendingを再現 */
+  /* 複数のbox-shadowを重ねて、距離ベースのグローを再現 */
+  box-shadow: 
+    0 0 3px var(--accent-color),
+    0 0 6px var(--accent-color),
+    0 0 10px var(--accent-color),
+    0 0 15px var(--accent-color);
 }
 
 /* hover時の枠線アニメーション */
@@ -516,19 +536,37 @@ body.modal-open .project-navigation {
 }
 
 /* 疑似要素：グロー（::after） */
+/* 軌跡の発光（radius2: 20）に合わせて発光具合を調整 */
+/* 軌跡の仕様: radius1=5px（太さ）、radius2=20px（発光範囲）、発光の広がり=15px */
 .project-item::after {
   content: '';
   position: absolute;
-  inset: -5px;
+  /* 軌跡のradius2: 20pxに合わせて、border（5px）の外側に15pxの範囲で発光 */
+  /* サムネイルサイズ90px、拡大時117px、border 5px、発光範囲15px = 合計20px外側 */
+  inset: -20px;
   border-radius: 50%;
-  /* hover時のアクセントカラーのグロー（外側エッジのみ） */
-  /* 中心から85%まで: 完全に透明、85-100%: アクセントカラー */
-  background: radial-gradient(circle, transparent 85%, var(--accent-color) 85%, var(--accent-color) 100%);
+  /* カーソル軌跡のシェーダーグローを再現：pow(uSize.y / dist, intensity)の効果 */
+  /* 距離ベースのグローを再現するため、より滑らかなグラデーションを使用 */
+  /* radius1=3px, radius2=5pxに合わせて、中心から約60%まで透明、60-100%で発光 */
+  /* CSS変数の制約により、var(--accent-color)を直接使用し、opacityで調整 */
+  background: radial-gradient(circle, transparent 60%, var(--accent-color) 70%, var(--accent-color) 85%, var(--accent-color) 100%);
+  background-color: transparent;
   opacity: 0;
-  transition: opacity 0.3s ease-in-out, background 0.3s ease-in-out;
+  /* カーソルの軌跡と同じタイミングで色が変化するように、transitionを短くする */
+  /* カーソルは毎フレーム更新されるため、サムネイルも即座に追従するようにする */
+  transition: opacity 0.3s ease-in-out, background 0.1s ease-in-out, background-color 0.1s ease-in-out;
   z-index: 0;
   pointer-events: none;
-  filter: blur(7px);
+  /* カーソル軌跡のシェーダーグローを再現：pow(uSize.y / dist, intensity)の効果 */
+  /* blurを調整して、シェーダーのグローに近づける */
+  filter: blur(8px);
+  /* AdditiveBlending的な効果を再現：複数のbox-shadowを重ねて距離ベースのグローを再現 */
+  /* Tone mapping (1.0 - exp(-col))の効果を再現するため、より強い発光を使用 */
+  box-shadow: 
+    0 0 5px var(--accent-color),
+    0 0 10px var(--accent-color),
+    0 0 15px var(--accent-color),
+    0 0 20px var(--accent-color);
 }
 
 /* Normal状態（デフォルト） */
@@ -541,13 +579,10 @@ body.modal-open .project-navigation {
   filter: brightness(1);
 }
 
-/* 非選択時の白い光彩（サムネイルのエッジから外側へ） */
-/* サムネイルのエッジ（100%付近）が白、外側に向かって徐々に透明 */
+/* 非選択時：発光を完全に非表示（サムネイルのみ表示） */
 .project-item:not(:hover):not(.selected)::after {
-  background: radial-gradient(circle, transparent 92%, rgba(255, 255, 255, 0.6) 96%, rgba(255, 255, 255, 1.0) 100%);
-  opacity: 1;
-  filter: blur(5px);
-  inset: -5px;
+  opacity: 0;
+  display: none;
 }
 
 /* Hover状態（一時的フォーカス） */
@@ -566,7 +601,10 @@ body.modal-open .project-navigation {
 }
 
 .project-item:hover:not(.selected)::after {
-  opacity: 0.4;
+  /* カーソル軌跡のAdditiveBlendingとTone mappingを再現 */
+  /* opacityを上げて、シェーダーの輝きに近づける */
+  opacity: 0.8;
+  display: block;
 }
 
 /* hoverされたアイテムの前後のアイテムを左右に広げる */
@@ -1427,7 +1465,7 @@ body.modal-open .modal-overlay {
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 1.75rem 1.5rem;
+    padding: 40px 1.5rem; /* top/bottom: 40px, left/right: 1.5rem */
     gap: 1rem;
     max-width: 100vw;
   }
@@ -1479,7 +1517,7 @@ body.modal-open .modal-overlay {
 
   .project-navigation {
     gap: 0.75rem;
-    padding: 1.75rem 1.25rem;
+    padding: 40px 1.25rem; /* top/bottom: 40px, left/right: 1.25rem */
     bottom: 16px;
   }
 
@@ -1525,7 +1563,7 @@ body.modal-open .modal-overlay {
   }
 
   .project-navigation {
-    padding: 1.75rem 1.25rem;
+    padding: 40px 1.25rem; /* top/bottom: 40px, left/right: 1.25rem */
   }
 }
 
