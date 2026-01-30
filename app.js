@@ -48,9 +48,6 @@ const CURSOR_CONFIG = {
   curveLerp: 0.5, // CodePenの例に合わせて変更
   radius1: 3, // threejs-toysのデフォルト
   radius2: 5, // threejs-toysのデフォルト
-  velocityTreshold: 10, // threejs-toysのデフォルト
-  sleepRadiusX: 150, // threejs-toysのデフォルト
-  sleepRadiusY: 150, // threejs-toysのデフォルト
   sleepTimeCoefX: 1.0, // 円を描くための係数（1秒で約1ラジアン回転）
   sleepTimeCoefY: 1.0, // 円を描くための係数（1秒で約1ラジアン回転）
 };
@@ -100,8 +97,6 @@ function updateAccentColor() {
 // ============================================
 async function initCursorEffect() {
   try {
-    console.log('[Cursor Effect] Initializing custom cursor effect...');
-
     // Three.jsをインポート
     const THREE = await import('https://unpkg.com/three@0.160.0/build/three.module.js');
 
@@ -122,8 +117,6 @@ async function initCursorEffect() {
 
     // 色の移り変わりを開始
     startColorTransition();
-
-    console.log('[Cursor Effect] Custom cursor effect initialized successfully');
   } catch (error) {
     console.error('[Cursor Effect] Failed to initialize cursor effect:', error);
   }
@@ -195,8 +188,6 @@ function getColorFromHue(hue) {
 // 自前のカーソルエフェクトを作成（threejs-toysのneonCursorを参考）
 // ============================================
 function createCustomCursorEffect(THREE, initialColor) {
-  console.log('[Cursor Effect] Creating custom cursor effect with color:', initialColor);
-
   const el = document.body;
   const config = { ...CURSOR_CONFIG };
 
@@ -221,8 +212,6 @@ function createCustomCursorEffect(THREE, initialColor) {
   renderer.domElement.style.zIndex = '100'; // タイトル(250)より下、サムネイル(140)より上
   el.appendChild(renderer.domElement);
 
-  console.log('[Cursor Effect] Renderer created, size:', window.innerWidth, 'x', window.innerHeight);
-
   // 色をRGBに変換
   const rgb = hexToRgb(initialColor);
   if (!rgb) {
@@ -230,7 +219,6 @@ function createCustomCursorEffect(THREE, initialColor) {
     return null;
   }
   const colorVec = new THREE.Vector3(rgb.r / 255, rgb.g / 255, rgb.b / 255);
-  console.log('[Cursor Effect] Initial color RGB:', rgb, 'Vector3:', colorVec);
 
   // threejs-toysと同じ実装：PlaneGeometryとフラグメントシェーダーでベジェ曲線を描画
   // uPoints配列を作成（uniform配列として使用）
@@ -362,7 +350,6 @@ function createCustomCursorEffect(THREE, initialColor) {
 
   // ポイントの履歴を保存（カーブを作成するため）- threejs-toysと同じ実装
   const curvePoints = new Array(config.curvePoints).fill(0).map(() => new THREE.Vector2());
-  const maxHistoryLength = config.curvePoints;
 
   // 初期位置を画面中央に設定
   mouse.set(0, 0);
@@ -372,6 +359,7 @@ function createCustomCursorEffect(THREE, initialColor) {
   // 初期状態ではfalseにして、マウスが動いたときにtrueにする
   let isMouseActive = false;
   let isTouchDevice = false; // タッチデバイスかどうかを判定
+  let sleepModeStartTime = null; // sleep modeに入った時点の時間を記録
 
   // 待機時の円の半径（レスポンシブ対応）
   // 「Please select a project_」の文字サイズに比例するように計算
@@ -383,7 +371,6 @@ function createCustomCursorEffect(THREE, initialColor) {
   // タッチデバイスの検出（一度でもタッチイベントが発生したらタッチデバイスと判定）
   const detectTouchDevice = () => {
     isTouchDevice = true;
-    console.log('[Cursor Effect] Touch device detected');
   };
 
   // マウスイベント（PC版用）
@@ -401,18 +388,6 @@ function createCustomCursorEffect(THREE, initialColor) {
 
     target.set(x, y);
     isMouseActive = true;
-
-    if (!window._mouseMoveLogged) {
-      console.log('[Cursor Effect] Mouse move:', {
-        clientX: e.clientX,
-        clientY: e.clientY,
-        rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
-        x,
-        y,
-        target: target.clone()
-      });
-      window._mouseMoveLogged = true;
-    }
   };
 
   const handleMouseLeave = (e) => {
@@ -425,7 +400,8 @@ function createCustomCursorEffect(THREE, initialColor) {
     // mouseleaveイベントは、マウスがブラウザウィンドウから出た時に発火
     if (!e.relatedTarget || e.relatedTarget === null) {
       isMouseActive = false;
-      console.log('[Cursor Effect] Mouse left browser window, isMouseActive:', isMouseActive);
+      // sleep modeに入った時点の時間を記録（円の最も下の点から始めるため）
+      sleepModeStartTime = clock.getElapsedTime();
     }
   };
 
@@ -443,7 +419,6 @@ function createCustomCursorEffect(THREE, initialColor) {
 
       target.set(x, y);
       isMouseActive = true;
-      console.log('[Cursor Effect] Touch start:', { clientX: touch.clientX, clientY: touch.clientY, x, y });
     }
   };
 
@@ -463,13 +438,15 @@ function createCustomCursorEffect(THREE, initialColor) {
   const handleTouchEnd = (e) => {
     // タッチ終了時：sleep modeに移行（画面中央で円を描く）
     isMouseActive = false;
-    console.log('[Cursor Effect] Touch ended, isMouseActive:', isMouseActive);
+    // sleep modeに入った時点の時間を記録（円の最も下の点から始めるため）
+    sleepModeStartTime = clock.getElapsedTime();
   };
 
   const handleTouchCancel = (e) => {
     // タッチキャンセル時：sleep modeに移行（画面中央で円を描く）
     isMouseActive = false;
-    console.log('[Cursor Effect] Touch cancelled, isMouseActive:', isMouseActive);
+    // sleep modeに入った時点の時間を記録（円の最も下の点から始めるため）
+    sleepModeStartTime = clock.getElapsedTime();
   };
 
   // threejs-toysと同じ実装：documentに対してイベントリスナーを設定
@@ -478,7 +455,7 @@ function createCustomCursorEffect(THREE, initialColor) {
   // mouseleaveとmouseoutの両方を設定（ブラウザ互換性のため）
   document.addEventListener('mouseleave', handleMouseLeave);
   document.addEventListener('mouseout', handleMouseLeave);
-  
+
   // タッチイベント（スマホ版対応）
   document.addEventListener('touchstart', handleTouchStart, { passive: true });
   document.addEventListener('touchmove', handleTouchMove, { passive: true });
@@ -509,12 +486,10 @@ function createCustomCursorEffect(THREE, initialColor) {
     if (guidanceText) {
       const computedStyle = window.getComputedStyle(guidanceText);
       const fontSize = parseFloat(computedStyle.fontSize); // px単位で取得
-      
+
       // フォントサイズに倍率を掛けて半径を計算
       currentSleepRadiusX = fontSize * SLEEP_RADIUS_FONT_MULTIPLIER;
       currentSleepRadiusY = fontSize * SLEEP_RADIUS_FONT_MULTIPLIER;
-      
-      console.log('[Cursor Effect] Resized to:', width, 'x', height, 'fontSize:', fontSize, 'sleepRadius:', currentSleepRadiusX);
     } else {
       // guidanceTextが取得できない場合のフォールバック
       currentSleepRadiusX = 150;
@@ -530,15 +505,8 @@ function createCustomCursorEffect(THREE, initialColor) {
   function animate() {
     cursorAnimationFrameId = requestAnimationFrame(animate);
 
-    const delta = clock.getDelta();
     const time = clock.getElapsedTime();
 
-    // threejs-toysと同じ実装：マウスがブラウザ内にある場合とない場合で処理を分岐
-    // デバッグ用：isMouseActiveの状態を定期的にログ出力
-    if (time < 2 && Math.floor(time * 10) % 10 === 0) {
-      console.log('[Cursor Effect] isMouseActive:', isMouseActive, 'time:', time);
-    }
-    
     if (isMouseActive) {
       // マウス位置を滑らかに追跡（threejs-toysと同じ実装：直接lerp）
       mouse.lerp(target, config.curveLerp);
@@ -550,12 +518,12 @@ function createCustomCursorEffect(THREE, initialColor) {
       }
       // 最初のポイントを現在のマウス位置に設定
       curvePoints[0].copy(mouse);
+
+      // アクティブ状態になったら、sleep modeの開始時間をリセット
+      sleepModeStartTime = null;
     } else {
-      // マウスがブラウザ外に出た場合、画面中央を回る円を描く（threejs-toysと同じ実装）
-      const sleepTimeX = time * config.sleepTimeCoefX;
-      const sleepTimeY = time * config.sleepTimeCoefY;
-      const cosX = Math.cos(sleepTimeX);
-      const sinY = Math.sin(sleepTimeY);
+      // マウスがブラウザ外に出た場合、画面中央を回る円を描く
+      // 円の最も下の点（角度 = -π/2、270度）から始まるように実装
 
       // 画面サイズに応じた半径を計算（threejs-toysと同じ実装）
       // threejs-toysでは、wWidth（画面の幅）とwidth（レンダラーの幅）を使用
@@ -567,6 +535,39 @@ function createCustomCursorEffect(THREE, initialColor) {
       // threejs-toysと同じ計算：I = sleepRadiusX * wWidth / width, F = sleepRadiusY * wWidth / width
       const I = (currentSleepRadiusX * wWidth) / width;
       const F = (currentSleepRadiusY * wWidth) / width;
+
+      // sleep modeに入った時点の時間を記録（まだ記録されていない場合）
+      // 初期状態（ページ読み込み時）からsleep modeが有効な場合も考慮
+      if (sleepModeStartTime === null) {
+        sleepModeStartTime = time;
+
+        // sleep modeに入った時点で、curvePointsのすべての要素を円の最も下の点に初期化
+        // 角度 = -π/2（最も下の点）から始まる
+        const initialAngleX = -Math.PI / 2;
+        const initialAngleY = -Math.PI / 2;
+        const initialCosX = Math.cos(initialAngleX);
+        const initialSinY = Math.sin(initialAngleY);
+        const initialD = I * initialCosX;
+        const initialV = F * initialSinY;
+        const initialX = initialD / (wWidth / 2);
+        const initialY = -initialV / (wHeight / 2);
+
+        // curvePointsのすべての要素を円の最も下の点に初期化
+        for (let i = 0; i < config.curvePoints; i++) {
+          curvePoints[i].set(initialX, initialY);
+        }
+      }
+
+      // sleep modeに入ってからの経過時間を計算
+      const elapsedSinceSleep = time - sleepModeStartTime;
+
+      // 円の最も下の点（角度 = -π/2）から始まり、経過時間に応じて角度を増やす
+      // 角度 = -π/2 + elapsedSinceSleep * sleepTimeCoefX
+      const angleX = -Math.PI / 2 + elapsedSinceSleep * config.sleepTimeCoefX;
+      const angleY = -Math.PI / 2 + elapsedSinceSleep * config.sleepTimeCoefY;
+
+      const cosX = Math.cos(angleX);
+      const sinY = Math.sin(angleY);
 
       // threejs-toysと同じ計算：D = I * N, V = F * x
       // ここで、N = cosX, x = sinY
@@ -589,30 +590,6 @@ function createCustomCursorEffect(THREE, initialColor) {
       }
       // 最初のポイントをスリープモードの位置に直接設定（NDC座標）
       curvePoints[0].set(x, y);
-
-      // デバッグ用（定期的にログ出力）
-      if (time < 3 && Math.floor(time * 10) % 5 === 0) {
-        console.log('[Cursor Effect] Sleep mode active:', {
-          time,
-          isMouseActive,
-          sleepTimeCoefX: config.sleepTimeCoefX,
-          sleepTimeCoefY: config.sleepTimeCoefY,
-          sleepTimeX,
-          sleepTimeY,
-          cosX,
-          sinY,
-          I,
-          F,
-          D,
-          V,
-          x,
-          y,
-          wWidth,
-          wHeight,
-          width,
-          curvePoints0: curvePoints[0].clone()
-        });
-      }
     }
 
     // threejs-toysと同じ実装：SplineCurveを使用してポイントを取得
@@ -660,14 +637,6 @@ function createCustomCursorEffect(THREE, initialColor) {
       material.uniforms.uPoints.needsUpdate = true;
     }
 
-    // デバッグ用（最初の数フレームのみ）
-    if (!window._cursorDebugLogged && curvePoints.length > 0) {
-      console.log('[Cursor Effect] Curve points length:', curvePoints.length);
-      console.log('[Cursor Effect] Mouse position:', mouse.x, mouse.y);
-      console.log('[Cursor Effect] First uPoint:', uPointsUniform[0].x, uPointsUniform[0].y);
-      window._cursorDebugLogged = true;
-    }
-
     renderer.render(scene, camera);
   }
 
@@ -675,7 +644,6 @@ function createCustomCursorEffect(THREE, initialColor) {
 
   // 破棄関数
   function destroy() {
-    console.log('[Cursor Effect] Destroying custom cursor effect...');
     if (cursorAnimationFrameId) {
       cancelAnimationFrame(cursorAnimationFrameId);
       cursorAnimationFrameId = null;
@@ -710,7 +678,6 @@ function createCustomCursorEffect(THREE, initialColor) {
       if (rgb) {
         const colorVec = new THREE.Vector3(rgb.r / 255, rgb.g / 255, rgb.b / 255);
         material.uniforms.uColor.value = colorVec;
-        console.log('[Cursor Effect] Color updated to:', color, 'RGB:', rgb);
       }
     }
   };
@@ -721,7 +688,6 @@ function createCustomCursorEffect(THREE, initialColor) {
 // ============================================
 function updateCursorEffectColor(color) {
   if (!cursorEffectInstance) {
-    console.warn('[Cursor Effect] No cursor effect instance to update');
     return;
   }
 
@@ -752,16 +718,6 @@ function hexToRgb(hex) {
     g: parseInt(result[2], 16),
     b: parseInt(result[3], 16)
   } : null;
-}
-
-// ============================================
-// クリーンアップ（必要に応じて）
-// ============================================
-function stopColorTransition() {
-  if (colorAnimationFrameId) {
-    cancelAnimationFrame(colorAnimationFrameId);
-    colorAnimationFrameId = null;
-  }
 }
 
 // ============================================
