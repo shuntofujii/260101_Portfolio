@@ -37,6 +37,7 @@ let cursorEffectInstance = null;
 let colorAnimationFrameId = null;
 let colorTransitionStartTime = null;
 let cursorAnimationFrameId = null;
+let initialHue = null; // ランダムな初期色相（0-360度）
 
 // 色の移り変わり設定
 const COLOR_TRANSITION_DURATION = 60000; // 60秒で1周（360度）- よりゆっくりとした色の変化
@@ -61,15 +62,19 @@ let currentAccentColor = null;
 // 色相を回るプログラム（全色相を回る）
 function getCurrentAccentColor() {
   if (colorTransitionStartTime === null) {
-    // 初期化されていない場合は初期色を返す
-    return getColorFromHue(0);
+    // 初期化されていない場合は初期色を返す（ランダムな初期色相を使用）
+    if (initialHue === null) {
+      initialHue = Math.random() * 360; // 0-360度のランダムな色相
+    }
+    return getColorFromHue(initialHue);
   }
 
   const currentTime = performance.now();
   const elapsed = currentTime - colorTransitionStartTime;
 
   // 色相（0-360度）を計算（時間に基づいて循環）
-  const hue = (elapsed / COLOR_TRANSITION_DURATION) * 360 % 360;
+  // 初期色相からのオフセットを加算して、ランダムな開始点から色相を回す
+  const hue = (initialHue + (elapsed / COLOR_TRANSITION_DURATION) * 360) % 360;
 
   // HSV色空間からRGBに変換
   return getColorFromHue(hue);
@@ -105,8 +110,13 @@ async function initCursorEffect() {
       destroyCursorEffect();
     }
 
-    // 初期色を設定
-    const initialColor = getColorFromHue(0);
+    // ランダムな初期色相を生成（まだ生成されていない場合）
+    if (initialHue === null) {
+      initialHue = Math.random() * 360; // 0-360度のランダムな色相
+    }
+
+    // 初期色を設定（ランダムな色相から）
+    const initialColor = getColorFromHue(initialHue);
     currentAccentColor = initialColor;
 
     // カーソルエフェクトを初期化
@@ -359,7 +369,11 @@ function createCustomCursorEffect(THREE, initialColor) {
   // 初期状態ではfalseにして、マウスが動いたときにtrueにする
   let isMouseActive = false;
   let isTouchDevice = false; // タッチデバイスかどうかを判定
-  let sleepModeStartTime = null; // sleep modeに入った時点の時間を記録
+  // NOTE:
+  // 以前は「sleep modeに入った時点の時間」を都度リセットしていたため、
+  // ブラウザ外に出るたびに円運動が毎回同じ点から再開してしまっていた。
+  // ここでは「グローバル時間（clock）」を基準に円運動の位相を決めることで、
+  // 戻り座標（位相）が毎回固定にならないようにする。
 
   // 待機時の円の半径（レスポンシブ対応）
   // 「Please select a project_」の文字サイズに比例するように計算
@@ -400,8 +414,6 @@ function createCustomCursorEffect(THREE, initialColor) {
     // mouseleaveイベントは、マウスがブラウザウィンドウから出た時に発火
     if (!e.relatedTarget || e.relatedTarget === null) {
       isMouseActive = false;
-      // sleep modeに入った時点の時間を記録（円の最も下の点から始めるため）
-      sleepModeStartTime = clock.getElapsedTime();
     }
   };
 
@@ -438,15 +450,11 @@ function createCustomCursorEffect(THREE, initialColor) {
   const handleTouchEnd = (e) => {
     // タッチ終了時：sleep modeに移行（画面中央で円を描く）
     isMouseActive = false;
-    // sleep modeに入った時点の時間を記録（円の最も下の点から始めるため）
-    sleepModeStartTime = clock.getElapsedTime();
   };
 
   const handleTouchCancel = (e) => {
     // タッチキャンセル時：sleep modeに移行（画面中央で円を描く）
     isMouseActive = false;
-    // sleep modeに入った時点の時間を記録（円の最も下の点から始めるため）
-    sleepModeStartTime = clock.getElapsedTime();
   };
 
   // threejs-toysと同じ実装：documentに対してイベントリスナーを設定
@@ -518,12 +526,10 @@ function createCustomCursorEffect(THREE, initialColor) {
       }
       // 最初のポイントを現在のマウス位置に設定
       curvePoints[0].copy(mouse);
-
-      // アクティブ状態になったら、sleep modeの開始時間をリセット
-      sleepModeStartTime = null;
     } else {
       // マウスがブラウザ外に出た場合、画面中央を回る円を描く
-      // 円の最も下の点（角度 = -π/2、270度）から始まるように実装
+      // 重要：円運動の位相は「グローバル時間」に紐づけ、戻り座標が毎回同じ点にならないようにする。
+      // 角度オフセット（-π/2）により、time=0 では円の最も下の点から始まる。
 
       // 画面サイズに応じた半径を計算（threejs-toysと同じ実装）
       // threejs-toysでは、wWidth（画面の幅）とwidth（レンダラーの幅）を使用
@@ -535,36 +541,10 @@ function createCustomCursorEffect(THREE, initialColor) {
       // threejs-toysと同じ計算：I = sleepRadiusX * wWidth / width, F = sleepRadiusY * wWidth / width
       const I = (currentSleepRadiusX * wWidth) / width;
       const F = (currentSleepRadiusY * wWidth) / width;
-
-      // sleep modeに入った時点の時間を記録（まだ記録されていない場合）
-      // 初期状態（ページ読み込み時）からsleep modeが有効な場合も考慮
-      if (sleepModeStartTime === null) {
-        sleepModeStartTime = time;
-
-        // sleep modeに入った時点で、curvePointsのすべての要素を円の最も下の点に初期化
-        // 角度 = -π/2（最も下の点）から始まる
-        const initialAngleX = -Math.PI / 2;
-        const initialAngleY = -Math.PI / 2;
-        const initialCosX = Math.cos(initialAngleX);
-        const initialSinY = Math.sin(initialAngleY);
-        const initialD = I * initialCosX;
-        const initialV = F * initialSinY;
-        const initialX = initialD / (wWidth / 2);
-        const initialY = -initialV / (wHeight / 2);
-
-        // curvePointsのすべての要素を円の最も下の点に初期化
-        for (let i = 0; i < config.curvePoints; i++) {
-          curvePoints[i].set(initialX, initialY);
-        }
-      }
-
-      // sleep modeに入ってからの経過時間を計算
-      const elapsedSinceSleep = time - sleepModeStartTime;
-
-      // 円の最も下の点（角度 = -π/2）から始まり、経過時間に応じて角度を増やす
-      // 角度 = -π/2 + elapsedSinceSleep * sleepTimeCoefX
-      const angleX = -Math.PI / 2 + elapsedSinceSleep * config.sleepTimeCoefX;
-      const angleY = -Math.PI / 2 + elapsedSinceSleep * config.sleepTimeCoefY;
+      // グローバル時間（time）に紐づけた角度（位相）
+      // 角度 = -π/2 + time * sleepTimeCoefX
+      const angleX = -Math.PI / 2 + time * config.sleepTimeCoefX;
+      const angleY = -Math.PI / 2 + time * config.sleepTimeCoefY;
 
       const cosX = Math.cos(angleX);
       const sinY = Math.sin(angleY);
