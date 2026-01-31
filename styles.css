@@ -382,9 +382,9 @@ body.modal-open .context-panel {
   pointer-events: none;
   opacity: 0;
   transition: opacity var(--transition-slow);
-  font-size: clamp(0.9rem, 3vw, 1.2rem);
+  font-size: clamp(0.8rem, 2.6vw, 1.05rem);
   font-weight: 300;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-secondary);
   letter-spacing: 0.05em;
   user-select: none;
   text-align: center;

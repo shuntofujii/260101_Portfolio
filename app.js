@@ -374,7 +374,7 @@ function createCustomCursorEffect(THREE, initialColor) {
   // 待機時の円の半径（レスポンシブ対応）
   // 「Please select a project_」の文字サイズに比例するように計算
   // フォントサイズの倍数で半径を決定（例：フォントサイズの10倍など）
-  const SLEEP_RADIUS_FONT_MULTIPLIER = 10; // フォントサイズに対する倍率
+  const SLEEP_RADIUS_FONT_MULTIPLIER = 12; // フォントサイズに対する倍率（待機円を少し大きく）
   let currentSleepRadiusX = 150; // 初期値
   let currentSleepRadiusY = 150; // 初期値
 
