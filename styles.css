@@ -246,16 +246,19 @@ body.modal-open .context-panel {
 
 /* ============================================
    ② 動画背景レイヤー（full bleed）
+   ※ スマホで読み込み後の拡大・座標ずれを防ぐため、
+      レイヤーと動画を常にビューポート固定サイズにしている
    ============================================ */
 .focus-visual {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   z-index: 110; /* サムネイルhover時の動画：カーソル軌跡(100)より上に表示 */
   overflow: hidden;
   transition: opacity var(--transition-video);
+  contain: layout paint;
 }
 
 .focus-visual.modal-background {
@@ -264,19 +267,24 @@ body.modal-open .context-panel {
 }
 
 .visual-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   min-width: 100%;
-  max-width: none;
+  min-height: 100%;
+  z-index: 0;
+  pointer-events: none;
 }
 
-/* 背景動画 */
+/* 背景動画用コンテナ：サイズを親に依存させず固定 */
 .bg {
   position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   z-index: 0;
 }
 
@@ -304,21 +312,33 @@ body.modal-open .context-panel {
    ============================================ */
 #bgLayer {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   pointer-events: none;
   opacity: 1;
   transition: opacity 420ms ease;
   will-change: opacity;
 }
 
+/* 背景用 #bgVideo：position を fixed に統一し、サイズをビューポートで固定。
+   .hero-media の position:absolute でレイアウトが親依存しないよう上書き。
+   width/height は JS で表示時に px 指定できるよう !important は付けない */
 #bgVideo {
-  width: 100%;
-  height: 100%;
-  min-width: 100%;
-  min-height: 100%;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw;
+  height: 100vh;
+  min-width: 100vw;
+  min-height: 100vh;
   object-fit: cover;
   object-position: center;
   filter: brightness(0.9) saturate(1.05);
+  transition: opacity 0.35s ease-out;
 }
 
 #bgLayer.isFading {
@@ -339,7 +359,12 @@ body.modal-open .context-panel {
   transition: opacity var(--transition-video);
 }
 
-.hero-media.fade-in {
+/* 背景動画では fade-in アニメーションを使わず opacity のみで表示（拡大・移動の錯覚を防ぐ） */
+#bgVideo.hero-media.fade-in {
+  animation: none;
+}
+
+.hero-media.fade-in:not(#bgVideo) {
   animation: fadeIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 

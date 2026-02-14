@@ -1036,7 +1036,11 @@ function updateHeroMedia(heroMedia) {
           clearTimeout(video._showFallbackId);
           video._showFallbackId = null;
         }
-        const existingListeners = ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough', 'error'];
+        if (video._resizeHandler) {
+          window.removeEventListener('resize', video._resizeHandler);
+          video._resizeHandler = null;
+        }
+        const existingListeners = ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough', 'playing', 'error'];
         existingListeners.forEach(eventType => {
           video.removeEventListener(eventType, video._playHandler);
           video.removeEventListener(eventType, video._showHandler);
@@ -1055,8 +1059,9 @@ function updateHeroMedia(heroMedia) {
         video.setAttribute('muted', 'true');
         video.setAttribute('playsinline', 'true');
         video.style.display = 'block';
-        // メタデータ読み込みまで非表示にし、スマホでの一瞬のサイズジャンプを防ぐ
         video.style.opacity = '0';
+        video.style.width = '';
+        video.style.height = '';
 
         // 動画が終了したときに再再生（ループのフォールバック）
         const loopHandler = function () {
@@ -1073,7 +1078,6 @@ function updateHeroMedia(heroMedia) {
           if (video.readyState >= 2) { // HAVE_CURRENT_DATA以上
             video.play().catch(e => {
               console.log('Video autoplay prevented:', e);
-              // ユーザー操作で再試行するためのガード
               const retryPlay = () => {
                 video.play().catch(() => { });
                 document.removeEventListener('pointerdown', retryPlay);
@@ -1087,28 +1091,31 @@ function updateHeroMedia(heroMedia) {
           }
         };
 
-        // メタデータ読み込み後に表示（スマホで0.9倍→拡大のジャンプを防ぐ）
+        // 表示は「再生開始後」に限定（Safari の object-fit ずれが落ち着いたタイミングで表示）
+        const applyViewportSize = () => {
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          video.style.width = w + 'px';
+          video.style.height = h + 'px';
+        };
         const showVideo = () => {
           if (video.style.opacity === '1') return;
-          video.style.opacity = '1';
-          video.classList.add('fade-in');
-          setTimeout(() => {
-            video.classList.remove('fade-in');
-          }, 700);
-          video.removeEventListener('loadedmetadata', showVideo);
-          video.removeEventListener('loadeddata', showVideo);
           if (video._showFallbackId) {
             clearTimeout(video._showFallbackId);
             video._showFallbackId = null;
           }
+          applyViewportSize();
+          video.style.opacity = '1';
+          video.classList.remove('fade-in');
+          video.removeEventListener('playing', showVideo);
         };
         video._showHandler = showVideo;
-        video.addEventListener('loadedmetadata', showVideo, { once: true });
-        video.addEventListener('loadeddata', showVideo, { once: true });
-        if (video.readyState >= 1) {
-          showVideo();
-        }
-        video._showFallbackId = setTimeout(showVideo, 800);
+        video._resizeHandler = () => {
+          if (video.style.opacity === '1') applyViewportSize();
+        };
+        video.addEventListener('playing', showVideo, { once: true });
+        window.addEventListener('resize', video._resizeHandler);
+        video._showFallbackId = setTimeout(showVideo, 1200);
 
         // 複数のイベントで再生を試行（フォールバック）
         const playHandler = () => {
@@ -1119,24 +1126,24 @@ function updateHeroMedia(heroMedia) {
         };
         video._playHandler = playHandler;
 
-        // エラーハンドリング
         const errorHandler = (e) => {
           console.error('Video load error:', e, heroMedia.src);
           video.removeEventListener('error', errorHandler);
           video.style.opacity = '1';
+          if (video._showFallbackId) {
+            clearTimeout(video._showFallbackId);
+            video._showFallbackId = null;
+          }
         };
         video._errorHandler = errorHandler;
         video.addEventListener('error', errorHandler);
 
-        // 複数のイベントリスナーを設定（最初に発火したもので再生）
         video.addEventListener('loadeddata', playHandler, { once: true });
         video.addEventListener('canplay', playHandler, { once: true });
         video.addEventListener('canplaythrough', playHandler, { once: true });
 
-        // 動画を読み込む
         video.load();
 
-        // 既に読み込み済みの場合のフォールバック
         if (video.readyState >= 2) {
           attemptPlay();
         }
