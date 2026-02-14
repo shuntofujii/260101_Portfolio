@@ -426,7 +426,7 @@ body.modal-open .context-panel {
   z-index: 140;
   display: flex;
   gap: 1.5rem;
-  padding: 40px 2.5rem; /* top/bottom: 40px, left/right: 2.5rem */
+  padding: 50px 2.5rem; /* top/bottom: 50px, left/right: 2.5rem */
   background: rgba(255, 255, 255, 0);
   backdrop-filter: none;
   border: none;
@@ -1259,9 +1259,16 @@ body.modal-open .modal-overlay {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
   background: #000;
   transition: opacity 0.3s ease;
+}
+
+/* 左右で高さを揃える場合：アイテムは行の高さいっぱいにし、画像は拡大・左右トリミング */
+.mediaGrid[data-equal-height="true"] .mediaItem {
+  min-height: 0;
+  height: 100%;
 }
 
 .mediaGrid .mediaItem:hover img {
@@ -1465,7 +1472,7 @@ body.modal-open .modal-overlay {
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 40px 1.5rem; /* top/bottom: 40px, left/right: 1.5rem */
+    padding: 50px 1.5rem; /* top/bottom: 50px, left/right: 1.5rem */
     gap: 1rem;
     max-width: 100vw;
   }
@@ -1517,7 +1524,7 @@ body.modal-open .modal-overlay {
 
   .project-navigation {
     gap: 0.75rem;
-    padding: 40px 1.25rem; /* top/bottom: 40px, left/right: 1.25rem */
+    padding: 50px 1.25rem; /* top/bottom: 50px, left/right: 1.25rem */
     bottom: 16px;
   }
 
@@ -1563,7 +1570,7 @@ body.modal-open .modal-overlay {
   }
 
   .project-navigation {
-    padding: 40px 1.25rem; /* top/bottom: 40px, left/right: 1.25rem */
+    padding: 50px 1.25rem; /* top/bottom: 50px, left/right: 1.25rem */
   }
 }
 

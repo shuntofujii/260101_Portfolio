@@ -272,47 +272,14 @@
         "initiatives": [
           {
             "title": "Main",
-            "videos": [
-              {
-                "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_m_1.webm"
-              }
-            ],
-            "images": [
-              {
-                "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_p_1.webp"
-              },
-              {
-                "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_p_2.webp"
-              },
-              {
-                "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_p_3.webp"
-              },
-              {
-                "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_p_4.webp"
-              },
-              {
-                "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_p_5.webp"
-              }
-            ]
+            "assetPrefix": "murder",
+            "videos": 1,
+            "images": 5
           },
           {
             "title": "Process",
-            "videos": [
-              {
-                "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_process_m_1.webm"
-              },
-              {
-                "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/murder_process_m_2.webm"
-              }
-            ]
+            "assetPrefix": "murder_process",
+            "videos": 2
           }
         ]
       },
@@ -321,83 +288,14 @@
         "initiatives": [
           {
             "title": "ダダコネおじさん",
-            "videos": [
-              {
-                "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/content_dadakone_m_1.webm"
-              },
-              {
-                "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/content_dadakone_m_2.webm"
-              },
-              {
-                "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/content_dadakone_m_3.webm"
-              }
-            ]
+            "assetPrefix": "content_dadakone",
+            "videos": 3
           },
           {
             "title": "ゾンビに襲われた",
-            "videos": [
-              {
-                "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/content_zombie_m_1.webm"
-              },
-              {
-                "type": "video",
-                "src": "https://assets.shuntofujii.com/deteqle/content_zombie_m_2.webm"
-              }
-            ],
-            "imageGroups": [
-              {
-                "images": [
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_1.webp"
-                  },
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_2.webp"
-                  },
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_3.webp"
-                  },
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_4.webp"
-                  },
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_5.webp"
-                  }
-                ]
-              },
-              {
-                "images": [
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_6.webp"
-                  },
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_7.webp"
-                  },
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_8.webp"
-                  },
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_9.webp"
-                  },
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/deteqle/content_zombie_p_10.webp"
-                  }
-                ]
-              }
-            ]
+            "assetPrefix": "content_zombie",
+            "videos": 2,
+            "imageGroups": [5, 5]
           }
         ]
       },
@@ -406,16 +304,8 @@
         "initiatives": [
           {
             "title": "Main",
-            "images": [
-              {
-                "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/mailish_p_1.webp"
-              },
-              {
-                "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/mailish_p_2.webp"
-              }
-            ]
+            "assetPrefix": "mailish",
+            "images": 2
           }
         ]
       },
@@ -424,16 +314,8 @@
         "initiatives": [
           {
             "title": "Main",
-            "images": [
-              {
-                "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/designsystem_p_1.webp"
-              },
-              {
-                "type": "image",
-                "src": "https://assets.shuntofujii.com/deteqle/designsystem_p_2.webp"
-              }
-            ]
+            "assetPrefix": "designsystem",
+            "images": 2
           }
         ]
       }
@@ -506,26 +388,9 @@
         "initiatives": [
           {
             "title": "Main",
-            "videos": [
-              {
-                "type": "video",
-                "src": "https://assets.shuntofujii.com/sepila/lecture_m_1.webm"
-              }
-            ],
-            "images": [
-              {
-                "type": "image",
-                "src": "https://assets.shuntofujii.com/sepila/lecture_p_1.webp"
-              },
-              {
-                "type": "image",
-                "src": "https://assets.shuntofujii.com/sepila/lecture_p_2.webp"
-              },
-              {
-                "type": "image",
-                "src": "https://assets.shuntofujii.com/sepila/lecture_p_3.webp"
-              }
-            ]
+            "assetPrefix": "lecture",
+            "videos": 1,
+            "images": 3
           }
         ]
       },
@@ -534,46 +399,9 @@
         "initiatives": [
           {
             "title": "Main",
-            "videos": [
-              {
-                "type": "video",
-                "src": "https://assets.shuntofujii.com/sepila/color_m_1.webm"
-              }
-            ],
-            "imageGroups": [
-              {
-                "images": [
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/sepila/color_p_1.webp"
-                  },
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/sepila/color_p_2.webp"
-                  },
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/sepila/color_p_3.webp"
-                  }
-                ]
-              },
-              {
-                "images": [
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/sepila/color_p_4.webp"
-                  },
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/sepila/color_p_5.webp"
-                  },
-                  {
-                    "type": "image",
-                    "src": "https://assets.shuntofujii.com/sepila/color_p_6.webp"
-                  }
-                ]
-              }
-            ]
+            "assetPrefix": "color",
+            "videos": 1,
+            "imageGroups": [3, 3]
           }
         ]
       },
@@ -582,16 +410,8 @@
         "initiatives": [
           {
             "title": "Main",
-            "images": [
-              {
-                "type": "image",
-                "src": "https://assets.shuntofujii.com/sepila/process_p_1.webp"
-              },
-              {
-                "type": "image",
-                "src": "https://assets.shuntofujii.com/sepila/process_p_2.webp"
-              }
-            ]
+            "assetPrefix": "process",
+            "images": 2
           }
         ]
       }

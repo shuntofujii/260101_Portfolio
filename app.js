@@ -1217,26 +1217,21 @@ function resetToInitialState() {
 // ============================================
 const baseAssetsUrl = "https://assets.shuntofujii.com";
 
-// 新しい命名規則: 施策コードネーム_案件コードネーム_動画ならm、画像ならp_通番
-// 案件名がない場合はスキップ
+// 統一命名規則: {prefix}_{mediaType}_{number}.{ext}
+// prefix = initiativeName（caseName なし）または initiativeName_caseName（caseName あり）
+// mediaType: m=動画, p=画像
+function buildAssetPrefix(initiativeName, caseName = null) {
+  return caseName ? `${initiativeName}_${caseName}` : initiativeName;
+}
+
 function buildImageUrl(projectSlug, initiativeName, caseName = null, number = 1) {
-  let filename;
-  if (caseName) {
-    filename = `${initiativeName}_${caseName}_p_${number}.webp`;
-  } else {
-    filename = `${initiativeName}_p_${number}.webp`;
-  }
-  return `${baseAssetsUrl}/${projectSlug}/${filename}`;
+  const prefix = buildAssetPrefix(initiativeName, caseName);
+  return `${baseAssetsUrl}/${projectSlug}/${prefix}_p_${number}.webp`;
 }
 
 function buildVideoUrl(projectSlug, initiativeName, caseName = null, number = 1) {
-  let filename;
-  if (caseName) {
-    filename = `${initiativeName}_${caseName}_m_${number}.webm`;
-  } else {
-    filename = `${initiativeName}_m_${number}.webm`;
-  }
-  return `${baseAssetsUrl}/${projectSlug}/${filename}`;
+  const prefix = buildAssetPrefix(initiativeName, caseName);
+  return `${baseAssetsUrl}/${projectSlug}/${prefix}_m_${number}.webm`;
 }
 
 // ============================================
@@ -1471,15 +1466,22 @@ function createInitiativeCard(initiative, projectSlug, showTitle = true) {
     card.appendChild(head);
   }
 
-  // 動画（hasVideo=trueの場合のみ）
-  if (initiative.hasVideo) {
+  // 動画（videos 本数、または hasVideo: true で 1 本）
+  const videoCount = initiative.videos ?? (initiative.hasVideo ? 1 : 0);
+  if (videoCount > 1) {
+    const videoGrid = createVideoGrid(
+      Array(videoCount).fill({}),
+      projectSlug,
+      initiative.assetPrefix,
+      null
+    );
+    card.appendChild(videoGrid);
+  } else if (videoCount === 1) {
     const videoShell = document.createElement('div');
     videoShell.className = 'video-shell';
 
-    // video要素
     const video = document.createElement('video');
     video.className = 'video';
-    // assetPrefixを施策コードネームとして扱い、案件名は無し
     const videoSrc = buildVideoUrl(projectSlug, initiative.assetPrefix, null, 1);
     video.src = videoSrc;
     video.playsInline = true;
@@ -1540,51 +1542,39 @@ function createInitiativeCard(initiative, projectSlug, showTitle = true) {
     card.appendChild(videoShell);
   }
 
-  // 画像グリッド（images > 0の場合のみ）
-  if (initiative.images > 0) {
-    const grid = document.createElement('div');
-    grid.className = 'mediaGrid';
-    grid.dataset.count = String(initiative.images);
-
-    for (let i = 1; i <= initiative.images; i++) {
-      const item = document.createElement('div');
-      item.className = 'mediaItem';
-      item.setAttribute('role', 'button');
-      item.setAttribute('tabindex', '0');
-      item.setAttribute('aria-label', `Open image ${i} of ${initiative.title}`);
-
-      const img = document.createElement('img');
-      // assetPrefixを施策コードネームとして扱い、案件名は無し
-      const imageUrl = buildImageUrl(projectSlug, initiative.assetPrefix, null, i);
-      img.src = imageUrl;
-      img.loading = 'lazy';
-      img.decoding = 'async';
-      img.alt = '';
-
-      // エラーハンドリング
-      img.addEventListener('error', (e) => {
-        console.warn('Image load error:', imageUrl);
-        item.style.display = 'none';
-      });
-
-      // クリックでライトボックスを開く
-      item.addEventListener('click', () => {
-        openLightbox(imageUrl, item);
-      });
-
-      // キーボードアクセス対応
-      item.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          openLightbox(imageUrl, item);
+  // 画像: imageGroups（複数行）または images（1 グリッド）
+  if (initiative.imageGroups && initiative.imageGroups.length > 0) {
+    let offset = 0;
+    initiative.imageGroups.forEach((count, groupIndex) => {
+      const syntheticImages = Array(count).fill(null);
+      const grid = createImageGrid(
+        syntheticImages,
+        projectSlug,
+        true,
+        initiative.assetPrefix,
+        null,
+        offset
+      );
+      if (grid) {
+        if (groupIndex > 0) {
+          const isMobile = window.matchMedia('(max-width: 768px)').matches;
+          grid.style.marginTop = isMobile ? 'var(--img-gap-sp)' : 'var(--img-gap-pc)';
         }
-      });
-
-      item.appendChild(img);
-      grid.appendChild(item);
-    }
-
-    card.appendChild(grid);
+        card.appendChild(grid);
+      }
+      offset += count;
+    });
+  } else if (initiative.images > 0) {
+    const syntheticImages = Array(initiative.images).fill(null);
+    const grid = createImageGrid(
+      syntheticImages,
+      projectSlug,
+      false,
+      initiative.assetPrefix,
+      null,
+      0
+    );
+    if (grid) card.appendChild(grid);
   }
 
   return card;
@@ -1694,9 +1684,55 @@ function createVideoGrid(videos, projectSlug, initiativeName = null, caseName = 
 }
 
 // ============================================
+// 画像グリッド：同行の高さを揃え、短い方は拡大・左右トリミングで表示
+// ============================================
+function equalizeMediaGridRowHeights(grid) {
+  if (!grid.dataset.equalHeight) return;
+  const items = Array.from(grid.querySelectorAll('.mediaItem'));
+  const visibleItems = items.filter(item => item.style.display !== 'none');
+  if (visibleItems.length === 0) return;
+  const allLoaded = visibleItems.every(item => item.dataset.naturalWidth && item.dataset.naturalHeight);
+  if (!allLoaded) return;
+
+  const count = items.length;
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+  const layout = getImageGridLayout(count, isMobile);
+  const columns = layout.columns || 1;
+  const gap = parseFloat(getComputedStyle(grid).gap) || 0;
+  const gridWidth = grid.offsetWidth;
+  const colWidth = (gridWidth - gap * (columns - 1)) / columns;
+
+  // 各アイテムの行インデックス（2列なら 0,1→行0, 2,3→行1 …）
+  const rowForIndex = [];
+  let row = 0, col = 0;
+  for (let i = 0; i < count; i++) {
+    const span = (layout.spans && layout.spans.find(s => s.index === i)) ? layout.spans.find(s => s.index === i).span : 1;
+    if (col + span > columns && col > 0) { row++; col = 0; }
+    rowForIndex[i] = row;
+    col += span;
+    if (col >= columns) { row++; col = 0; }
+  }
+
+  const rowMaxHeights = [];
+  for (let i = 0; i < count; i++) {
+    if (items[i].style.display === 'none') continue;
+    const r = rowForIndex[i];
+    const w = Number(items[i].dataset.naturalWidth);
+    const h = Number(items[i].dataset.naturalHeight);
+    if (!w || !h) continue;
+    const span = (layout.spans && layout.spans.find(s => s.index === i)) ? layout.spans.find(s => s.index === i).span : 1;
+    const itemWidth = colWidth * span + (span - 1) * gap;
+    const naturalHeight = itemWidth * (h / w);
+    if (rowMaxHeights[r] == null || naturalHeight > rowMaxHeights[r]) rowMaxHeights[r] = naturalHeight;
+  }
+
+  grid.style.gridTemplateRows = rowMaxHeights.map(h => `${Math.round(h)}px`).join(' ');
+}
+
+// ============================================
 // 画像グリッドの作成
 // ============================================
-function createImageGrid(images, projectSlug, forceHorizontal = false, initiativeName = null, caseName = null) {
+function createImageGrid(images, projectSlug, forceHorizontal = false, initiativeName = null, caseName = null, startIndex = 0) {
   if (!images || images.length === 0) return null;
 
   const grid = document.createElement('div');
@@ -1717,6 +1753,10 @@ function createImageGrid(images, projectSlug, forceHorizontal = false, initiativ
     if (layout.columns > 0) {
       grid.style.gridTemplateColumns = `repeat(${layout.columns}, 1fr)`;
     }
+    // 2列以上で複数アイテムがある場合、同行の高さを揃える
+    if (images.length >= 2 && layout.columns >= 2) {
+      grid.dataset.equalHeight = 'true';
+    }
   }
 
   images.forEach((imageData, index) => {
@@ -1735,18 +1775,14 @@ function createImageGrid(images, projectSlug, forceHorizontal = false, initiativ
     }
 
     const img = document.createElement('img');
-    // 新しい命名規則に基づいてURLを生成（initiativeNameが指定されている場合）
-    // ただし、imageDataにsrcプロパティがある場合は、そちらを優先（imageGroupsの場合）
     let imageUrl;
-    if (imageData.src || (typeof imageData === 'string')) {
-      // 既にURLが指定されている場合（imageGroupsなど）は、そのまま使用
+    if (imageData && (imageData.src || typeof imageData === 'string')) {
       imageUrl = imageData.src || imageData;
     } else if (initiativeName) {
-      const number = index + 1;
+      const number = startIndex + index + 1;
       imageUrl = buildImageUrl(projectSlug, initiativeName, caseName, number);
     } else {
-      // 既存のURLを使用（後方互換性）
-      imageUrl = imageData.src || imageData;
+      imageUrl = imageData && imageData.src ? imageData.src : '';
     }
 
     img.src = imageUrl;
@@ -1759,9 +1795,14 @@ function createImageGrid(images, projectSlug, forceHorizontal = false, initiativ
       item.style.display = 'none';
     });
 
-    // メディアのアスペクト比に従って枠の縦幅を決定
     img.addEventListener('load', () => {
-      item.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+      if (grid.dataset.equalHeight) {
+        item.dataset.naturalWidth = String(img.naturalWidth);
+        item.dataset.naturalHeight = String(img.naturalHeight);
+        equalizeMediaGridRowHeights(grid);
+      } else {
+        item.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+      }
     });
 
     // クリックでライトボックスを開く
@@ -1798,50 +1839,11 @@ function createInitiativeSection(initiative, projectSlug, initiativeName = null,
     section.appendChild(heading);
   }
 
-  // IZUMOプロジェクト用：assetPrefix構造（assetPrefix、hasVideo、images数値）を処理
+  // assetPrefix 形式（統一）: 動画・画像を宣言的に指定
   if (initiative.assetPrefix) {
-    // createInitiativeCardを使用してIZUMO構造を処理
-    // createInitiativeSectionで既にtitleを表示している（"Main"以外の場合）ので、
-    // createInitiativeCardでは表示しない
-    // "Main"の場合も表示しない
     const showTitleInCard = false;
     const card = createInitiativeCard(initiative, projectSlug, showTitleInCard);
     section.appendChild(card);
-    return section;
-  }
-
-  // デテクルプロジェクト用：videos配列、images配列構造を処理
-  // 動画（videos配列がある場合）
-  if (initiative.videos && initiative.videos.length > 0) {
-    const videoGrid = createVideoGrid(initiative.videos, projectSlug, initiativeName, caseName);
-    section.appendChild(videoGrid);
-  }
-
-  // 画像（images配列がある場合）
-  if (initiative.images && initiative.images.length > 0) {
-    const imageGrid = createImageGrid(initiative.images, projectSlug, false, initiativeName, caseName);
-    if (imageGrid) {
-      section.appendChild(imageGrid);
-    }
-  }
-
-  // 画像グループ（imageGroups配列がある場合）
-  // imageGroupsの場合は横並びで表示（例外措置）
-  if (initiative.imageGroups && initiative.imageGroups.length > 0) {
-    initiative.imageGroups.forEach((group, groupIndex) => {
-      if (group.images && group.images.length > 0) {
-        const imageGrid = createImageGrid(group.images, projectSlug, true, initiativeName, caseName);
-        if (imageGrid) {
-          // imageGroups同士の間隔を設定（最後のグループ以外）
-          if (groupIndex < initiative.imageGroups.length - 1) {
-            const isMobile = window.matchMedia('(max-width: 768px)').matches;
-            const gap = isMobile ? 'var(--img-gap-sp)' : 'var(--img-gap-pc)';
-            imageGrid.style.marginBottom = gap;
-          }
-          section.appendChild(imageGrid);
-        }
-      }
-    });
   }
 
   return section;
@@ -1860,59 +1862,10 @@ function createCaseSection(caseData, projectSlug) {
   heading.textContent = caseData.title;
   section.appendChild(heading);
 
-  // 施策リスト
+  // 施策リスト（各 initiative は assetPrefix 形式で記述）
   if (caseData.initiatives && caseData.initiatives.length > 0) {
     caseData.initiatives.forEach(initiative => {
-      // 案件名と施策名を取得（タイトルから推測、または明示的に指定）
-      // projects.jsonにinitiativeSlugやcaseSlugがあれば使用、なければタイトルから推測
-      let initiativeName = null;
-      let caseName = null;
-
-      if (initiative.initiativeSlug) {
-        // 明示的に指定されている場合
-        initiativeName = initiative.initiativeSlug;
-        caseName = initiative.caseSlug || null;
-      } else if (projectSlug === 'deteqle') {
-        // デテクルプロジェクト用のマッピング（タイトルから推測）
-        // 案件名と施策名の組み合わせで判断
-        if (caseData.title === 'ARマーダーミステリー（仮称）') {
-          if (initiative.title === 'Main') {
-            initiativeName = 'murder';
-            caseName = null;
-          } else if (initiative.title === 'Process') {
-            initiativeName = 'murder';
-            caseName = 'process';
-          }
-        } else if (caseData.title === 'ARコンテンツ') {
-          if (initiative.title === 'ダダコネおじさん') {
-            initiativeName = 'content';
-            caseName = 'dadakone';
-          } else if (initiative.title === 'ゾンビに襲われた') {
-            initiativeName = 'content';
-            caseName = 'zombie';
-          }
-        } else if (caseData.title === 'Cafe Mai:lish' && initiative.title === 'Main') {
-          initiativeName = 'mailish';
-          caseName = null;
-        } else if (caseData.title === 'Design System' && initiative.title === 'Main') {
-          initiativeName = 'designsystem';
-          caseName = null;
-        }
-      } else if (projectSlug === 'sepila') {
-        // SEPILAプロジェクト用のマッピング（タイトルから推測）
-        if (caseData.title === 'Lecture Video' && initiative.title === 'Main') {
-          initiativeName = 'lecture';
-          caseName = null;
-        } else if (caseData.title === 'Color' && initiative.title === 'Main') {
-          initiativeName = 'color';
-          caseName = null;
-        } else if (caseData.title === 'Process' && initiative.title === 'Main') {
-          initiativeName = 'process';
-          caseName = null;
-        }
-      }
-
-      const initiativeSection = createInitiativeSection(initiative, projectSlug, initiativeName, caseName);
+      const initiativeSection = createInitiativeSection(initiative, projectSlug);
       section.appendChild(initiativeSection);
     });
   }
