@@ -1031,13 +1031,19 @@ function updateHeroMedia(heroMedia) {
       video.style.opacity = '0';
 
       setTimeout(() => {
-        // 既存のイベントリスナーをクリーンアップ
-        const existingListeners = ['loadeddata', 'canplay', 'canplaythrough', 'error'];
+        // 既存のイベントリスナー・タイマーをクリーンアップ
+        if (video._showFallbackId) {
+          clearTimeout(video._showFallbackId);
+          video._showFallbackId = null;
+        }
+        const existingListeners = ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough', 'error'];
         existingListeners.forEach(eventType => {
           video.removeEventListener(eventType, video._playHandler);
+          video.removeEventListener(eventType, video._showHandler);
           video.removeEventListener(eventType, video._errorHandler);
         });
         video._playHandler = null;
+        video._showHandler = null;
         video._errorHandler = null;
 
         video.src = heroMedia.src;
@@ -1049,6 +1055,8 @@ function updateHeroMedia(heroMedia) {
         video.setAttribute('muted', 'true');
         video.setAttribute('playsinline', 'true');
         video.style.display = 'block';
+        // メタデータ読み込みまで非表示にし、スマホでの一瞬のサイズジャンプを防ぐ
+        video.style.opacity = '0';
 
         // 動画が終了したときに再再生（ループのフォールバック）
         const loopHandler = function () {
@@ -1079,6 +1087,29 @@ function updateHeroMedia(heroMedia) {
           }
         };
 
+        // メタデータ読み込み後に表示（スマホで0.9倍→拡大のジャンプを防ぐ）
+        const showVideo = () => {
+          if (video.style.opacity === '1') return;
+          video.style.opacity = '1';
+          video.classList.add('fade-in');
+          setTimeout(() => {
+            video.classList.remove('fade-in');
+          }, 700);
+          video.removeEventListener('loadedmetadata', showVideo);
+          video.removeEventListener('loadeddata', showVideo);
+          if (video._showFallbackId) {
+            clearTimeout(video._showFallbackId);
+            video._showFallbackId = null;
+          }
+        };
+        video._showHandler = showVideo;
+        video.addEventListener('loadedmetadata', showVideo, { once: true });
+        video.addEventListener('loadeddata', showVideo, { once: true });
+        if (video.readyState >= 1) {
+          showVideo();
+        }
+        video._showFallbackId = setTimeout(showVideo, 800);
+
         // 複数のイベントで再生を試行（フォールバック）
         const playHandler = () => {
           attemptPlay();
@@ -1092,6 +1123,7 @@ function updateHeroMedia(heroMedia) {
         const errorHandler = (e) => {
           console.error('Video load error:', e, heroMedia.src);
           video.removeEventListener('error', errorHandler);
+          video.style.opacity = '1';
         };
         video._errorHandler = errorHandler;
         video.addEventListener('error', errorHandler);
@@ -1108,15 +1140,6 @@ function updateHeroMedia(heroMedia) {
         if (video.readyState >= 2) {
           attemptPlay();
         }
-
-        // フェードイン
-        video.style.opacity = '1';
-        video.classList.add('fade-in');
-
-        // アニメーションクラスをリセット
-        setTimeout(() => {
-          video.classList.remove('fade-in');
-        }, 700);
       }, 100);
     };
 

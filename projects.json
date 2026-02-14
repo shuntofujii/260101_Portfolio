@@ -447,10 +447,24 @@
       "src": "https://assets.shuntofujii.com/top/video-08.webm"
     },
     "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-08.webp",
+    "projectSlug": "kujico",
+    "cases": [
+      {
+        "title": "Trailer",
+        "initiatives": [
+          {
+            "title": "Main",
+            "assetPrefix": "trailer",
+            "hasVideo": true,
+            "images": 5
+          }
+        ]
+      }
+    ],
     "gallery": [
       {
         "type": "image",
-        "src": "https://assets.shuntofujii.com/kujico/placeholder-image.jpg",
+        "src": "https://assets.shuntofujii.com/kujico/trailer_p_1.webp",
         "caption": "メインビジュアル"
       }
     ],
