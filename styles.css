@@ -42,9 +42,10 @@
   --z-focus-visual-back: 9;
   --z-modal-back: 90;
   --z-cursor: 100;
+  --z-noise: 120;
   --z-focus-visual: 110;
   --z-panels: 140;
-  --z-guidance: 150;
+  --z-guidance: 115;
   --z-title-bg: 200;
   --z-portfolio-title: 250;
   --z-modal-overlay: 1000;
@@ -520,6 +521,27 @@ body.modal-open .context-panel {
   51%, 100% {
     opacity: 0;
   }
+}
+
+/* ============================================
+   ノイズテクスチャ（3Dカーソルとパネルの間）
+   リッチなノイズ表現レポートに基づく実装：
+   - 第1章: カラーチャンネル別強度（青>緑>赤）で赤系の発色を保持
+   - 第2章: feTurbulence stitchTiles='stitch' でシームレス、color-interpolation-filters='sRGB' でレンダリング一貫性
+   - 第3章: mix-blend-mode overlay で彩度を損なわず粒子感を付与
+   - レイヤーはコンテンツと分離した専用要素でテキスト・シャドウの崩れを防止
+   ============================================ */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-noise);
+  pointer-events: none;
+  opacity: 0.72;
+  mix-blend-mode: overlay;
+  /* SVG: fractalNoise → saturate → componentTransfer(contrast) → matrix(R<G<B) */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.42' numOctaves='4' result='t' stitchTiles='stitch'/%3E%3CfeColorMatrix in='t' type='saturate' values='0' result='gray'/%3E%3CfeComponentTransfer in='gray' result='grain'%3E%3CfeFuncR type='linear' slope='2.8' intercept='-0.7'/%3E%3CfeFuncG type='linear' slope='2.8' intercept='-0.7'/%3E%3CfeFuncB type='linear' slope='2.8' intercept='-0.7'/%3E%3C/feComponentTransfer%3E%3CfeColorMatrix in='grain' type='matrix' values='0.45%200.45%200.45%200%200%200.75%200.75%200.75%200%200%201%201%201%200%200%200%200%200%201%200' result='grainRGB'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' fill='%23fff' filter='url(%23n)' opacity='0.8'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
 }
 
 /* ============================================
