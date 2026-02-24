@@ -32,6 +32,12 @@
   --img-gap-sp: 10px;
   --img-radius: 16px;
 
+  /* レスポンシブ: Safe Area（ノッチ・ホームインジケータ対応） */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
   /* レイヤー順（z-index） */
   --z-focus-visual-back: 9;
   --z-modal-back: 90;
@@ -60,6 +66,45 @@
   transition: border-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
 }
 
+/* スクリーンリーダー・SEO用: 視覚的に非表示だがテキストは残す（クローラー・アクセシビリティ） */
+.visually-hidden,
+.seo-project-list {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.seo-project-list ol {
+  list-style: decimal;
+  padding-left: 1.5em;
+}
+
+/* スキップリンク: キーボードフォーカス時のみ表示 */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  padding: 0.75rem 1.5rem;
+  background: var(--accent-color, #00d9ff);
+  color: #0a0a0a;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: top 0.2s ease;
+}
+.skip-link:focus {
+  top: var(--safe-top, 12px);
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
 /* ============================================
    リセット & ベース
    ============================================ */
@@ -75,7 +120,11 @@ body {
   color: var(--text-primary);
   overflow-x: hidden;
   min-height: 100vh;
+  min-height: calc(100vh - var(--safe-top) - var(--safe-bottom));
   position: relative;
+  /* iOS で入力フォーカス時の自動ズームを防ぐ目安（本文は 16px 以上推奨） */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* ============================================
@@ -83,8 +132,8 @@ body {
    ============================================ */
 .portfolio-title {
   position: fixed;
-  top: 1.5rem;
-  left: 2rem;
+  top: calc(1.5rem + var(--safe-top));
+  left: calc(2rem + var(--safe-left));
   z-index: var(--z-portfolio-title);
   cursor: pointer;
   transition: opacity var(--transition-fast);
@@ -120,13 +169,11 @@ body {
 
 /* レスポンシブ対応（hover-cardクラスが付与されている場合） */
 .context-panel.hover-card {
-  /* タイトルの下に配置（タイトル高さ + 余白を考慮） */
-  top: clamp(calc(1.5rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem));
-  /* タイトルと同じ左位置に揃える */
-  left: clamp(2rem, 2vmin, 2rem);
-  
+  /* タイトルの下に配置（タイトル高さ + 余白を考慮）+ Safe Area */
+  top: calc(clamp(calc(1.5rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem)) + var(--safe-top));
+  left: calc(clamp(2rem, 2vmin, 2rem) + var(--safe-left));
   width: clamp(260px, 34vmin, 520px);
-  max-width: calc(100vw - (clamp(2rem, 2vmin, 2rem) * 2));
+  max-width: calc(100vw - (clamp(2rem, 2vmin, 2rem) * 2) - var(--safe-left) - var(--safe-right));
 }
 
 .context-panel.visible {
@@ -480,25 +527,26 @@ body.modal-open .context-panel {
    ============================================ */
 .project-navigation {
   position: fixed;
-  bottom: 16px;
+  bottom: calc(16px + var(--safe-bottom));
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-panels);
   display: flex;
   gap: 1.5rem;
-  /* 広がるネオンリングが切れないよう上下左右に余裕を持たせる */
-  padding: 58px 3rem; /* top/bottom: リング用の余白を確保, left/right: 同様 */
+  /* 広がるネオンリングが切れないよう上下左右に余裕を持たせる + Safe Area */
+  padding: 58px calc(3rem + var(--safe-right)) 58px calc(3rem + var(--safe-left));
   background: rgba(255, 255, 255, 0);
   backdrop-filter: none;
   border: none;
   border-radius: 0;
   width: auto;
-  max-width: 100vw;
+  max-width: calc(100vw - var(--safe-left) - var(--safe-right));
   overflow-x: auto;
   overflow-y: visible;
   scrollbar-width: none;
   -ms-overflow-style: none;
   transition: opacity var(--transition-medium), transform var(--transition-medium);
+  -webkit-overflow-scrolling: touch;
 }
 
 .project-navigation.modal-background {
@@ -538,6 +586,8 @@ body.modal-open .project-navigation {
   border: none;
   box-sizing: border-box;
   margin: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .project-thumbnail {
@@ -721,7 +771,7 @@ body.modal-open .project-navigation {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(16px, 4vmin, 2rem);
+  padding: calc(clamp(16px, 4vmin, 2rem) + var(--safe-top)) calc(clamp(16px, 4vmin, 2rem) + var(--safe-right)) calc(clamp(16px, 4vmin, 2rem) + var(--safe-bottom)) calc(clamp(16px, 4vmin, 2rem) + var(--safe-left));
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--modal-dur) var(--modal-ease);
@@ -732,17 +782,17 @@ body.modal-open .modal-overlay {
   pointer-events: auto;
 }
 
-/* モーダル幅とブラウザ幅の差が240px確保できない場合、上下paddingを480px（上下各240px）確保 */
+/* モーダル幅とブラウザ幅の差が240px確保できない場合、上下paddingを確保 + Safe Area */
 @media (max-width: 1139px) {
   .modal-overlay {
-    padding-top: max(240px, clamp(16px, 4vmin, 2rem));
-    padding-bottom: max(240px, clamp(16px, 4vmin, 2rem));
-    padding-left: clamp(16px, 4vmin, 2rem);
-    padding-right: clamp(16px, 4vmin, 2rem);
+    padding-top: max(240px, calc(clamp(16px, 4vmin, 2rem) + var(--safe-top)));
+    padding-bottom: max(240px, calc(clamp(16px, 4vmin, 2rem) + var(--safe-bottom)));
+    padding-left: calc(clamp(16px, 4vmin, 2rem) + var(--safe-left));
+    padding-right: calc(clamp(16px, 4vmin, 2rem) + var(--safe-right));
   }
 
   .modal-container {
-    max-height: calc(100vh - 480px);
+    max-height: calc(100vh - 480px - var(--safe-top) - var(--safe-bottom));
   }
 }
 
@@ -754,7 +804,7 @@ body.modal-open .modal-overlay {
   border-radius: 24px;
   max-width: 900px;
   max-height: 90vh;
-  width: min(900px, calc(100vw - 32px));
+  width: min(900px, calc(100vw - 32px - var(--safe-left) - var(--safe-right)));
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -795,10 +845,12 @@ body.modal-open .modal-overlay {
 
 .modal-close {
   position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
+  top: calc(1.5rem + var(--safe-top));
+  right: calc(1.5rem + var(--safe-right));
   width: 40px;
   height: 40px;
+  min-width: 40px;
+  min-height: 40px;
   border-radius: 50%;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
@@ -810,6 +862,7 @@ body.modal-open .modal-overlay {
   align-items: center;
   justify-content: center;
   transition: all var(--transition-fast);
+  touch-action: manipulation;
 }
 
 .modal-close:hover {
@@ -1466,6 +1519,19 @@ body.modal-open .modal-overlay {
   margin-bottom: 0;
 }
 
+/* スマホ: 3本以上は2列に制限（タップしやすさ・視認性） */
+@media (max-width: 768px) {
+  .video-grid[data-count="3"],
+  .video-grid[data-count="4"],
+  .video-grid[data-count="5"] {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .video-grid {
+    gap: var(--img-gap-sp);
+  }
+}
+
 /* PC版 */
 @media (min-width: 900px) {
   .video-grid {
@@ -1474,12 +1540,13 @@ body.modal-open .modal-overlay {
 }
 
 /* ============================================
-   レスポンシブ（スマホ対応）
+   レスポンシブ（タブレット・スマホ）
+   ブレークポイント: 768px, 520px, 480px
    ============================================ */
 @media (max-width: 768px) {
   .portfolio-title {
-    top: 1rem;
-    left: 1rem;
+    top: calc(1rem + var(--safe-top));
+    left: calc(1rem + var(--safe-left));
   }
 
   .portfolio-title-text {
@@ -1487,21 +1554,21 @@ body.modal-open .modal-overlay {
   }
 
   .context-panel {
-    top: 4rem;
-    left: 1rem;
-    max-width: calc(100% - 2rem);
+    top: calc(4rem + var(--safe-top));
+    left: calc(1rem + var(--safe-left));
+    max-width: calc(100% - 2rem - var(--safe-left) - var(--safe-right));
   }
 
-  /* hover-card用のレスポンシブ調整（タイトルの下に配置） */
   .context-panel.hover-card {
-    top: clamp(calc(1rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem));
-    left: 1rem;
-    max-width: calc(100vw - 2rem);
+    top: calc(clamp(calc(1rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem)) + var(--safe-top));
+    left: calc(1rem + var(--safe-left));
+    max-width: calc(100vw - 2rem - var(--safe-left) - var(--safe-right));
   }
 
   .focus-visual {
     width: 100%;
     height: 100vh;
+    height: 100dvh;
     top: 0;
   }
 
@@ -1515,22 +1582,23 @@ body.modal-open .modal-overlay {
   }
 
   .project-navigation {
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 58px 2rem; /* ネオンリング用の余白を確保 */
+    bottom: calc(24px + var(--safe-bottom));
+    padding-left: calc(2rem + var(--safe-left));
+    padding-right: calc(2rem + var(--safe-right));
     gap: 1rem;
-    max-width: 100vw;
+    max-width: calc(100vw - var(--safe-left) - var(--safe-right));
   }
 
   .project-item {
     width: 75px;
     height: 75px;
+    min-width: 75px;
+    min-height: 75px;
   }
 
-
   .modal-container {
-    width: calc(100vw - 2rem);
+    width: calc(100vw - 2rem - var(--safe-left) - var(--safe-right));
+    max-width: calc(100vw - 2rem - var(--safe-left) - var(--safe-right));
     border-radius: 16px;
   }
 
@@ -1551,16 +1619,37 @@ body.modal-open .modal-overlay {
   }
 
   .modal-initiatives {
-    margin-top: 0px;
+    margin-top: 0;
     padding-top: 2rem;
   }
-
 
   .initiative-list {
     gap: 2rem;
   }
+}
 
+@media (max-width: 520px) {
+  .context-panel.hover-card {
+    top: calc(clamp(calc(1rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem)) + var(--safe-top));
+    left: calc(8px + var(--safe-left));
+    width: calc(100vw - 16px - var(--safe-left) - var(--safe-right));
+    max-width: calc(100vw - 16px - var(--safe-left) - var(--safe-right));
+  }
 
+  .hover-card .context-content {
+    --pad-vertical: clamp(10px, 2.4vmin, 14px);
+    --pad-horizontal: clamp(12px, 2.4vmin, 16px);
+  }
+
+  .hover-card .row {
+    grid-template-columns: auto 1fr;
+    column-gap: clamp(3px, 0.4vmin, 5px);
+  }
+
+  .project-navigation {
+    padding-left: calc(1.75rem + var(--safe-left));
+    padding-right: calc(1.75rem + var(--safe-right));
+  }
 }
 
 @media (max-width: 480px) {
@@ -1569,14 +1658,17 @@ body.modal-open .modal-overlay {
   }
 
   .project-navigation {
+    bottom: calc(16px + var(--safe-bottom));
     gap: 0.75rem;
-    padding: 58px 1.75rem; /* ネオンリング用の余白を確保 */
-    bottom: 16px;
+    padding-left: calc(1.75rem + var(--safe-left));
+    padding-right: calc(1.75rem + var(--safe-right));
   }
 
   .project-item {
     width: 65px;
     height: 65px;
+    min-width: 65px;
+    min-height: 65px;
   }
 
   .modal-content {
@@ -1584,47 +1676,20 @@ body.modal-open .modal-overlay {
   }
 
   .modal-close {
-    top: 1rem;
-    right: 1rem;
+    top: calc(1rem + var(--safe-top));
+    right: calc(1rem + var(--safe-right));
     width: 36px;
     height: 36px;
     font-size: 1.3rem;
   }
 }
 
-/* =========================================
-   Hover info panel (top-left) responsive
-   ========================================= */
-
-@media (max-width: 520px) {
-  .hover-card {
-    width: calc(100vw - 16px);
-    max-width: calc(100vw - 16px);
-    /* タイトルの下に配置 */
-    top: clamp(calc(1rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem));
-    left: 8px;
-  }
-  
-  .hover-card .context-content {
-    --pad-vertical: clamp(10px, 2.4vmin, 14px);
-    --pad-horizontal: clamp(12px, 2.4vmin, 16px);
-  }
-  
-  .hover-card .row {
-    grid-template-columns: auto 1fr;
-    column-gap: clamp(3px, 0.4vmin, 5px);
-  }
-
-  .project-navigation {
-    padding: 58px 1.75rem; /* ネオンリング用の余白を確保 */
-  }
-}
-
+/* 大画面: コンテキストパネル幅 */
 @media (min-width: 1200px) {
-  .hover-card {
+  .context-panel.hover-card {
     width: clamp(320px, 28vmin, 560px);
   }
-  
+
   .hover-card .context-content {
     --pad-vertical: clamp(14px, 1.6vmin, 20px);
     --pad-horizontal: clamp(22px, 2.2vmin, 32px);
@@ -1661,7 +1726,7 @@ body.modal-open .modal-overlay {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: calc(2rem + var(--safe-top)) calc(2rem + var(--safe-right)) calc(2rem + var(--safe-bottom)) calc(2rem + var(--safe-left));
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
@@ -1682,10 +1747,12 @@ body.modal-open .modal-overlay {
 
 .lightbox-close {
   position: absolute;
-  top: 2rem;
-  right: 2rem;
+  top: calc(2rem + var(--safe-top));
+  right: calc(2rem + var(--safe-right));
   width: 48px;
   height: 48px;
+  min-width: 48px;
+  min-height: 48px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
@@ -1700,6 +1767,7 @@ body.modal-open .modal-overlay {
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  touch-action: manipulation;
 }
 
 .lightbox-close:hover {
@@ -1736,21 +1804,23 @@ body.modal-open .modal-overlay {
 
 @media (max-width: 768px) {
   .lightbox-overlay {
-    padding: 1rem;
+    padding: calc(1rem + var(--safe-top)) calc(1rem + var(--safe-right)) calc(1rem + var(--safe-bottom)) calc(1rem + var(--safe-left));
   }
 
   .lightbox-close {
-    top: 1rem;
-    right: 1rem;
+    top: calc(1rem + var(--safe-top));
+    right: calc(1rem + var(--safe-right));
     width: 40px;
     height: 40px;
+    min-width: 40px;
+    min-height: 40px;
     font-size: 1.5rem;
   }
 
   .lightbox-image,
   .lightbox-video {
-    max-width: 95vw;
-    max-height: 90vh;
+    max-width: min(95vw, calc(100vw - var(--safe-left) - var(--safe-right) - 2rem));
+    max-height: min(90vh, calc(100dvh - var(--safe-top) - var(--safe-bottom) - 2rem));
     border-radius: 8px;
   }
 }

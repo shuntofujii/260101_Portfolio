@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- サイトを更新・デプロイしたら lastmod を当日の日付（YYYY-MM-DD）に更新してください -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://shuntofujii.com/</loc>
+    <lastmod>2025-02-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

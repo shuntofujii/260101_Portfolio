@@ -1,7 +1,11 @@
 // メディア（画像・動画グリッド、施策カード、動画プレイヤー）
 import { state } from './state.js';
 import { getRefs } from './domRefs.js';
-import { baseAssetsUrl } from './constants.js';
+import { baseAssetsUrl, BREAKPOINT_MOBILE_PX } from './constants.js';
+
+function isMobileViewport() {
+  return window.matchMedia(`(max-width: ${BREAKPOINT_MOBILE_PX}px)`).matches;
+}
 
 // 統一命名規則: {prefix}_{mediaType}_{number}.{ext}
 function buildAssetPrefix(initiativeName, caseName = null) {
@@ -18,7 +22,8 @@ export function buildVideoUrl(projectSlug, initiativeName, caseName = null, numb
   return `${baseAssetsUrl}/${projectSlug}/${prefix}_m_${number}.webm`;
 }
 
-export function getImageGridLayout(count, isMobile) {
+export function getImageGridLayout(count, isMobile = null) {
+  if (isMobile === null) isMobile = isMobileViewport();
   if (isMobile) {
     switch (count) {
       case 2: return { columns: 2, spans: [] };
@@ -54,8 +59,7 @@ export function equalizeMediaGridRowHeights(grid) {
   if (!allLoaded) return;
 
   const count = items.length;
-  const isMobile = window.matchMedia('(max-width: 768px)').matches;
-  const layout = getImageGridLayout(count, isMobile);
+  const layout = getImageGridLayout(count, isMobileViewport());
   const columns = layout.columns || 1;
   const gap = parseFloat(getComputedStyle(grid).gap) || 0;
   const gridWidth = grid.offsetWidth;
@@ -87,7 +91,7 @@ export function equalizeMediaGridRowHeights(grid) {
   grid.style.gridTemplateRows = rowMaxHeights.map(h => `${Math.round(h)}px`).join(' ');
 }
 
-export function createImageGrid(images, projectSlug, forceHorizontal = false, initiativeName = null, caseName = null, startIndex = 0) {
+export function createImageGrid(images, projectSlug, forceHorizontal = false, initiativeName = null, caseName = null, startIndex = 0, optionAltPrefix = '') {
   if (!images || images.length === 0) return null;
 
   const grid = document.createElement('div');
@@ -100,18 +104,22 @@ export function createImageGrid(images, projectSlug, forceHorizontal = false, in
     grid.dataset.forceHorizontal = 'true';
     grid.style.gridTemplateColumns = `repeat(${images.length}, 1fr)`;
   } else {
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    layout = getImageGridLayout(images.length, isMobile);
+    layout = getImageGridLayout(images.length, isMobileViewport());
     if (layout.columns > 0) grid.style.gridTemplateColumns = `repeat(${layout.columns}, 1fr)`;
     if (images.length >= 2 && layout.columns >= 2) grid.dataset.equalHeight = 'true';
   }
 
   images.forEach((imageData, index) => {
+    const position = startIndex + index + 1;
+    const altText = (imageData && imageData.caption)
+      ? String(imageData.caption).trim()
+      : (optionAltPrefix ? `${optionAltPrefix} 画像 ${position}` : `画像 ${position}`);
+
     const item = document.createElement('div');
     item.className = 'mediaItem';
     item.setAttribute('role', 'button');
     item.setAttribute('tabindex', '0');
-    item.setAttribute('aria-label', `Image ${index + 1}`);
+    item.setAttribute('aria-label', altText);
 
     if (!forceHorizontal && layout && layout.spans) {
       const span = layout.spans.find(s => s.index === index);
@@ -132,7 +140,7 @@ export function createImageGrid(images, projectSlug, forceHorizontal = false, in
     img.src = imageUrl;
     img.loading = 'lazy';
     img.decoding = 'async';
-    img.alt = '';
+    img.alt = altText;
 
     img.addEventListener('error', () => {
       console.warn('Image load error:', imageUrl);
@@ -468,12 +476,12 @@ export function createInitiativeCard(initiative, projectSlug, showTitle = true) 
         true,
         initiative.assetPrefix,
         null,
-        offset
+        offset,
+        initiative.title || ''
       );
       if (grid) {
         if (groupIndex > 0) {
-          const isMobile = window.matchMedia('(max-width: 768px)').matches;
-          grid.style.marginTop = isMobile ? 'var(--img-gap-sp)' : 'var(--img-gap-pc)';
+          grid.style.marginTop = isMobileViewport() ? 'var(--img-gap-sp)' : 'var(--img-gap-pc)';
         }
         card.appendChild(grid);
       }
@@ -487,7 +495,8 @@ export function createInitiativeCard(initiative, projectSlug, showTitle = true) 
       false,
       initiative.assetPrefix,
       null,
-      0
+      0,
+      initiative.title || ''
     );
     if (grid) card.appendChild(grid);
   }

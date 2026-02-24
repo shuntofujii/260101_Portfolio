@@ -1,0 +1,5 @@
+# https://shuntofujii.com
+User-agent: *
+Allow: /
+
+Sitemap: https://shuntofujii.com/sitemap.xml

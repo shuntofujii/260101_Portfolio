@@ -1,4 +1,7 @@
 // 定数（時間・z-index・URL・カーソル設定など）
+/** CSS のレスポンシブブレークポイント（スマホ判定）と揃える */
+export const BREAKPOINT_MOBILE_PX = 768;
+
 export const LIGHTBOX_CLOSE_DURATION_MS = 400;
 export const LIGHTBOX_VIDEO_PLAY_DELAY_MS = 500;
 export const VIDEO_UPDATE_FADE_DELAY_MS = 100;

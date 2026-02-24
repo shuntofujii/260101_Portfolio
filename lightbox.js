@@ -203,6 +203,8 @@ export function openLightbox(imageSrc, originElement) {
   }
   if (refs.lightboxImage) refs.lightboxImage.style.display = 'block';
   refs.lightboxImage.src = imageSrc;
+  const originImg = originElement?.querySelector?.('img');
+  refs.lightboxImage.alt = (originImg && originImg.alt) ? originImg.alt : '画像の拡大表示';
   refs.lightboxOverlay.removeAttribute('hidden');
   refs.lightboxOverlay.classList.remove('closing');
 
