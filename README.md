@@ -1,18 +1,31 @@
 # ゲーム UI 風ポートフォリオ
 
-ゲームのキャラクター選択 UI のように、9 つのプロジェクトを選んで体験できるポートフォリオサイトです。
+ゲームのキャラクター選択 UI のように、9 つのプロジェクトを選んで体験できるポートフォリオサイトです。プロジェクトにホバーするとヒーロー動画と概要パネルが表示され、クリックでモーダルが開きます。モーダル内では案件（cases）ごとに画像・動画グリッドを表示でき、画像・動画のクリックでライトボックス表示に対応しています。
 
 ## 📁 ファイル構成
 
 ```
 /260101_Portfolio/
-├── index.html          # メインHTML
-├── styles.css          # スタイルシート
-├── app.js              # JavaScript（状態管理・インタラクション）
-├── projects.json       # プロジェクトデータ（9件）
-├── assets/             # 画像・動画ファイル
+├── index.html          # メインHTML（メタ・OGP・構造化データ・スキップリンク含む）
+├── styles.css          # スタイルシート（CSS変数でテーマ・z-index・Safe Area を集約）
+├── projects.json       # プロジェクトデータ（9件。cases 構造で施策別メディアも管理可）
+├── app.js              # エントリポイント（初期化・ナビ描画・ホバー/クリック処理）
+├── state.js            # 状態管理（currentState, 選択中プロジェクト等）
+├── domRefs.js          # DOM 参照の保持（setRefs / getRefs）
+├── constants.js        # 定数（ブレークポイント・時間・カーソル設定・ベースURL）
+├── utils.js            # ユーティリティ（escapeHtml, フォーカストラップ）
+├── modal.js            # モーダルの開閉・コンテンツ組み立て
+├── lightbox.js         # ライトボックス（画像・動画の拡大表示）
+├── media.js            # メディア表示（画像/動画グリッド、cases 用カード、動画プレイヤー）
+├── cursorEffect.js    # カーソル軌跡エフェクト・アクセント色の時間変化
+├── sitemap.xml         # サイトマップ（SEO・更新時に lastmod を更新推奨）
+├── robots.txt          # クローラー許可と Sitemap 指定
+├── CNAME               # GitHub Pages などでドメイン指定する場合に使用
+├── SEO_RECOMMENDATIONS.md  # SEO 実施内容と運用で推奨すること
 └── README.md           # このファイル
 ```
+
+- **アセット（画像・動画）**: 本リポジトリには `assets/` フォルダは含まれていません。`projects.json` および `constants.js` の `baseAssetsUrl` で指定した外部 URL（例: `https://assets.shuntofujii.com`）から読み込みます。自前で配信する場合は `baseAssetsUrl` と各プロジェクトの `heroMedia.src` / `thumbnail` / cases のアセット命名規則を揃えてください。
 
 ## 🚀 ローカル起動方法
 
@@ -54,78 +67,84 @@ http-server -p 8000
 
 ## 🎨 カスタマイズ
 
-### アクセントカラーの変更
+### アクセントカラー・テーマ
 
-`styles.css` の `:root` セクションで、アクセントカラーを変更できます：
+- **動的なアクセント色**: デフォルトでは `cursorEffect.js` がアクセント色を時間経過で変化させ、`document.documentElement.style.setProperty('--accent-color', color)` で CSS 変数 `--accent-color` を更新します。カーソル軌跡・ホバー時の枠・モーダル閉じるボタンなどがこの色に連動します。
+- **固定色にしたい場合**: `styles.css` の `:root` で `--accent-color` を固定値にし、`app.js` から `initCursorEffect()` の呼び出しを外す、もしくは `cursorEffect.js` 内の色更新処理を無効化してください。
+
+`styles.css` の `:root` では次の変数を変更できます。
 
 ```css
 :root {
-  --accent-color: #00d9ff; /* シアン（デフォルト） */
-  /* --accent-color: #a8ff00; */ /* ライム */
-  /* --accent-color: #ffb800; */ /* アンバー */
-  /* --accent-color: #ff6b9d; */ /* ピンク */
+  --accent-color: #00d9ff;        /* アクセント（カーソルと連動時は JS で上書き） */
+  --bg-gradient-start: #0a0a0f;
+  --bg-gradient-end: #1a1a2e;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --text-muted: #666666;
+  --panel-bg: rgba(255, 255, 255, 0.05);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  /* トランジション・画像グリッド間隔・Safe Area・z-index なども :root で定義 */
 }
 ```
 
-コメントアウトを切り替えて、お好みの色に変更してください。
+### ベースURL（アセット）
+
+画像・動画のベースURLは `constants.js` の `baseAssetsUrl` で指定しています。自サイト用に変更してください。
+
+```js
+export const baseAssetsUrl = 'https://assets.shuntofujii.com';
+```
 
 ## ✅ 差し替えチェックリスト
 
 ### 1. プロジェクトデータ（`projects.json`）
 
-- [ ] 各プロジェクトの `title` を実際のプロジェクト名に変更
-- [ ] `category` を適切なカテゴリに変更（Branding / Motion / Visual など）
-- [ ] `role` を実際の役割に変更
-- [ ] `year` を実際の制作年に変更
+- [ ] 各プロジェクトの `id` / `title` を実際のプロジェクト名に変更
+- [ ] `category` / `role` / `scope` / `year` を実際の内容に変更
 - [ ] `tools` 配列を実際に使用したツールに変更
-- [ ] `tagline` を各プロジェクトのキャッチフレーズに変更
-- [ ] `description` をプロジェクトの説明文に変更
-- [ ] `heroMedia.src` を実際の画像/動画パスに変更
-- [ ] `thumbnail` をサムネイル画像のパスに変更
-- [ ] `gallery` 配列に実際の画像/動画を追加
+- [ ] `tagline` / `description` を各プロジェクトの説明に変更
+- [ ] `heroMedia`（`type`, `src`）をホバー時に表示する動画・画像に変更
+- [ ] `thumbnail` をサムネイル画像の URL に変更
 - [ ] `links` 配列に外部リンク（Behance / YouTube / Web など）を追加
+- [ ] **cases を使う場合**: `projectSlug` と `cases` を追加（後述「アセットルール」参照）。モーダル内に案件・施策ごとの画像・動画グリッドが表示されます。`cases` がないプロジェクトは、モーダルではヘッダー・メタ・説明文・リンクのみ表示されます。
 
-### 2. 画像・動画ファイル（`assets/`）
+### 2. 画像・動画ファイル（アセット）
 
-- [ ] 各プロジェクトのヒーロー画像/動画を配置
-- [ ] 各プロジェクトのサムネイル画像を配置
-- [ ] ギャラリー用の画像/動画を配置
-- [ ] ファイル名が `projects.json` のパスと一致しているか確認
+- [ ] 各プロジェクトのヒーロー用メディア（`heroMedia.src`）を配置
+- [ ] 各プロジェクトのサムネイル（`thumbnail`）を配置
+- [ ] cases を使う場合は、アセット命名規則に従ってファイルを配置し、`projects.json` の `assetPrefix` / `videos` / `images` / `imageGroups` と一致させる
 
-### 3. プロフィール情報（`index.html`）
+### 3. メタ情報・構造化データ（`index.html`）
 
-- [ ] プロフィールアイコン（右下の「P」）のリンク先を設定
-- [ ] コンタクトアイコン（Email / Twitter / Instagram）のリンク先を設定
-  - Email: `mailto:` リンクに変更
-  - Twitter: 実際の Twitter URL に変更
-  - Instagram: 実際の Instagram URL に変更
+- [ ] `<title>` と `meta name="description"` / `meta name="keywords"` を変更
+- [ ] OGP（`og:title`, `og:description`, `og:image`, `og:url` 等）を変更
+- [ ] Twitter 用メタ（`twitter:card`, `twitter:title`, `twitter:image` 等）を変更
+- [ ] `application/ld+json` の ProfilePage / WebPage の名前・説明・`sameAs`（SNS 等）を変更
+- [ ] `link rel="canonical"` を本番 URL に変更
+- [ ] `theme-color` / `favicon` / `apple-touch-icon` を必要に合わせて変更
 
-### 4. メタ情報（`index.html`）
+### 4. デザイン調整（`styles.css`）
 
-- [ ] `<title>` タグの内容を変更
-- [ ] 必要に応じて `<meta>` タグを追加（OGP など）
+- [ ] `:root` の `--accent-color` / `--bg-gradient-*` / `--text-*` 等を好みに合わせて調整
+- [ ] フォントは Google Fonts の Inter を利用。差し替える場合は `index.html` の `link` と `styles.css` の `font-family` を変更
 
-### 5. デザイン調整（`styles.css`）
-
-- [ ] アクセントカラーを決定し、`:root` で設定
-- [ ] フォントサイズや余白を必要に応じて調整
-- [ ] 背景グラデーションを好みに合わせて調整
-
-### 6. 動作確認
+### 5. 動作確認
 
 - [ ] ローカルサーバーで起動できるか確認
-- [ ] 各プロジェクトの hover で ①②③ が正しく切り替わるか確認
-- [ ] 各プロジェクトの click でモーダルが開くか確認
-- [ ] モーダル内の画像/動画が正しく表示されるか確認
+- [ ] プロジェクトにホバーでヒーロー動画・コンテキストパネルが表示されるか確認
+- [ ] プロジェクトをクリックでモーダルが開くか確認
+- [ ] モーダル内の画像・動画が正しく表示され、クリックでライトボックスが開くか確認
 - [ ] 外部リンクが正しく動作するか確認
-- [ ] スマホ表示で問題がないか確認（横スクロール、レイアウト崩れなど）
-- [ ] ESC キーと × ボタンでモーダルが閉じるか確認
+- [ ] ESC キーと × ボタンでモーダル・ライトボックスが閉じるか確認
+- [ ] スキップリンク（フォーカス時）・キーボード操作が期待どおりか確認
+- [ ] スマホ表示で問題がないか確認（Safe Area・横スクロール・レイアウト崩れなど）
 
 ---
 
-## 📦 アセットルール（izumo / deteqle 型プロジェクト）
+## 📦 アセットルール（projectSlug / cases 型プロジェクト）
 
-`projectSlug` を持つプロジェクトは、`cases` 構造で案件・施策ごとにメディアを管理します。
+`projectSlug` と `cases` を持つプロジェクトは、案件・施策ごとにメディアを管理し、モーダル内にセクションとして表示されます。
 
 ### ファイル命名規則（統一ルール）
 
@@ -135,28 +154,31 @@ http-server -p 8000
 
 | 要素 | 説明 |
 |------|------|
-| `prefix` | 施策の識別子。`initiativeName` のみ、または `initiativeName_caseName`（案件を細分する場合） |
+| `prefix` | 施策の識別子。`assetPrefix` の値（単一のときは案件名なし、細分する場合は `initiativeName_caseName` 形式） |
 | `mediaType` | `m` = 動画、`p` = 画像 |
 | `number` | 通番（1 から） |
 | `ext` | 動画 `.webm`、画像 `.webp` |
 
-**案件名なし**（caseName が null）は、`prefix = initiativeName` のみのケースです。
+**例**
 
-**例**  
 - `strategy2024_m_1.webm`, `strategy2024_p_1.webp`（prefix = strategy2024、案件名なし）
-- `murder_process_m_1.webm`, `content_zombie_p_1.webp`（prefix = initiativeName_caseName）
+- `murder_process_m_1.webm`, `content_zombie_p_1.webp`（prefix = initiativeName_caseName 形式）
 
 ### ベースURL
 
+`constants.js` の `baseAssetsUrl` と組み合わせて次の形式です。
+
 ```
-https://assets.shuntofujii.com/{projectSlug}/{filename}
+{baseAssetsUrl}/{projectSlug}/{filename}
 ```
 
-動画のポスター画像は、動画と同じ basename で拡張子を `.webp` にしたファイルを使用します。
+例: `https://assets.shuntofujii.com/izumo/strategy2024_p_1.webp`
 
-### projects.json の記述（統一形式）
+動画のポスター画像は、動画と同じ basename で拡張子を `.webp` にしたファイルを利用します（コード内で `.webm` → `.webp` に置換）。
 
-各施策は `assetPrefix` で prefix を指定し、動画・画像は本数・枚数で宣言します。
+### projects.json の記述（cases / initiatives）
+
+各案件（case）は `title` と `initiatives` 配列を持ち、各 initiative は次のプロパティでメディアを宣言します。
 
 | プロパティ | 説明 |
 |-----------|------|
@@ -166,7 +188,7 @@ https://assets.shuntofujii.com/{projectSlug}/{filename}
 | `images` | 画像の枚数（1 グリッドで表示） |
 | `imageGroups` | 画像を複数行に分ける場合の各グループの枚数（例: `[5, 5]` → 1〜5 枚目と 6〜10 枚目） |
 
-**例 1** 動画 1 本 + 画像 2 枚（従来の IZUMO 形式）
+**例 1** 動画 1 本 + 画像 2 枚
 
 ```json
 {
@@ -208,7 +230,7 @@ https://assets.shuntofujii.com/{projectSlug}/{filename}
 
 - 行の高さは、その行内でいちばん背の高い画像に合わせる。
 - 高さが足りない画像は拡大してセルを埋め、はみ出た部分は**左右をトリミング**（中央基準の `object-fit: cover`）して表示する。
-- **クリック時**は従来どおりライトボックスで**画像全体**が表示される（トリミングされていない状態で見られる）。
+- **クリック時**はライトボックスで**画像全体**が表示される。
 
 ※ 1 列のみのグリッドや、`data-force-horizontal` の横並びグループには適用されません。
 
@@ -218,13 +240,13 @@ https://assets.shuntofujii.com/{projectSlug}/{filename}
 
 ### 画像が表示されない
 
-- ファイルパスが正しいか確認（`assets/` ディレクトリ内にファイルがあるか）
+- ファイルパスが正しいか確認（`baseAssetsUrl` + `projectSlug` + ファイル名の組み合わせ）
 - ファイル名の大文字小文字が一致しているか確認
 - ブラウザのコンソールでエラーを確認
 
 ### 動画が再生されない
 
-- MP4 形式であることを確認
+- ヒーロー用は `.webm` を推奨。モーダル内インライン動画も `.webm` + ポスター `.webp` を想定
 - ファイルサイズが大きすぎないか確認
 - ブラウザが対応しているコーデックか確認
 
@@ -238,12 +260,23 @@ https://assets.shuntofujii.com/{projectSlug}/{filename}
 - ブラウザのコンソールでエラーを確認
 - `projects.json` が正しく読み込まれているか確認
 
+### カーソルエフェクトが動かない
+
+- `cursorEffect.js` は WebGL（Three.js 相当の処理）を使用。非対応環境ではエラーになる可能性があります。その場合は `app.js` の `initCursorEffect()` を呼ばないようにすると、アクセント色は CSS の `--accent-color` のみで表示されます。
+
+---
+
 ## 📝 技術仕様
 
 - **フレームワーク**: なし（Vanilla HTML/CSS/JS）
-- **外部ライブラリ**: Google Fonts（Inter）のみ
-- **対応ブラウザ**: モダンブラウザ（Chrome, Firefox, Safari, Edge）
-- **レスポンシブ**: 対応（スマホ・タブレット・PC）
+- **モジュール**: ES Modules（`<script type="module" src="app.js" defer>`）
+- **外部リソース**: Google Fonts（Inter）、アセットは `baseAssetsUrl` で指定したドメインから読み込み
+- **対応ブラウザ**: モダンブラウザ（Chrome, Firefox, Safari, Edge）。ES Modules 対応環境を想定
+- **レスポンシブ**: 対応（スマホ・タブレット・PC）。Safe Area（ノッチ・ホームインジケータ）を CSS 変数で考慮
+- **アクセシビリティ**: スキップリンク、`aria-label`（ナビ・ダイアログ・ライトボックス）、モーダル/ライトボックス内のフォーカストラップ、ESC で閉じる
+- **SEO**: `robots.txt`、`sitemap.xml`、メタタグ（OGP・Twitter）、構造化データ（ProfilePage / WebPage + ItemList）、視覚非表示の実績一覧テキスト。詳細は `SEO_RECOMMENDATIONS.md` を参照
+
+---
 
 ## 📄 ライセンス
 
@@ -251,5 +284,3 @@ https://assets.shuntofujii.com/{projectSlug}/{filename}
 
 **出典の保持**  
 本リポジトリのコード（HTML / JS / CSS）には、テンプレート元の出典表記（https://shuntofujii.com/）がコメントとして含まれています。二次利用・改変の際も、ライセンスおよび出典の明示のため、これらの表記は残してください。
-
-
