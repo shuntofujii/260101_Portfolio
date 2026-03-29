@@ -127,6 +127,10 @@ export function createImageGrid(images, projectSlug, forceHorizontal = false, in
       if (span) item.style.gridColumn = `span ${span.span}`;
     }
 
+    if (!grid.dataset.equalHeight) {
+      item.style.aspectRatio = '16 / 9';
+    }
+
     const img = document.createElement('img');
     let imageUrl;
     if (imageData && (imageData.src || typeof imageData === 'string')) {

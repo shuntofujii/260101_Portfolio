@@ -9,7 +9,14 @@ import {
   VIDEO_UPDATE_FADE_DELAY_MS,
   VIDEO_SHOW_FALLBACK_MS,
   baseAssetsUrl,
-  OPENING_SOON_PROJECT_ID
+  OPENING_SOON_PROJECT_ID,
+  BREAKPOINT_MOBILE_PX,
+  VIDEO_PRELOAD_LINK_MAX_MOBILE,
+  VIDEO_PRELOAD_LINK_MAX_DESKTOP,
+  HERO_VIDEO_PREFETCH_COUNT_MOBILE,
+  HERO_VIDEO_PREFETCH_COUNT_DESKTOP,
+  PROJECT_THUMBNAIL_SIZE_PX,
+  THUMBNAIL_FETCH_PRIORITY_COUNT
 } from './constants.js';
 import { escapeHtml } from './utils.js';
 import { initCursorEffect } from './cursorEffect.js';
@@ -62,6 +69,35 @@ setRefs({
 
 const refs = getRefs();
 
+function isMobileViewport() {
+  return window.matchMedia(`(max-width: ${BREAKPOINT_MOBILE_PX}px)`).matches;
+}
+
+/**
+ * モバイルでは初回の帯域を画像 LCP に譲り、操作後にバックグラウンドで動画を順次温める
+ */
+function scheduleVideoPreloadAfterInteraction(allVideoUrls, heroVideoUrls) {
+  const start = () => {
+    scheduleIdleVideoPreload(allVideoUrls, heroVideoUrls);
+  };
+  const opts = { once: true, passive: true };
+  window.addEventListener('pointerdown', start, opts);
+  window.addEventListener('keydown', start, opts);
+}
+
+function scheduleCursorEffectInit() {
+  if (!isMobileViewport()) {
+    return initCursorEffect();
+  }
+  const run = () => initCursorEffect();
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(() => run(), { timeout: 2800 });
+  } else {
+    setTimeout(run, 200);
+  }
+  return Promise.resolve();
+}
+
 // ============================================
 // 初期化
 // ============================================
@@ -74,16 +110,25 @@ async function init() {
     state.projects = await response.json();
 
     const { all: allVideoUrls, hero: heroVideoUrls } = collectProjectVideoUrls(state.projects);
-    injectVideoLinkPreloads(heroVideoUrls, 10);
-    heroVideoUrls.slice(0, 3).forEach((u) => {
+    const mobile = isMobileViewport();
+    const linkMax = mobile ? VIDEO_PRELOAD_LINK_MAX_MOBILE : VIDEO_PRELOAD_LINK_MAX_DESKTOP;
+    const heroPrefetchN = mobile ? HERO_VIDEO_PREFETCH_COUNT_MOBILE : HERO_VIDEO_PREFETCH_COUNT_DESKTOP;
+
+    injectVideoLinkPreloads(heroVideoUrls, linkMax);
+    heroVideoUrls.slice(0, heroPrefetchN).forEach((u) => {
       ensureVideoPlayUrl(u).catch(() => {});
     });
-    scheduleIdleVideoPreload(allVideoUrls, heroVideoUrls);
+
+    if (mobile) {
+      scheduleVideoPreloadAfterInteraction(allVideoUrls, heroVideoUrls);
+    } else {
+      scheduleIdleVideoPreload(allVideoUrls, heroVideoUrls);
+    }
 
     renderInitialState();
     renderProjectNavigation();
     setupEventListeners();
-    await initCursorEffect();
+    await scheduleCursorEffectInit();
   } catch (error) {
     console.error('Error loading projects:', error);
     showErrorState();
@@ -129,6 +174,14 @@ function renderProjectNavigation() {
     thumbnail.className = 'project-thumbnail';
     thumbnail.src = project.thumbnail || `${baseAssetsUrl}/top/placeholder-image.jpg`;
     thumbnail.alt = project.title;
+    thumbnail.width = PROJECT_THUMBNAIL_SIZE_PX;
+    thumbnail.height = PROJECT_THUMBNAIL_SIZE_PX;
+    thumbnail.decoding = 'async';
+    if (index < THUMBNAIL_FETCH_PRIORITY_COUNT) {
+      thumbnail.fetchPriority = 'high';
+    } else {
+      thumbnail.loading = 'lazy';
+    }
     thumbnail.onerror = function () {
       this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23333" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="%23999" font-size="12"%3E' + project.title.substring(0, 2) + '%3C/text%3E%3C/svg%3E';
     };
@@ -480,7 +533,7 @@ function updateContextPanel(project) {
         </div>
         ${safeTools ? `
         <div class="context-info-item row">
-          <img src="https://assets.shuntofujii.com/icons/toolkits.svg" alt="Toolkits" class="toolkit-icon" />
+          <img src="https://assets.shuntofujii.com/icons/toolkits.svg" alt="Toolkits" class="toolkit-icon" width="14" height="14" decoding="async" loading="lazy" />
           <span class="context-info-value value">${safeTools}</span>
         </div>
         ` : ''}

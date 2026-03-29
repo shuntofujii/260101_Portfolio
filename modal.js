@@ -30,14 +30,14 @@ export function openModal(project, triggerElement) {
       ${safeTagline ? `<p class="modal-tagline">${safeTagline}</p>` : ''}
       <div class="modal-meta">
         <div class="modal-meta-item">
-          <img src="https://assets.shuntofujii.com/icons/domain.svg" alt="Domain" class="modal-meta-icon" />
+          <img src="https://assets.shuntofujii.com/icons/domain.svg" alt="Domain" class="modal-meta-icon" width="18" height="18" decoding="async" loading="lazy" />
           <div class="modal-meta-content">
             <span class="modal-meta-label">Domain</span>
             <span class="modal-meta-value">${safeCategory}</span>
           </div>
         </div>
         <div class="modal-meta-item">
-          <img src="https://assets.shuntofujii.com/icons/year.svg" alt="Year" class="modal-meta-icon" />
+          <img src="https://assets.shuntofujii.com/icons/year.svg" alt="Year" class="modal-meta-icon" width="18" height="18" decoding="async" loading="lazy" />
           <div class="modal-meta-content">
             <span class="modal-meta-label">Year</span>
             <span class="modal-meta-value">${safeYear}</span>
@@ -45,7 +45,7 @@ export function openModal(project, triggerElement) {
         </div>
         ${safeFocusValue ? `
         <div class="modal-meta-item">
-          <img src="https://assets.shuntofujii.com/icons/focus.svg" alt="Focus" class="modal-meta-icon" />
+          <img src="https://assets.shuntofujii.com/icons/focus.svg" alt="Focus" class="modal-meta-icon" width="18" height="18" decoding="async" loading="lazy" />
           <div class="modal-meta-content">
             <span class="modal-meta-label">Focus</span>
             <span class="modal-meta-value">${safeFocusValue}</span>
@@ -54,7 +54,7 @@ export function openModal(project, triggerElement) {
         ` : ''}
         ${safeToolsStr ? `
         <div class="modal-meta-item">
-          <img src="https://assets.shuntofujii.com/icons/toolkits.svg" alt="Toolkits" class="modal-meta-icon" />
+          <img src="https://assets.shuntofujii.com/icons/toolkits.svg" alt="Toolkits" class="modal-meta-icon" width="18" height="18" decoding="async" loading="lazy" />
           <div class="modal-meta-content">
             <span class="modal-meta-label">Toolkits</span>
             <span class="modal-meta-value">${safeToolsStr}</span>

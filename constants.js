@@ -31,3 +31,17 @@ export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 
 /** コンテキストパネルで「Opening Soon」を付与するプロジェクト id（projects.json の id と一致） */
 export const OPENING_SOON_PROJECT_ID = 'project-08';
+
+/** 動画 `<link rel="preload">` の上限（モバイルは帯域を LCP 向けに譲る） */
+export const VIDEO_PRELOAD_LINK_MAX_MOBILE = 1;
+export const VIDEO_PRELOAD_LINK_MAX_DESKTOP = 5;
+
+/** 起動時に Blob 取得で先に温めるヒーロー動画本数 */
+export const HERO_VIDEO_PREFETCH_COUNT_MOBILE = 1;
+export const HERO_VIDEO_PREFETCH_COUNT_DESKTOP = 3;
+
+/** `.project-item` / `.project-thumbnail` の表示サイズ（CLS 用 width/height と一致） */
+export const PROJECT_THUMBNAIL_SIZE_PX = 90;
+
+/** 優先読み込みするサムネイル数（残りは lazy） */
+export const THUMBNAIL_FETCH_PRIORITY_COUNT = 2;
