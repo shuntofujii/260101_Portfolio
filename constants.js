@@ -15,10 +15,19 @@ export const CURSOR_CONFIG = {
   shaderPoints: 16,
   curvePoints: 80,
   curveLerp: 0.5,
+  /** サムネイル上では追従を強めて尻尾を短く（0〜1、大きいほど短い） */
+  curveLerpOnThumbnail: 1,
   radius1: 3,
   radius2: 5,
   sleepTimeCoefX: 1.0,
   sleepTimeCoefY: 1.0,
+  /** .project-item の矩形に足す余白（0 なら拡大前レイアウト枠ぴったり） */
+  thumbnailOverlapPadPx: 0,
+  /** 重なり時の不透明度を 0/1 に近づける補間係数（毎フレーム） */
+  thumbnailOpacityLerp: 0.22,
 };
 
 export const baseAssetsUrl = 'https://assets.shuntofujii.com';
+
+/** コンテキストパネルで「Opening Soon」を付与するプロジェクト id（projects.json の id と一致） */
+export const OPENING_SOON_PROJECT_ID = 'project-08';

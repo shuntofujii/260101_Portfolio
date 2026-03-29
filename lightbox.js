@@ -3,6 +3,7 @@ import { state } from './state.js';
 import { getRefs } from './domRefs.js';
 import { createFocusTrap } from './utils.js';
 import { LIGHTBOX_CLOSE_DURATION_MS, LIGHTBOX_VIDEO_PLAY_DELAY_MS } from './constants.js';
+import { ensureVideoPlayUrl } from './videoCache.js';
 
 function finishLightboxClose(mediaType) {
   const refs = getRefs();
@@ -10,6 +11,7 @@ function finishLightboxClose(mediaType) {
   refs.lightboxOverlay.classList.remove('closing');
   if (mediaType === 'video' && refs.lightboxVideo) {
     refs.lightboxVideo.src = '';
+    refs.lightboxVideo.removeAttribute('data-lightbox-canonical-src');
     refs.lightboxVideo.style.display = 'none';
     refs.lightboxVideo.style.position = '';
     refs.lightboxVideo.style.left = '';
@@ -109,7 +111,8 @@ export function openLightboxVideo(videoSrc, originElement) {
 
   if (refs.lightboxImage) refs.lightboxImage.style.display = 'none';
   refs.lightboxVideo.style.display = 'block';
-  refs.lightboxVideo.src = videoSrc;
+  refs.lightboxVideo.removeAttribute('src');
+  refs.lightboxVideo.dataset.lightboxCanonicalSrc = videoSrc;
   refs.lightboxVideo.muted = true;
   refs.lightboxVideo.playsInline = true;
   refs.lightboxVideo.setAttribute('playsinline', 'true');
@@ -173,8 +176,16 @@ export function openLightboxVideo(videoSrc, originElement) {
       refs.lightboxVideo.style.transition = 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
     }
   };
-  refs.lightboxVideo.addEventListener('loadedmetadata', handleVideoLoad, { once: true });
-  if (refs.lightboxVideo.readyState >= 1) handleVideoLoad();
+
+  const applySrc = (playUrl) => {
+    if (state.lightboxType !== 'video') return;
+    if (refs.lightboxVideo.dataset.lightboxCanonicalSrc !== videoSrc) return;
+    refs.lightboxVideo.src = playUrl;
+    refs.lightboxVideo.addEventListener('loadedmetadata', handleVideoLoad, { once: true });
+    if (refs.lightboxVideo.readyState >= 1) handleVideoLoad();
+  };
+
+  ensureVideoPlayUrl(videoSrc).then(applySrc);
 }
 
 export function openLightbox(imageSrc, originElement) {
@@ -200,6 +211,7 @@ export function openLightbox(imageSrc, originElement) {
     refs.lightboxVideo.style.display = 'none';
     refs.lightboxVideo.pause();
     refs.lightboxVideo.src = '';
+    refs.lightboxVideo.removeAttribute('data-lightbox-canonical-src');
   }
   if (refs.lightboxImage) refs.lightboxImage.style.display = 'block';
   refs.lightboxImage.src = imageSrc;

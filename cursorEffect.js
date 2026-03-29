@@ -122,7 +122,8 @@ function createCustomCursorEffect(THREE, initialColor) {
       uRatio: { value: uRatio },
       uSize: { value: uSize },
       uPoints: { value: uPointsUniform },
-      uColor: { value: colorVec }
+      uColor: { value: colorVec },
+      uOpacity: { value: 1 }
     },
     defines: { SHADER_POINTS: config.shaderPoints },
     vertexShader: `
@@ -176,6 +177,7 @@ function createCustomCursorEffect(THREE, initialColor) {
       uniform vec2 uSize;
       uniform vec2 uPoints[SHADER_POINTS];
       uniform vec3 uColor;
+      uniform float uOpacity;
       varying vec2 vUv;
       void main() {
         float intensity = 1.0;
@@ -195,7 +197,7 @@ function createCustomCursorEffect(THREE, initialColor) {
         col += glow * uColor;
         col = 1.0 - exp(-col);
         col = pow(col, vec3(0.4545));
-        gl_FragColor = vec4(col, 1.0);
+        gl_FragColor = vec4(col, uOpacity);
       }
     `,
     transparent: true,
@@ -220,6 +222,11 @@ function createCustomCursorEffect(THREE, initialColor) {
   const SLEEP_RADIUS_FONT_MULTIPLIER = 12;
   let currentSleepRadiusX = 150;
   let currentSleepRadiusY = 150;
+
+  /** サムネイルと軌跡が重なるとき 0 に近づける（シェーダ uOpacity） */
+  let trailOverlapOpacity = 1;
+  /** 直前フレームでポインタがサムネ上だったか（退出時に履歴をリセットする） */
+  let wasPointerOverThumb = false;
 
   const detectTouchDevice = () => { isTouchDevice = true; };
 
@@ -305,12 +312,48 @@ function createCustomCursorEffect(THREE, initialColor) {
     state.cursorAnimationFrameId = requestAnimationFrame(animate);
     const time = clock.getElapsedTime();
 
-    if (isMouseActive) {
-      mouse.lerp(target, config.curveLerp);
-      for (let i = config.curvePoints - 1; i > 0; i--) {
-        curvePoints[i].lerp(curvePoints[i - 1], config.curveLerp);
+    const canvasRect = renderer.domElement.getBoundingClientRect();
+    const pad = config.thumbnailOverlapPadPx;
+    // .project-item は拡大前のレイアウト枠（90px 等）。img の scale は rect に乗らない
+    const thumbNodes = document.querySelectorAll('.project-item');
+    const rects = [];
+    for (let i = 0; i < thumbNodes.length; i++) {
+      rects.push(thumbNodes[i].getBoundingClientRect());
+    }
+    let pointerOverThumb = false;
+    if (rects.length > 0) {
+      const head = isMouseActive ? target : curvePoints[0];
+      const cx = canvasRect.left + ((head.x + 1) / 2) * canvasRect.width;
+      const cy = canvasRect.top + ((1 - head.y) / 2) * canvasRect.height;
+      for (let j = 0; j < rects.length && !pointerOverThumb; j++) {
+        const r = rects[j];
+        if (r.width <= 0 || r.height <= 0) continue;
+        if (
+          cx >= r.left - pad &&
+          cx <= r.right + pad &&
+          cy >= r.top - pad &&
+          cy <= r.bottom + pad
+        ) {
+          pointerOverThumb = true;
+        }
       }
-      curvePoints[0].copy(mouse);
+    }
+    const curveLerpNow = pointerOverThumb ? config.curveLerpOnThumbnail : config.curveLerp;
+
+    if (isMouseActive) {
+      if (pointerOverThumb) {
+        // サムネ上: 追従しない（mouse / curvePoints は更新しない）
+      } else if (wasPointerOverThumb) {
+        // サムネから出た直後: 履歴を捨て、表示開始位置を現在のポインタにそろえる
+        mouse.copy(target);
+        for (let i = 0; i < config.curvePoints; i++) curvePoints[i].copy(target);
+      } else {
+        mouse.lerp(target, config.curveLerp);
+        for (let i = config.curvePoints - 1; i > 0; i--) {
+          curvePoints[i].lerp(curvePoints[i - 1], config.curveLerp);
+        }
+        curvePoints[0].copy(mouse);
+      }
     } else {
       const wWidth = window.innerWidth;
       const wHeight = window.innerHeight;
@@ -342,7 +385,7 @@ function createCustomCursorEffect(THREE, initialColor) {
       const y = -V / (wHeight / 2);
 
       for (let i = config.curvePoints - 1; i > 0; i--) {
-        curvePoints[i].lerp(curvePoints[i - 1], config.curveLerp);
+        curvePoints[i].lerp(curvePoints[i - 1], curveLerpNow);
       }
       curvePoints[0].set(x, y);
     }
@@ -374,6 +417,16 @@ function createCustomCursorEffect(THREE, initialColor) {
       }
       material.uniforms.uPoints.needsUpdate = true;
     }
+
+    const targetOpacity = pointerOverThumb ? 0 : 1;
+    if (wasPointerOverThumb && !pointerOverThumb) trailOverlapOpacity = 1;
+    const lerpK = config.thumbnailOpacityLerp;
+    trailOverlapOpacity += (targetOpacity - trailOverlapOpacity) * lerpK;
+    if (Math.abs(trailOverlapOpacity - targetOpacity) < 0.002) trailOverlapOpacity = targetOpacity;
+    material.uniforms.uOpacity.value = trailOverlapOpacity;
+
+    wasPointerOverThumb = pointerOverThumb;
+
     renderer.render(scene, camera);
   }
   animate();

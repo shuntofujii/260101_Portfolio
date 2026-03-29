@@ -2,6 +2,7 @@
 import { state } from './state.js';
 import { getRefs } from './domRefs.js';
 import { baseAssetsUrl, BREAKPOINT_MOBILE_PX } from './constants.js';
+import { attachVideoElement } from './videoCache.js';
 
 function isMobileViewport() {
   return window.matchMedia(`(max-width: ${BREAKPOINT_MOBILE_PX}px)`).matches;
@@ -12,7 +13,7 @@ function buildAssetPrefix(initiativeName, caseName = null) {
   return caseName ? `${initiativeName}_${caseName}` : initiativeName;
 }
 
-export function buildImageUrl(projectSlug, initiativeName, caseName = null, number = 1) {
+function buildImageUrl(projectSlug, initiativeName, caseName = null, number = 1) {
   const prefix = buildAssetPrefix(initiativeName, caseName);
   return `${baseAssetsUrl}/${projectSlug}/${prefix}_p_${number}.webp`;
 }
@@ -22,7 +23,7 @@ export function buildVideoUrl(projectSlug, initiativeName, caseName = null, numb
   return `${baseAssetsUrl}/${projectSlug}/${prefix}_m_${number}.webm`;
 }
 
-export function getImageGridLayout(count, isMobile = null) {
+function getImageGridLayout(count, isMobile = null) {
   if (isMobile === null) isMobile = isMobileViewport();
   if (isMobile) {
     switch (count) {
@@ -50,7 +51,7 @@ export function getImageGridLayout(count, isMobile = null) {
   }
 }
 
-export function equalizeMediaGridRowHeights(grid) {
+function equalizeMediaGridRowHeights(grid) {
   if (!grid.dataset.equalHeight) return;
   const items = Array.from(grid.querySelectorAll('.mediaItem'));
   const visibleItems = items.filter(item => item.style.display !== 'none');
@@ -251,7 +252,8 @@ export function initVideoPlayer(videoShell) {
 
   function openLightboxVideo() {
     const refs = getRefs();
-    if (typeof refs.openLightboxVideo === 'function') refs.openLightboxVideo(video.src, videoShell);
+    const src = video.dataset.canonicalVideoSrc || video.src;
+    if (typeof refs.openLightboxVideo === 'function') refs.openLightboxVideo(src, videoShell);
   }
 
   function togglePlay() {
@@ -303,87 +305,89 @@ export function initVideoPlayer(videoShell) {
   updateMuteButton();
 }
 
+/** モーダル内インライン動画: ポスター・アスペクト比・コントロールを含むシェルを1つ生成 */
+function createInteractiveVideoShell(canonicalSrc, posterOverride = null) {
+  const posterUrl = posterOverride ?? canonicalSrc.replace(/\.webm$/, '.webp');
+  const videoShell = document.createElement('div');
+  videoShell.className = 'video-shell';
+
+  const video = document.createElement('video');
+  video.className = 'video';
+  video.playsInline = true;
+  video.setAttribute('playsinline', 'true');
+  video.setAttribute('webkit-playsinline', 'true');
+  video.preload = 'metadata';
+  video.poster = posterUrl;
+  attachVideoElement(video, canonicalSrc);
+  video.muted = true;
+  video.loop = true;
+  video.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
+  video.setAttribute('disablepictureinpicture', 'true');
+
+  const posterImg = new Image();
+  posterImg.onload = () => {
+    videoShell.style.aspectRatio = `${posterImg.naturalWidth} / ${posterImg.naturalHeight}`;
+  };
+  posterImg.onerror = () => {
+    video.addEventListener('loadedmetadata', () => {
+      if (video.videoWidth && video.videoHeight) {
+        videoShell.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+      }
+    }, { once: true });
+  };
+  posterImg.src = posterUrl;
+
+  const overlayPlay = document.createElement('button');
+  overlayPlay.className = 'video-overlay-play';
+  overlayPlay.type = 'button';
+  overlayPlay.setAttribute('aria-label', 'Play');
+  const playIcon = document.createElement('span');
+  playIcon.className = 'icon-play';
+  overlayPlay.appendChild(playIcon);
+
+  const controls = document.createElement('div');
+  controls.className = 'video-controls';
+  const playPauseBtn = document.createElement('button');
+  playPauseBtn.className = 'btn-playpause';
+  playPauseBtn.type = 'button';
+  playPauseBtn.setAttribute('aria-label', 'Play');
+  const seekBar = document.createElement('input');
+  seekBar.className = 'seek';
+  seekBar.type = 'range';
+  seekBar.min = '0';
+  seekBar.max = '100';
+  seekBar.value = '0';
+  seekBar.setAttribute('aria-label', 'Seek');
+  const muteBtn = document.createElement('button');
+  muteBtn.className = 'btn-mute';
+  muteBtn.type = 'button';
+  muteBtn.setAttribute('aria-label', 'Mute');
+  controls.appendChild(playPauseBtn);
+  controls.appendChild(seekBar);
+  controls.appendChild(muteBtn);
+
+  videoShell.appendChild(video);
+  videoShell.appendChild(overlayPlay);
+  videoShell.appendChild(controls);
+  initVideoPlayer(videoShell);
+  return videoShell;
+}
+
 export function createVideoGrid(videos, projectSlug, initiativeName = null, caseName = null) {
   const grid = document.createElement('div');
   grid.className = 'video-grid';
   grid.dataset.count = String(videos.length);
 
   videos.forEach((videoData, index) => {
-    const videoShell = document.createElement('div');
-    videoShell.className = 'video-shell';
-
-    const video = document.createElement('video');
-    video.className = 'video';
-
-    let videoSrc, posterUrl;
+    let canonicalSrc;
+    let posterOverride = null;
     if (initiativeName) {
-      const number = index + 1;
-      videoSrc = buildVideoUrl(projectSlug, initiativeName, caseName, number);
-      posterUrl = videoSrc.replace(/\.webm$/, '.webp');
+      canonicalSrc = buildVideoUrl(projectSlug, initiativeName, caseName, index + 1);
     } else {
-      videoSrc = videoData.src;
-      posterUrl = (videoData.src || '').replace(/\.webm$/, '.webp');
+      canonicalSrc = videoData.src;
+      posterOverride = (videoData.src || '').replace(/\.webm$/, '.webp');
     }
-
-    video.src = videoSrc;
-    video.playsInline = true;
-    video.setAttribute('playsinline', 'true');
-    video.setAttribute('webkit-playsinline', 'true');
-    video.preload = 'metadata';
-    video.poster = posterUrl;
-    video.muted = true;
-    video.loop = true;
-    video.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
-    video.setAttribute('disablepictureinpicture', 'true');
-
-    const posterImg = new Image();
-    posterImg.onload = () => {
-      videoShell.style.aspectRatio = `${posterImg.naturalWidth} / ${posterImg.naturalHeight}`;
-    };
-    posterImg.onerror = () => {
-      video.addEventListener('loadedmetadata', () => {
-        if (video.videoWidth && video.videoHeight) {
-          videoShell.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
-        }
-      }, { once: true });
-    };
-    posterImg.src = posterUrl;
-
-    const overlayPlay = document.createElement('button');
-    overlayPlay.className = 'video-overlay-play';
-    overlayPlay.type = 'button';
-    overlayPlay.setAttribute('aria-label', 'Play');
-    const playIcon = document.createElement('span');
-    playIcon.className = 'icon-play';
-    overlayPlay.appendChild(playIcon);
-
-    const controls = document.createElement('div');
-    controls.className = 'video-controls';
-    const playPauseBtn = document.createElement('button');
-    playPauseBtn.className = 'btn-playpause';
-    playPauseBtn.type = 'button';
-    playPauseBtn.setAttribute('aria-label', 'Play');
-    const seekBar = document.createElement('input');
-    seekBar.className = 'seek';
-    seekBar.type = 'range';
-    seekBar.min = '0';
-    seekBar.max = '100';
-    seekBar.value = '0';
-    seekBar.setAttribute('aria-label', 'Seek');
-    const muteBtn = document.createElement('button');
-    muteBtn.className = 'btn-mute';
-    muteBtn.type = 'button';
-    muteBtn.setAttribute('aria-label', 'Mute');
-    controls.appendChild(playPauseBtn);
-    controls.appendChild(seekBar);
-    controls.appendChild(muteBtn);
-
-    videoShell.appendChild(video);
-    videoShell.appendChild(overlayPlay);
-    videoShell.appendChild(controls);
-
-    initVideoPlayer(videoShell);
-    grid.appendChild(videoShell);
+    grid.appendChild(createInteractiveVideoShell(canonicalSrc, posterOverride));
   });
 
   return grid;
@@ -413,57 +417,8 @@ export function createInitiativeCard(initiative, projectSlug, showTitle = true) 
     );
     card.appendChild(videoGrid);
   } else if (videoCount === 1) {
-    const videoShell = document.createElement('div');
-    videoShell.className = 'video-shell';
-
-    const video = document.createElement('video');
-    video.className = 'video';
     const videoSrc = buildVideoUrl(projectSlug, initiative.assetPrefix, null, 1);
-    video.src = videoSrc;
-    video.playsInline = true;
-    video.setAttribute('playsinline', 'true');
-    video.setAttribute('webkit-playsinline', 'true');
-    video.preload = 'metadata';
-    video.poster = videoSrc.replace(/\.webm$/, '.webp');
-    video.muted = true;
-    video.loop = true;
-    video.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
-    video.setAttribute('disablepictureinpicture', 'true');
-
-    const overlayPlay = document.createElement('button');
-    overlayPlay.className = 'video-overlay-play';
-    overlayPlay.type = 'button';
-    overlayPlay.setAttribute('aria-label', 'Play');
-    const playIcon = document.createElement('span');
-    playIcon.className = 'icon-play';
-    overlayPlay.appendChild(playIcon);
-
-    const controls = document.createElement('div');
-    controls.className = 'video-controls';
-    const playPauseBtn = document.createElement('button');
-    playPauseBtn.className = 'btn-playpause';
-    playPauseBtn.type = 'button';
-    playPauseBtn.setAttribute('aria-label', 'Play');
-    const seekBar = document.createElement('input');
-    seekBar.className = 'seek';
-    seekBar.type = 'range';
-    seekBar.min = '0';
-    seekBar.max = '100';
-    seekBar.value = '0';
-    seekBar.setAttribute('aria-label', 'Seek');
-    const muteBtn = document.createElement('button');
-    muteBtn.className = 'btn-mute';
-    muteBtn.type = 'button';
-    muteBtn.setAttribute('aria-label', 'Mute');
-    controls.appendChild(playPauseBtn);
-    controls.appendChild(seekBar);
-    controls.appendChild(muteBtn);
-
-    videoShell.appendChild(video);
-    videoShell.appendChild(overlayPlay);
-    videoShell.appendChild(controls);
-    initVideoPlayer(videoShell);
-    card.appendChild(videoShell);
+    card.appendChild(createInteractiveVideoShell(videoSrc));
   }
 
   if (initiative.imageGroups && initiative.imageGroups.length > 0) {
@@ -504,7 +459,7 @@ export function createInitiativeCard(initiative, projectSlug, showTitle = true) 
   return card;
 }
 
-export function createInitiativeSection(initiative, projectSlug, initiativeName = null, caseName = null) {
+export function createInitiativeSection(initiative, projectSlug) {
   const section = document.createElement('div');
   section.className = 'initiative-section';
 
@@ -516,8 +471,7 @@ export function createInitiativeSection(initiative, projectSlug, initiativeName 
   }
 
   if (initiative.assetPrefix) {
-    const card = createInitiativeCard(initiative, projectSlug, false);
-    section.appendChild(card);
+    section.appendChild(createInitiativeCard(initiative, projectSlug, false));
   }
 
   return section;
