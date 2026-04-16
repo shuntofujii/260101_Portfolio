@@ -38,14 +38,18 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
 
-  /* レイヤー順（z-index） */
+  /* レイヤー順（z-index, 小→大）
+     運用ルール:
+     - グローバルレイヤーは var(--z-*) を利用
+     - コンポーネント内の局所調整は直値（0/1/2...）を許容
+     - constants.js の CURSOR_Z_INDEX は --z-cursor と同値を維持 */
   --z-focus-visual-back: 9;
   --z-modal-back: 90;
   --z-cursor: 100;
+  --z-guidance: 110;
+  --z-focus-visual: 115;
   --z-noise: 120;
-  --z-focus-visual: 110;
   --z-panels: 140;
-  --z-guidance: 115;
   --z-title-bg: 200;
   --z-portfolio-title: 250;
   --z-modal-overlay: 1000;
