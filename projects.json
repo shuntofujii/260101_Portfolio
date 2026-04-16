@@ -61,6 +61,13 @@
     "tagline": "What's possible with Windows",
     "description": "マイクロソフト社主催の新規事業ピッチイベント「Empower Japan Intrapreneur Community」のクリエイティブディレクションを行いました。\nイベントのロゴ、発表者登壇時の事業紹介動画、Teams背景など、幅広く制作させていただきました。",
     "projectSlug": "ejic",
+    "modalMetaItems": [
+      { "label": "Client", "value": "日本マイクロソフト株式会社", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+    ],
     "explicitModal": {
       "segments": [
         { "type": "sectionTitle", "text": "Intro Video" },
@@ -131,7 +138,6 @@
       { "label": "Prize", "value": "Tokyo Web3 Hackathon 2nd Prize", "icon": "https://assets.shuntofujii.com/icons/prize.svg" },
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Designer", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
       { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
       { "label": "Team", "value": "Concept：Harry So / Development：Luka Fujiwara", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
@@ -160,7 +166,7 @@
     "title": "IZUMO",
     "category": "Mobile App",
     "role": "Marketing Strategy",
-    "scope": "Product Video",
+    "scope": "Marketing Strategy / Community Management / Product Video",
     "year": "2022-2023",
     "tools": [
       "After Effects",
@@ -174,7 +180,6 @@
       { "label": "Client", "value": "IZUMOxr Ltd.", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Marketing & Community Manager", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
       { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
     ],
@@ -318,7 +323,6 @@
       { "label": "Client", "value": "株式会社MuuMu", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Director", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
       { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
     ],
@@ -408,10 +412,9 @@
     "modalMetaItems": [
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Art Director", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
       { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
-      { "label": "Team", "value": "Director & Producer：浅尾 尭洋 / Line Producer：渡邉 康祐", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
+      { "label": "Team", "value": "Director & Producer：浅尾 尭洋 / Line Producer：渡邉 康裕", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
     ],
     "heroMedia": {
       "type": "video",
@@ -449,7 +452,7 @@
     "modalMetaItems": [
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Co-Founder", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
+      { "label": "Founder", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
       { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
     ],
@@ -522,7 +525,7 @@
     "modalMetaItems": [
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Co-Founder", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
+      { "label": "Founder", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
       { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
     ],
@@ -563,6 +566,11 @@
     "year": "1995-",
     "tagline": "作ること全般が好きです。",
     "description": "色々楽しく作ってきました。AIの台頭により不要となったスキルばかりですが、楽しいからOK！",
+    "modalMetaItems": [
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" }
+    ],
     "heroMedia": {
       "type": "video",
       "src": "https://assets.shuntofujii.com/top/video-09.webm"

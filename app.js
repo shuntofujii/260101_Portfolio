@@ -503,10 +503,20 @@ function updateContextPanel(project) {
     categoryYear = `${project.category} (${project.year})`;
   }
 
-  const roleScope = [project.role, project.scope].filter(Boolean).join(' / ') || '';
+  const buildUnifiedFocus = (role, scope) => {
+    const r = String(role || '').trim();
+    const s = String(scope || '').trim();
+    if (!r && !s) return '';
+    if (!r) return s;
+    if (!s) return r;
+    const parts = s.split(' / ').map(x => x.trim()).filter(Boolean);
+    if (parts.includes(r)) return parts.join(' / ');
+    return [r, ...parts].join(' / ');
+  };
+  const focus = buildUnifiedFocus(project.role, project.scope);
 
   const safeCategoryYear = escapeHtml(categoryYear);
-  const safeRoleScope = escapeHtml(roleScope);
+  const safeRoleScope = escapeHtml(focus);
   const safeTools = tools ? escapeHtml(tools) : '';
 
   refs.contextPanel.innerHTML = `

@@ -9,9 +9,20 @@ export function openModal(project, triggerElement) {
   const refs = getRefs();
   state.modalTriggerElement = triggerElement || null;
 
-  // Direction / Focus を分離（順番指定＆重複回避のため）
+  const buildUnifiedFocus = (role, scope) => {
+    const r = String(role || '').trim();
+    const s = String(scope || '').trim();
+    if (!r && !s) return '';
+    if (!r) return s;
+    if (!s) return r;
+    const parts = s.split(' / ').map(x => x.trim()).filter(Boolean);
+    if (parts.includes(r)) return parts.join(' / ');
+    return [r, ...parts].join(' / ');
+  };
+
+  // Direction / Focus を分離（Focus は role+scope を統合）
   const directionValue = project.role || '';
-  const focusValue = project.scope || project.role || '';
+  const focusValue = buildUnifiedFocus(project.role, project.scope);
 
   const safeTitle = escapeHtml(project.title);
   const safeTagline = project.tagline ? escapeHtml(project.tagline) : '';

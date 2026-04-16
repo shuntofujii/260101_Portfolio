@@ -20,6 +20,7 @@
 ├── videoCache.js       # 動画の fetch→Blob URL キャッシュ・`<link rel="preload">`・アイドル時プリロード
 ├── projectVideoUrls.js # projects.json からヒーロー・cases・gallery の動画 URL を列挙（上記と連携）
 ├── cursorEffect.js     # カーソル軌跡エフェクト・アクセント色の時間変化（Three.js を CDN から動的 import）
+├── meta-audit.js       # meta監査（hover左上/モーダルmeta の乖離防止）
 ├── sitemap.xml         # サイトマップ（SEO・更新時に lastmod を更新推奨）
 ├── robots.txt          # クローラー許可と Sitemap 指定
 ├── CNAME               # GitHub Pages などでドメイン指定する場合に使用
@@ -155,6 +156,71 @@ export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 - [ ] `thumbnail` をサムネイル画像の URL に変更
 - [ ] `links` 配列に外部リンク（Behance / YouTube / Web など）を追加
 - [ ] **cases を使う場合**: `projectSlug` と `cases` を追加（後述「アセットルール」参照）。モーダル内に案件・施策ごとの画像・動画グリッドが表示されます。`cases` がないプロジェクトは、モーダルではヘッダー・メタ・説明文・リンクのみ表示されます。
+
+### プロジェクトmeta（hover左上 / モーダルmeta）運用ルール
+
+このプロジェクトでは「hover左上（コンテキストパネル）」と「モーダル最下部meta」で情報が乖離しないよう、次のルールで運用します。
+
+#### 構成要素（肩書き要素は廃止）
+
+プロジェクトごとのmeta構成要素は次の8種です（存在しない要素は省略してOK）。
+
+- `Client`
+- `Domain`
+- `Prize`
+- `Year`
+- `Founder`
+- `Focus`
+- `Toolkits`
+- `Team`
+
+#### Focus統合（Role/Scopeと同義）
+
+`Focus` は **Role/Scopeと同義**として扱い、表示用の `Focus` は次のルールで統合します。
+
+- `Focus = role + scope`（区切りは `" / "`）
+- ただし `scope` 側に `role` と同一の語が含まれている場合は **重複表示しない**
+
+#### 表示ルール
+
+- **hover左上（コンテキストパネル）**: 現行フォーマットのまま、次の4つのみ表示
+  - `Domain`（= `category`）
+  - `Year`（= `year`）
+  - `Focus`（= 上記統合ルールで生成）
+  - `Toolkits`（= `tools` を `" / "` 連結）
+- **モーダルmeta（最下部）**: そのプロジェクトに存在する要素は **`projects.json` の `modalMetaItems` にすべて記載**
+
+#### `projects.json` の `modalMetaItems` 仕様
+
+各プロジェクトに `modalMetaItems`（配列）を追加し、表示順もここで管理します。
+
+```json
+{
+  "modalMetaItems": [
+    { "label": "Client", "value": "株式会社○○", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
+    { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+    { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+    { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+    { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
+    { "label": "Team", "value": "Role：Name / ...", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
+  ]
+}
+```
+
+`value` は固定文字列のほか、次のトークンを利用できます。
+
+- `$domain`（= `category`）
+- `$year`（= `year`）
+- `$focus`（= 統合Focus）
+- `$toolkits`（= `tools` を `" / "` 連結）
+
+#### 監査（乖離防止）
+
+`projects.json` の更新後は次を実行し、metaの欠落/不整合を検出してください。
+
+```bash
+node meta-audit.js
+```
 
 ### 2. 画像・動画ファイル（アセット）
 
