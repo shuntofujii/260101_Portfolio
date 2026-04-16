@@ -9,72 +9,67 @@ export function openModal(project, triggerElement) {
   const refs = getRefs();
   state.modalTriggerElement = triggerElement || null;
 
-  let focusValue = project.role || '';
-  if (project.scope) {
-    focusValue = focusValue ? `${focusValue} / ${project.scope}` : project.scope;
-  }
+  // Direction / Focus を分離（順番指定＆重複回避のため）
+  const directionValue = project.role || '';
+  const focusValue = project.scope || project.role || '';
 
   const safeTitle = escapeHtml(project.title);
   const safeTagline = project.tagline ? escapeHtml(project.tagline) : '';
-  const safeCategory = escapeHtml(project.category);
-  const safeYear = escapeHtml(project.year);
-  const safeFocusValue = focusValue ? escapeHtml(focusValue) : '';
-  const safeToolsStr = project.tools && project.tools.length > 0 ? escapeHtml(project.tools.join(' / ')) : '';
+  const category = project.category || '';
+  const year = project.year || '';
+  const toolsStr = project.tools && project.tools.length > 0 ? project.tools.join(' / ') : '';
   const safeDescription = project.description
     ? escapeHtml(project.description).replace(/\n/g, '<br>')
     : '';
-  // modal-meta の共通ラベル（プロジェクト差し替え前提のダミー値）
-  const safeClient = escapeHtml('日本マイクロソフト株式会社');
-  const safeDirectionAndCreated = escapeHtml('藤井 洵斗');
 
-  const modalMetaHtml = `
+  /** projects.json の modalMetaItems を解決してHTML生成 */
+  const metaTokens = {
+    $domain: category,
+    $year: year,
+    $direction: directionValue,
+    $focus: focusValue,
+    $toolkits: toolsStr
+  };
+
+  const rawMetaItems = Array.isArray(project.modalMetaItems) ? project.modalMetaItems : null;
+  const defaultMetaItems = [
+    { label: 'Client', value: '日本マイクロソフト株式会社', icon: 'https://assets.shuntofujii.com/icons/client.svg' },
+    { label: 'Domain', value: '$domain', icon: 'https://assets.shuntofujii.com/icons/domain.svg' },
+    { label: 'Year', value: '$year', icon: 'https://assets.shuntofujii.com/icons/year.svg' },
+    { label: 'Direction', value: '$direction', icon: 'https://assets.shuntofujii.com/icons/focus.svg' },
+    { label: 'Direction & Created', value: '藤井 洵斗', icon: 'https://assets.shuntofujii.com/icons/created.svg' },
+    { label: 'Focus', value: '$focus', icon: 'https://assets.shuntofujii.com/icons/focus.svg' },
+    { label: 'Toolkits', value: '$toolkits', icon: 'https://assets.shuntofujii.com/icons/toolkits.svg' }
+  ];
+
+  const metaItems = (rawMetaItems || defaultMetaItems)
+    .map((it) => {
+      if (!it || !it.label) return null;
+      const rawValue = it.value ?? '';
+      const resolved = (typeof rawValue === 'string' && rawValue in metaTokens)
+        ? metaTokens[rawValue]
+        : rawValue;
+      const valueStr = String(resolved ?? '').trim();
+      if (!valueStr) return null;
+      return {
+        label: String(it.label),
+        value: valueStr,
+        icon: String(it.icon || '')
+      };
+    })
+    .filter(Boolean);
+
+  const modalMetaHtml = metaItems.length === 0 ? '' : `
     <div class="modal-meta">
+      ${metaItems.map((it) => `
       <div class="modal-meta-item">
-        <img src="https://assets.shuntofujii.com/icons/client.svg" alt="Client" class="modal-meta-icon" width="18" height="18" decoding="async" loading="lazy" />
+        ${it.icon ? `<img src="${it.icon}" alt="${escapeHtml(it.label)}" class="modal-meta-icon" width="18" height="18" decoding="async" loading="lazy" />` : ''}
         <div class="modal-meta-content">
-          <span class="modal-meta-label">Client</span>
-          <span class="modal-meta-value">${safeClient}</span>
+          <span class="modal-meta-label">${escapeHtml(it.label)}</span>
+          <span class="modal-meta-value">${escapeHtml(it.value)}</span>
         </div>
       </div>
-      <div class="modal-meta-item">
-        <img src="https://assets.shuntofujii.com/icons/created.svg" alt="Direction & Created" class="modal-meta-icon" width="18" height="18" decoding="async" loading="lazy" />
-        <div class="modal-meta-content">
-          <span class="modal-meta-label">Direction & Created</span>
-          <span class="modal-meta-value">${safeDirectionAndCreated}</span>
-        </div>
-      </div>
-      <div class="modal-meta-item">
-        <img src="https://assets.shuntofujii.com/icons/domain.svg" alt="Domain" class="modal-meta-icon" width="18" height="18" decoding="async" loading="lazy" />
-        <div class="modal-meta-content">
-          <span class="modal-meta-label">Domain</span>
-          <span class="modal-meta-value">${safeCategory}</span>
-        </div>
-      </div>
-      <div class="modal-meta-item">
-        <img src="https://assets.shuntofujii.com/icons/year.svg" alt="Year" class="modal-meta-icon" width="18" height="18" decoding="async" loading="lazy" />
-        <div class="modal-meta-content">
-          <span class="modal-meta-label">Year</span>
-          <span class="modal-meta-value">${safeYear}</span>
-        </div>
-      </div>
-      ${safeFocusValue ? `
-      <div class="modal-meta-item">
-        <img src="https://assets.shuntofujii.com/icons/focus.svg" alt="Focus" class="modal-meta-icon" width="18" height="18" decoding="async" loading="lazy" />
-        <div class="modal-meta-content">
-          <span class="modal-meta-label">Focus</span>
-          <span class="modal-meta-value">${safeFocusValue}</span>
-        </div>
-      </div>
-      ` : ''}
-      ${safeToolsStr ? `
-      <div class="modal-meta-item">
-        <img src="https://assets.shuntofujii.com/icons/toolkits.svg" alt="Toolkits" class="modal-meta-icon" width="18" height="18" decoding="async" loading="lazy" />
-        <div class="modal-meta-content">
-          <span class="modal-meta-label">Toolkits</span>
-          <span class="modal-meta-value">${safeToolsStr}</span>
-        </div>
-      </div>
-      ` : ''}
+      `).join('')}
     </div>
   `;
 

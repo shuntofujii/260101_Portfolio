@@ -13,6 +13,14 @@
     ],
     "tagline": "少子化対策 × 地域活性化 = デートプラン",
     "description": "デートプラン投稿・評価サイト「DATEs」をリリースしました。\nサービス設計〜UI/UXデザイン〜フロントコーディング、また自治体との連携など、代表として必死に手を動かしました。",
+    "modalMetaItems": [
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+      { "label": "Founder", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
+      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
+      { "label": "Team", "value": "Marketing：小泉 昂也 / Development：橋口 健志、山下 郁矢 / SNS：久次米 啓佑", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
+    ],
     "heroMedia": {
       "type": "video",
       "src": "https://assets.shuntofujii.com/top/video-01.webm"
@@ -119,6 +127,15 @@
     ],
     "tagline": "サステナブル大喜利",
     "description": "国内最大級のハッカソン「東京Web3ハッカソン」に出場し、全100組の中で準グランプリを獲得しました。\n大喜利のお題とボケを投稿することにブロックチェーン技術を用いることで、トークノミクスを成立させるというサービスでした。\n1週間と短い期間の中で、UI/UXデザイン、アプリの紹介動画の制作を担当させていただきました。",
+    "modalMetaItems": [
+      { "label": "Prize", "value": "Tokyo Web3 Hackathon 2nd Prize", "icon": "https://assets.shuntofujii.com/icons/prize.svg" },
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+      { "label": "Designer", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
+      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
+      { "label": "Team", "value": "Concept：Harry So / Development：Luka Fujiwara", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
+    ],
     "heroMedia": {
       "type": "video",
       "src": "https://assets.shuntofujii.com/top/video-03.webm"
@@ -153,6 +170,14 @@
     ],
     "tagline": "ARの普及を見越したSNS",
     "description": "香港に拠点を置くAR×Web3の会社IZUMOxr.Ltdにて、Marketing Managerを務めました。\n2022年6月の事業立ち上げから、2023年12月までの1年半で、コミュニティ立ち上げ(Discord登録者約1万人)やSNS立ち上げ(𝕏フォロワー約2万人)、それらに関わるキャンペーン実施やクリエイティブ制作など幅広くプロジェクトに携わりました。",
+    "modalMetaItems": [
+      { "label": "Client", "value": "IZUMOxr Ltd.", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+      { "label": "Marketing & Community Manager", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
+      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+    ],
     "heroMedia": {
       "type": "video",
       "src": "https://assets.shuntofujii.com/top/video-04.webm"
@@ -289,6 +314,14 @@
     ],
     "tagline": "AR × 人から生まれる新体験",
     "description": "国内有数のMR開発会社MuuMu社のサービス「デテクル」のマーケティング戦略策定及び、その実行を担当しております。\n戦略策定のためのリサーチ、実行に伴う制作〜商談まで全てのプロセスを担っております。",
+    "modalMetaItems": [
+      { "label": "Client", "value": "株式会社MuuMu", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+      { "label": "Director", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
+      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+    ],
     "heroMedia": {
       "type": "video",
       "src": "https://assets.shuntofujii.com/top/video-05.webm"
@@ -372,6 +405,14 @@
     ],
     "tagline": "国産映画を世界へ",
     "description": "全編英語長編映画「グーチョキデッド」の美術監督ならびに実行（デザイン、衣装調達、小道具など）、またマーケティングなど幅広い領域を担当しております。\n作品は \"ゆうばり国際ファンタスティック映画祭2025\" にノミネートされました。",
+    "modalMetaItems": [
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+      { "label": "Art Director", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
+      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
+      { "label": "Team", "value": "Director & Producer：浅尾 尭洋 / Line Producer：渡邉 康祐", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
+    ],
     "heroMedia": {
       "type": "video",
       "src": "https://assets.shuntofujii.com/top/video-06.webm"
@@ -405,6 +446,13 @@
     ],
     "tagline": "完全個室セルフマシンピラティス",
     "description": "セルフでピラティスを行うためのレッスン動画のディレクションを担っております。\n撮影〜画面UI制作〜編集の全工程を行っております。",
+    "modalMetaItems": [
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+      { "label": "Co-Founder", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
+      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+    ],
     "heroMedia": {
       "type": "video",
       "src": "https://assets.shuntofujii.com/top/video-07.webm"
@@ -471,6 +519,13 @@
     ],
     "tagline": "人間監査法人パイオニア",
     "description": "珈琲好きの友人と事業の立ち上げを行っております。",
+    "modalMetaItems": [
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+      { "label": "Co-Founder", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
+      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+    ],
     "heroMedia": {
       "type": "video",
       "src": "https://assets.shuntofujii.com/top/video-08.webm"
