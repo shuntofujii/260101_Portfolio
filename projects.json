@@ -52,6 +52,35 @@
     ],
     "tagline": "What's possible with Windows",
     "description": "マイクロソフト社主催の新規事業ピッチイベント「Empower Japan Intrapreneur Community」のクリエイティブディレクションを行いました。\nイベントのロゴ、発表者登壇時の事業紹介動画、Teams背景など、幅広く制作させていただきました。",
+    "projectSlug": "ejic",
+    "explicitModal": {
+      "segments": [
+        { "type": "sectionTitle", "text": "Intro Video" },
+        { "type": "video", "file": "fix_m_1.webm" },
+        { "type": "imageRow", "files": ["fix_p_1.webp", "fix_p_2.webp"] },
+        { "type": "subtitle", "text": "Process" },
+        { "type": "video", "file": "spaceship_m_1.webm" },
+        { "type": "imageRow", "files": ["spaceship_p_1.webp", "spaceship_p_2.webp", "spaceship_p_3.webp"] },
+        { "type": "video", "file": "fix_m_2.webm" },
+        { "type": "sectionTitle", "text": "Collateral" },
+        { "type": "subtitle", "text": "Teams Background" },
+        { "type": "imageRow", "files": ["background_p_1.webp", "background_p_2.webp", "background_p_3.webp"] },
+        { "type": "subtitle", "text": "Ranking Assets" },
+        { "type": "imageRow", "files": ["ranking_p_1.webp", "ranking_p_2.webp"] },
+        { "type": "imageRow", "files": ["ranking_p_3.webp", "ranking_p_4.webp"] },
+        { "type": "sectionTitle", "text": "Logo" },
+        { "type": "imageRow", "files": ["logo_p_1.webp"] },
+        { "type": "imageRow", "files": ["logo_p_2.webp"] },
+        { "type": "subtitle", "text": "Showcase" },
+        { "type": "imageRow", "files": ["logo_p_3.webp", "logo_p_4.webp"] },
+        { "type": "sectionTitle", "text": "Early Works" },
+        { "type": "video", "file": "2ndevent_m_1.webm" },
+        { "type": "imageRow", "files": ["2ndevent_p_1.webp", "2ndevent_p_2.webp"] },
+        { "type": "imageRow", "files": ["2ndeventbackground_p_1.webp"] },
+        { "type": "sectionTitle", "text": "Event Highlights" },
+        { "type": "imageRow", "files": ["other_p_1.webp", "other_p_2.webp"] }
+      ]
+    },
     "heroMedia": {
       "type": "video",
       "src": "https://assets.shuntofujii.com/top/video-02.webm"
@@ -60,13 +89,13 @@
     "gallery": [
       {
         "type": "video",
-        "src": "https://assets.shuntofujii.com/ejic/placeholder-video.webm",
-        "caption": "メインモーション"
+        "src": "https://assets.shuntofujii.com/ejic/fix_m_1.webm",
+        "caption": "Intro Video"
       },
       {
         "type": "image",
-        "src": "https://assets.shuntofujii.com/ejic/placeholder-image.jpg",
-        "caption": "コンセプトスケッチ"
+        "src": "https://assets.shuntofujii.com/ejic/fix_p_1.webp",
+        "caption": "プロセス"
       }
     ],
     "links": [

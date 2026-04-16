@@ -498,3 +498,50 @@ export function createCaseSection(caseData, projectSlug) {
 
   return section;
 }
+
+/**
+ * projects.json の explicitModal.segments からモーダル本文を生成（ファイル名ベースの固定レイアウト）
+ * @param {{ projectSlug?: string, explicitModal?: { segments?: Array<{ type: string, text?: string, file?: string, files?: string[] }> } }} project
+ * @param {HTMLElement} parentEl
+ */
+export function appendExplicitModal(project, parentEl) {
+  const slug = project.projectSlug;
+  const segments = project.explicitModal?.segments;
+  if (!slug || !Array.isArray(segments) || segments.length === 0) return;
+
+  const base = `${baseAssetsUrl}/${slug}`;
+  const altPrefix = project.title ? String(project.title) : '';
+
+  segments.forEach((seg) => {
+    if (!seg || !seg.type) return;
+
+    if (seg.type === 'sectionTitle' && seg.text) {
+      const h = document.createElement('h3');
+      h.className = 'explicit-modal-section-title';
+      h.textContent = seg.text;
+      parentEl.appendChild(h);
+      return;
+    }
+
+    if (seg.type === 'subtitle' && seg.text) {
+      const h = document.createElement('h4');
+      h.className = 'explicit-modal-subtitle';
+      h.textContent = seg.text;
+      parentEl.appendChild(h);
+      return;
+    }
+
+    if (seg.type === 'video' && seg.file) {
+      const url = `${base}/${seg.file}`;
+      parentEl.appendChild(createInteractiveVideoShell(url));
+      return;
+    }
+
+    if (seg.type === 'imageRow' && Array.isArray(seg.files) && seg.files.length > 0) {
+      const images = seg.files.map((f) => ({ src: `${base}/${f}` }));
+      const forceHorizontal = seg.files.length > 1;
+      const grid = createImageGrid(images, null, forceHorizontal, null, null, 0, altPrefix);
+      if (grid) parentEl.appendChild(grid);
+    }
+  });
+}

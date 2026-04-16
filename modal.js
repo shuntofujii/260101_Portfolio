@@ -2,7 +2,7 @@
 import { state } from './state.js';
 import { getRefs } from './domRefs.js';
 import { escapeHtml, createFocusTrap } from './utils.js';
-import { createCaseSection, createInitiativeCard } from './media.js';
+import { appendExplicitModal, createCaseSection, createInitiativeCard } from './media.js';
 import { closeLightbox } from './lightbox.js';
 
 export function openModal(project, triggerElement) {
@@ -66,7 +66,12 @@ export function openModal(project, triggerElement) {
     ${safeDescription ? `<div class="modal-description">${safeDescription}</div>` : ''}
   `;
 
-  if (project.cases && project.cases.length > 0 && project.projectSlug) {
+  if (project.explicitModal && project.projectSlug) {
+    const explicitSection = document.createElement('section');
+    explicitSection.className = 'modal-initiatives explicit-modal';
+    appendExplicitModal(project, explicitSection);
+    refs.modalContent.appendChild(explicitSection);
+  } else if (project.cases && project.cases.length > 0 && project.projectSlug) {
     const casesSection = document.createElement('section');
     casesSection.className = 'modal-initiatives';
     project.cases.forEach(caseData => {

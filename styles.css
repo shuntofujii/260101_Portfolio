@@ -324,7 +324,8 @@ body.modal-open .context-panel {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
   z-index: var(--z-focus-visual);
   overflow: hidden;
   transition: opacity var(--transition-video);
@@ -341,9 +342,8 @@ body.modal-open .context-panel {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
-  min-width: 100%;
-  min-height: 100%;
+  height: 100svh;
+  height: 100dvh;
   z-index: 0;
   pointer-events: none;
 }
@@ -354,7 +354,8 @@ body.modal-open .context-panel {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
   z-index: 0;
 }
 
@@ -363,13 +364,10 @@ body.modal-open .context-panel {
   inset: 0;
   width: 100%;
   height: 100%;
-  min-width: 100%;
-  min-height: 100%;
   object-fit: cover;
   object-position: center;
   pointer-events: none;
-  will-change: transform;
-  transform: translateZ(0);
+  will-change: opacity;
   transition: opacity var(--transition-video);
 }
 
@@ -385,7 +383,8 @@ body.modal-open .context-panel {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
   pointer-events: none;
   opacity: 1;
   transition: opacity 420ms ease;
@@ -401,10 +400,8 @@ body.modal-open .context-panel {
   left: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
-  width: 100vw;
-  height: 100vh;
-  min-width: 100vw;
-  min-height: 100vh;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   object-position: center;
   filter: brightness(0.9) saturate(1.05);
@@ -1511,6 +1508,43 @@ body.modal-open .modal-overlay {
   margin: 0 0 1rem 0;
 }
 
+/* explicitModal（EJIC 等：ファイル名ベースの固定セクション） */
+.explicit-modal-section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 2.5rem 0 0.75rem 0;
+}
+
+.explicit-modal-section-title:first-child {
+  margin-top: 0;
+}
+
+.explicit-modal-subtitle {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 1.75rem 0 1rem 0;
+}
+
+.explicit-modal-section-title + .explicit-modal-subtitle {
+  margin-top: 0.75rem;
+}
+
+.explicit-modal .mediaGrid {
+  margin-bottom: var(--img-gap-sp);
+}
+
+.explicit-modal .mediaGrid:last-child {
+  margin-bottom: 0;
+}
+
+@media (min-width: 900px) {
+  .explicit-modal .mediaGrid {
+    margin-bottom: var(--img-gap-pc);
+  }
+}
+
 /* ============================================
    動画グリッド（横並び2本〜5本）
    ============================================ */
@@ -1589,7 +1623,7 @@ body.modal-open .modal-overlay {
 
   .focus-visual {
     width: 100%;
-    height: 100vh;
+    height: 100svh;
     height: 100dvh;
     top: 0;
   }

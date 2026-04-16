@@ -416,8 +416,6 @@ function updateHeroMedia(heroMedia) {
           video.setAttribute('playsinline', 'true');
           video.style.display = 'block';
           video.style.opacity = '0';
-          video.style.width = '';
-          video.style.height = '';
 
           const loopHandler = function () {
             video.currentTime = 0;
@@ -443,29 +441,18 @@ function updateHeroMedia(heroMedia) {
             }
           };
 
-          const applyViewportSize = () => {
-            const w = window.innerWidth;
-            const h = window.innerHeight;
-            video.style.width = w + 'px';
-            video.style.height = h + 'px';
-          };
           const showVideo = () => {
             if (video.style.opacity === '1') return;
             if (video._showFallbackId) {
               clearTimeout(video._showFallbackId);
               video._showFallbackId = null;
             }
-            applyViewportSize();
             video.style.opacity = '1';
             video.classList.remove('fade-in');
             video.removeEventListener('playing', showVideo);
           };
           video._showHandler = showVideo;
-          video._resizeHandler = () => {
-            if (video.style.opacity === '1') applyViewportSize();
-          };
           video.addEventListener('playing', showVideo, { once: true });
-          window.addEventListener('resize', video._resizeHandler);
           video._showFallbackId = setTimeout(showVideo, VIDEO_SHOW_FALLBACK_MS);
 
           const playHandler = () => {

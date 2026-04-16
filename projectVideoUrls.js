@@ -1,4 +1,5 @@
 // projects.json から動画URL一覧を抽出（media.js の命名規則と一致させる）
+import { baseAssetsUrl } from './constants.js';
 import { buildVideoUrl } from './media.js';
 
 function addInitiativeVideos(set, projectSlug, initiative) {
@@ -38,6 +39,11 @@ export function collectProjectVideoUrls(projects) {
     if (project.projectSlug) {
       walkCases(all, project.projectSlug, project.cases);
       project.initiatives?.forEach((init) => addInitiativeVideos(all, project.projectSlug, init));
+      project.explicitModal?.segments?.forEach((seg) => {
+        if (seg?.type === 'video' && seg.file) {
+          all.add(`${baseAssetsUrl}/${project.projectSlug}/${seg.file}`);
+        }
+      });
     }
   });
 
