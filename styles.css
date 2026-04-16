@@ -30,6 +30,8 @@
   /* 画像グリッド */
   --img-gap-pc: 12px;
   --img-gap-sp: 10px;
+  /* モーダル内ブロック間隔（SP） */
+  --modal-block-gap-sp: 8px;
   --img-radius: 16px;
 
   /* レスポンシブ: Safe Area（ノッチ・ホームインジケータ対応） */
@@ -808,8 +810,9 @@ body.modal-open .modal-overlay {
 /* モーダル幅とブラウザ幅の差が240px確保できない場合、上下paddingを確保 + Safe Area */
 @media (max-width: 1139px) {
   .modal-overlay {
-    padding-top: max(240px, calc(clamp(16px, 4vmin, 2rem) + var(--safe-top)));
-    padding-bottom: max(240px, calc(clamp(16px, 4vmin, 2rem) + var(--safe-bottom)));
+    /* 上下のpaddingを少し大きく（左右は据え置き） */
+    padding-top: max(260px, calc(clamp(16px, 4vmin, 2rem) + var(--safe-top)));
+    padding-bottom: max(260px, calc(clamp(16px, 4vmin, 2rem) + var(--safe-bottom)));
     padding-left: calc(clamp(16px, 4vmin, 2rem) + var(--safe-left));
     padding-right: calc(clamp(16px, 4vmin, 2rem) + var(--safe-right));
   }
@@ -899,6 +902,10 @@ body.modal-open .modal-overlay {
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--accent-color) transparent;
+  /* modal-meta を末尾に寄せるための縦フレックス */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .modal-content::-webkit-scrollbar {
@@ -915,7 +922,7 @@ body.modal-open .modal-overlay {
 }
 
 .modal-header {
-  margin-bottom: 2rem;
+  margin-bottom: 0px;
 }
 
 .modal-title {
@@ -937,7 +944,8 @@ body.modal-open .modal-overlay {
   flex-wrap: wrap;
   gap: 1.5rem;
   row-gap: 0.5rem;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
+  margin-top: 48px;
   font-size: 0.75rem;
 }
 
@@ -976,7 +984,7 @@ body.modal-open .modal-overlay {
   font-size: 1rem;
   line-height: 1.8;
   color: var(--text-secondary);
-  margin-bottom: 2rem;
+  margin-bottom: 0px;
 }
 
 /* ============================================
@@ -1100,7 +1108,7 @@ body.modal-open .modal-overlay {
 .video-shell {
   position: relative;
   width: 100%;
-  margin-bottom: var(--img-gap-sp);
+  margin-bottom: var(--modal-block-gap-sp);
   overflow: hidden;
   background: #000;
   border-radius: 16px;
@@ -1536,7 +1544,7 @@ body.modal-open .modal-overlay {
 }
 
 .explicit-modal .mediaGrid {
-  margin-bottom: var(--img-gap-sp);
+  margin-bottom: var(--modal-block-gap-sp);
 }
 
 .explicit-modal .mediaGrid:last-child {
@@ -1581,10 +1589,14 @@ body.modal-open .modal-overlay {
 
 /* スマホ: 3本以上は2列に制限（タップしやすさ・視認性） */
 @media (max-width: 768px) {
-  .video-grid[data-count="3"],
   .video-grid[data-count="4"],
   .video-grid[data-count="5"] {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* videos=3 の場合は横3つ並びにする */
+  .video-grid[data-count="3"] {
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .video-grid {
@@ -1663,10 +1675,16 @@ body.modal-open .modal-overlay {
     width: calc(100vw - 2rem - var(--safe-left) - var(--safe-right));
     max-width: calc(100vw - 2rem - var(--safe-left) - var(--safe-right));
     border-radius: 16px;
+    /* 上部の余白を増やして、modalContent の top 値をより下へ寄せる */
+    margin-top: 12px;
   }
 
   .modal-content {
-    padding: 2rem 1.5rem;
+    /* タイトル上の余白を少し圧縮（左右は維持） */
+    padding-top: 1.75rem; /* 28px */
+    padding-right: 1.125rem; /* 18px */
+    padding-bottom: 2.375rem; /* 38px */
+    padding-left: 1.125rem; /* 18px */
   }
 
   .modal-title {
@@ -1727,7 +1745,7 @@ body.modal-open .modal-overlay {
     gap: 0.75rem;
     /* 65px サムネでもリング・box-shadow が同じ px 幅のため下側をやや多めに */
     padding-top: 58px;
-    padding-bottom: 64px;
+    padding-bottom: 36px;
     padding-left: calc(1.75rem + var(--safe-left));
     padding-right: calc(1.75rem + var(--safe-right));
   }
@@ -1740,7 +1758,11 @@ body.modal-open .modal-overlay {
   }
 
   .modal-content {
-    padding: 1.75rem 1.5rem;
+    /* タイトル上の余白を少し圧縮（左右は維持） */
+    padding-top: 1.75rem; /* 28px */
+    padding-right: 1.125rem; /* 18px */
+    padding-bottom: 2.375rem; /* 38px */
+    padding-left: 1.125rem; /* 18px */
   }
 
   .modal-close {
