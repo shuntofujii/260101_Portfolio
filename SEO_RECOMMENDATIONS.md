@@ -5,7 +5,7 @@
 - **robots.txt** … クローラー許可と `sitemap.xml` の指定
 - **sitemap.xml** … トップURLを登録（更新時に `lastmod` を更新推奨）
 - **メタタグ** … `theme-color`, `robots`, OGP（`og:locale`, `og:image:width/height/alt`）, Twitter（`twitter:image`, `twitter:image:alt`）, `apple-touch-icon`
-- **構造化データ** … ProfilePage/Person に加え、WebPage + ItemList（9プロジェクト名）を JSON-LD で追加
+- **構造化データ** … ProfilePage/Person に加え、WebPage + ItemList（8プロジェクト名）を JSON-LD で追加
 - **クローラー向けテキスト** … 視覚非表示の「ポートフォリオ実績一覧」セクション（見出し＋プロジェクト名・短い説明）をHTMLに追加
 - **noscript** … 実績名の表記を整理
 - **画像の alt / aria-label** … モーダル内グリッド画像に意味のある alt、ライトボックス表示時に alt を引き継ぎ

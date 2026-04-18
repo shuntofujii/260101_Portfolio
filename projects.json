@@ -73,7 +73,6 @@
         { "type": "sectionTitle", "text": "Intro Video" },
         { "type": "video", "file": "fix_m_1.webm" },
         { "type": "imageRow", "files": ["fix_p_1.webp", "fix_p_2.webp"] },
-        { "type": "subtitle", "text": "Process" },
         { "type": "video", "file": "spaceship_m_1.webm" },
         { "type": "imageRow", "files": ["spaceship_p_1.webp", "spaceship_p_2.webp", "spaceship_p_3.webp"] },
         { "type": "video", "file": "fix_m_2.webm" },
@@ -119,47 +118,6 @@
         "url": "#"
       }
     ]
-  },
-  {
-    "id": "project-03",
-    "title": "ZABTON",
-    "category": "Hackathon App",
-    "role": "Creative Direction",
-    "scope": "Product Video / UIUX Design",
-    "year": "2022",
-    "tools": [
-      "After Effects",
-      "Premiere Pro",
-      "XD"
-    ],
-    "tagline": "サステナブル大喜利",
-    "description": "国内最大級のハッカソン「東京Web3ハッカソン」に出場し、全100組の中で準グランプリを獲得しました。\n大喜利のお題とボケを投稿することにブロックチェーン技術を用いることで、トークノミクスを成立させるというサービスでした。\n1週間と短い期間の中で、UI/UXデザイン、アプリの紹介動画の制作を担当させていただきました。",
-    "modalMetaItems": [
-      { "label": "Prize", "value": "Tokyo Web3 Hackathon 2nd Prize", "icon": "https://assets.shuntofujii.com/icons/prize.svg" },
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
-      { "label": "Team", "value": "Concept：Harry So / Development：Luka Fujiwara", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
-    ],
-    "heroMedia": {
-      "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-03.webm"
-    },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-03.webp",
-    "gallery": [
-      {
-        "type": "image",
-        "src": "https://assets.shuntofujii.com/zabton/placeholder-image.jpg",
-        "caption": "メインビジュアル"
-      },
-      {
-        "type": "image",
-        "src": "https://assets.shuntofujii.com/zabton/placeholder-image.jpg",
-        "caption": "アプリケーション"
-      }
-    ],
-    "links": []
   },
   {
     "id": "project-04",
@@ -343,7 +301,7 @@
             "images": 5
           },
           {
-            "title": "Process",
+            "title": "メイキング",
             "assetPrefix": "murder_process",
             "videos": 2
           }
@@ -414,7 +372,7 @@
       "segments": [
         { "type": "sectionTitle", "text": "Trailer" },
         { "type": "video", "file": "Trailer_m_1.webm" },
-        { "type": "sectionTitle", "text": "◼︎Brian's House" },
+        { "type": "sectionTitle", "text": "Brian's House" },
         { "type": "imageRow", "files": ["brianhouse_p_1.webp"] },
         {
           "type": "mediaRow",
@@ -435,7 +393,7 @@
         { "type": "sectionTitle", "text": "Colosseum" },
         { "type": "imageRow", "files": ["colosseum_p_1.webp"] },
         { "type": "imageRow", "files": ["colosseumprocess_p_1.webp", "colosseumprocess_p_2.webp"] },
-        { "type": "sectionTitle", "text": "◼︎SWAT" },
+        { "type": "sectionTitle", "text": "SWAT" },
         { "type": "imageRow", "files": ["swat_p_1.webp"] },
         {
           "type": "mediaRow",
@@ -444,9 +402,8 @@
             { "type": "video", "file": "swatprocess_m_2.webm" }
           ]
         },
-        { "type": "sectionTitle", "text": "◼︎GanGoe's House" },
+        { "type": "sectionTitle", "text": "GanGoe's House" },
         { "type": "imageRow", "files": ["gangoehouse_p_1.webp"] },
-        { "type": "subtitle", "text": "・Process" },
         {
           "type": "mediaRow",
           "items": [
@@ -464,7 +421,7 @@
             { "type": "video", "file": "gangoehouseprocess_m_8.webm" }
           ]
         },
-        { "type": "sectionTitle", "text": "◼︎Red Carpet" },
+        { "type": "sectionTitle", "text": "Red Carpet" },
         { "type": "imageRow", "files": ["interview_p_1.webp"] },
         {
           "type": "mediaRow",
@@ -486,7 +443,7 @@
         { "type": "imageRow", "files": ["rockpaperdead_p_1.webp"] },
         { "type": "imageRow", "files": ["rockpaperdeadprocess_p_1.webp", "rockpaperdeadprocess_p_2.webp"] },
         { "type": "imageRow", "files": ["rockpaperdeadprocess_p_3.webp"] },
-        { "type": "sectionTitle", "text": "◼︎ZFILMS" },
+        { "type": "sectionTitle", "text": "ZFILMS" },
         { "type": "imageRow", "files": ["logo_p_1.webp"] },
         { "type": "imageRow", "files": ["logoprocess_p_1.webp", "logoprocess_p_2.webp"] },
         { "type": "sectionTitle", "text": "ディレクターズ葛藤" },
@@ -571,7 +528,7 @@
         ]
       },
       {
-        "title": "Process",
+        "title": "メイキング",
         "initiatives": [
           {
             "title": "Main",
