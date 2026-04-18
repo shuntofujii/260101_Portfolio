@@ -1,6 +1,7 @@
 [
   {
     "id": "project-01",
+    "pageSlug": "dates",
     "title": "DATEs",
     "category": "Web App",
     "role": "Founding",
@@ -46,6 +47,7 @@
   },
   {
     "id": "project-02",
+    "pageSlug": "ejic",
     "title": "EJIC",
     "category": "Business Event",
     "role": "Creative Direction",
@@ -120,6 +122,7 @@
   },
   {
     "id": "project-04",
+    "pageSlug": "izumo",
     "title": "IZUMO",
     "category": "Mobile App",
     "role": "Marketing Strategy",
@@ -263,6 +266,7 @@
   },
   {
     "id": "project-05",
+    "pageSlug": "deteqle",
     "title": "デテクル",
     "category": "Web App",
     "role": "Marketing Strategy",
@@ -354,6 +358,7 @@
   },
   {
     "id": "project-06",
+    "pageSlug": "rockpaperdead",
     "title": "グーチョキデッド",
     "category": "Film Production",
     "role": "Art Direction",
@@ -478,6 +483,7 @@
   },
   {
     "id": "project-07",
+    "pageSlug": "sepila",
     "title": "SEPILA",
     "category": "Fitness Brand",
     "role": "Creative Direction",
@@ -552,6 +558,7 @@
   },
   {
     "id": "project-08",
+    "pageSlug": "kujico",
     "title": "久次米珈琲焙煎所",
     "category": "Coffee Shop",
     "role": "Co-Founding",
@@ -598,6 +605,7 @@
   },
   {
     "id": "project-09",
+    "pageSlug": "others",
     "title": "Others",
     "category": "Other Projects",
     "role": "Graphic Design",

@@ -33,14 +33,10 @@
 
 - デプロイやコンテンツ更新のたびに、`sitemap.xml` の `lastmod` を**その日の日付（YYYY-MM-DD）**に更新すると、検索エンジンに「いつ更新されたか」を伝えやすくなります。
 
-### 4. コンテンツの追加（任意）
+### 4. プロジェクト別URL（実装済み）
 
-- 現状は1ページで完結しているため、検索でヒットしうるキーワードは限られます。
-- 将来的に「プロジェクトごとのページ」や「about / contact ページ」を増やすと、キーワードとインデックス数が増え、SEOの余地が広がります。
-- その場合は、各ページに  
-  - 固有の `<title>` と `meta description`  
-  - そのページ用の `canonical`  
-  を設定し、`sitemap.xml` にURLを追加することを推奨します。
+- 各案件は **`/{pageSlug}/`** の静的HTML（`{pageSlug}/index.html`）を持ちます。`projects.json` を更新したら **`node scripts/build-project-pages.mjs`** で再生成し、`sitemap.xml` の `lastmod` を更新してください。
+- 追加で「about / contact」などのページを増やす場合も、固有の `title` / `description` / `canonical` とサイトマップ登録を揃えてください。
 
 ### 5. 表示速度・Core Web Vitals
 

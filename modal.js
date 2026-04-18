@@ -86,7 +86,7 @@ export function openModal(project, triggerElement) {
 
   refs.modalContent.innerHTML = `
     <div class="modal-header">
-      <h2 class="modal-title">${safeTitle}</h2>
+      <h2 class="modal-title" id="modalTitleHeading">${safeTitle}</h2>
       ${safeTagline ? `<p class="modal-tagline">${safeTagline}</p>` : ''}
     </div>
     ${safeDescription ? `<div class="modal-description">${safeDescription}</div>` : ''}
@@ -142,6 +142,8 @@ export function openModal(project, triggerElement) {
     });
   }
 
+  document.dispatchEvent(new CustomEvent('portfolio:modalopen', { detail: { project } }));
+
   document.body.style.overflow = 'hidden';
   if (refs.guidanceText) refs.guidanceText.classList.remove('visible');
   if (refs.focusVisual) refs.focusVisual.classList.add('modal-background');
@@ -181,6 +183,7 @@ export function closeModal(stopAllInlineVideos) {
 
     if (refs.modalContent) refs.modalContent.innerHTML = '';
     state.isClosing = false;
+    document.dispatchEvent(new CustomEvent('portfolio:modalclose'));
   };
   refs.modalContainer.addEventListener('transitionend', onEnd);
 

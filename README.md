@@ -9,6 +9,10 @@
 ├── index.html          # メインHTML（メタ・OGP・構造化データ・スキップリンク含む）
 ├── styles.css          # スタイルシート（CSS変数でテーマ・z-index・Safe Area を集約）
 ├── projects.json       # プロジェクトデータ（8件。cases 構造で施策別メディアも管理可）
+├── {pageSlug}/         # 各案件の静的HTML（例: ejic/index.html → shuntofujii.com/ejic/）
+├── scripts/
+│   └── build-project-pages.mjs  # projects.json から {pageSlug}/index.html を再生成
+├── routing.js          # /{pageSlug}/ のパス解釈（app.js から利用）
 ├── app.js              # エントリポイント（初期化・ナビ描画・ホバー/クリック処理）
 ├── state.js            # 状態管理（currentState, 選択中プロジェクト等）
 ├── domRefs.js          # DOM 参照の保持（setRefs / getRefs）
@@ -37,6 +41,42 @@
 3. **`projectVideoUrls.js`** … `heroMedia`、トップレベル `initiatives`、`cases` 内の `videos` / `hasVideo`、および `gallery` 内の動画 URL を集約（`media.js` の `buildVideoUrl` と命名規則を共有）。
 4. **`media.js`** … モーダル用の画像グリッド・動画グリッド・インラインプレイヤー。`modal.js` から `createCaseSection` 等が呼ばれる。
 5. **`lightbox.js`** … 拡大表示の動画も `ensureVideoPlayUrl` 経由でキャッシュを再利用。
+
+### プロジェクト別URL（静的ページ）
+
+各案件は **`https://shuntofujii.com/{pageSlug}/`**（フラットURL）で個別にインデックス可能です。`projects.json` の各オブジェクトに **`pageSlug`** を定義し、トップのUIはそのままモーダルで表示します。
+
+- トップから案件を開くと、履歴APIで **`/{pageSlug}/`** にURLが合わせられます（リロードすると該当の静的HTMLが読み込まれます）。
+- ルート直下に **`{pageSlug}/index.html`** が生成されます（例: `ejic/index.html` → 本番では `/ejic/`）。
+
+#### `pageSlug` の付け方（必読）
+
+| 項目 | 内容 |
+|------|------|
+| **推奨** | 英小文字、数字、ハイフン（`-`）。短く一意なスラッグ（例: `ejic`, `dates`, `rockpaperdead`）。 |
+| **禁止（予約語）** | スラッグ **`projects` は使わないでください**。ルーティング上、案件URLとして扱いません（`routing.js` の予約）。 |
+| **将来のページと衝突しないように** | 今後ルート直下に `about` や `contact` などの固定ページを置く予定がある場合、その名前と同じ `pageSlug` は避けてください。 |
+| **`projects.json` との関係** | データファイル名は **`projects.json`**（リポジトリ直下）。ブラウザは **`/projects.json`** として取得します。これは **案件URL `/projects/` とは無関係**です（`/projects/` というパスの案件ページは作りません）。 |
+
+#### 静的HTMLの再生成（データ変更のたび）
+
+`projects.json` の **タイトル・説明文・`pageSlug`・サムネイル** などを変えたら、各 `{pageSlug}/index.html` 内の **canonical・OGP・JSON-LD** を更新するため、必ず次を実行してください。
+
+```bash
+node scripts/build-project-pages.mjs
+```
+
+案件を **追加・削除** した場合は、あわせて **`index.html`**（トップ）の構造化データ・SEO用実績リスト、**`sitemap.xml`** のURL一覧を手作業で整合させてください。
+
+## 🔁 デプロイ・データ更新時の推奨手順
+
+`projects.json` を編集したあと、次の順序を踏むと抜け漏れが減ります。
+
+1. **`node meta-audit.js`** … モーダルmetaとFocusの整合を確認（エラー時は修正してから次へ）。
+2. **`node scripts/build-project-pages.mjs`** … 全 `{pageSlug}/index.html` を再生成。
+3. **`sitemap.xml`** … 必要に応じて `lastmod` やURL一覧を更新（案件の追加・削除・URL変更時）。
+4. **トップ `index.html`** … ItemListの `url` や `.seo-project-list` のリンクを、案件追加・削除に合わせて更新（手動）。
+5. 本番反映後、**Search Console** のサイトマップ送信済みであれば、必要に応じて再送信。
 
 ## 🚀 ローカル起動方法
 
@@ -75,6 +115,10 @@ http-server -p 8000
 - Ruby: `ruby -run -e httpd . -p 8000`
 
 **注意**: `file://` プロトコルでは `projects.json` の読み込みが CORS エラーで失敗するため、必ずローカルサーバーを使用してください。
+
+### 本番URLの前提（ルート相対パス）
+
+`index.html` および各 `{pageSlug}/index.html` は **`/app.js`・`/styles.css`・`/projects.json`** のように **サイトルート基準の絶対パス**でリソースを読み込みます。**ドメイン直下（例: `https://shuntofujii.com/`）にホストする**想定です。サブディレクトリ配下だけに公開する場合は、パス解決を見直す必要があります。
 
 ## 🎨 カスタマイズ
 
@@ -148,6 +192,7 @@ export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 
 ### 1. プロジェクトデータ（`projects.json`）
 
+- [ ] 各プロジェクトに **`pageSlug`** を設定（一意・**`projects` は使わない**・将来の固定ページ名と重複させない）
 - [ ] 各プロジェクトの `id` / `title` を実際のプロジェクト名に変更
 - [ ] `category` / `role` / `scope` / `year` を実際の内容に変更
 - [ ] `tools` 配列を実際に使用したツールに変更
@@ -156,6 +201,7 @@ export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 - [ ] `thumbnail` をサムネイル画像の URL に変更
 - [ ] `links` 配列に外部リンク（Behance / YouTube / Web など）を追加
 - [ ] **cases を使う場合**: `projectSlug` と `cases` を追加（後述「アセットルール」参照）。モーダル内に案件・施策ごとの画像・動画グリッドが表示されます。`cases` がないプロジェクトは、モーダルではヘッダー・メタ・説明文・リンクのみ表示されます。
+- [ ] 編集後 **`node meta-audit.js`** → **`node scripts/build-project-pages.mjs`** を実行し、**`sitemap.xml`** とトップ **`index.html`**（ItemList・SEOリスト）を案件数に合わせて更新
 
 ### プロジェクトmeta（hover左上 / モーダルmeta）運用ルール
 
@@ -229,7 +275,7 @@ node meta-audit.js
 
 ### 3. メタ情報・構造化データ（`index.html`）
 
-- [ ] `<title>` と `meta name="description"` / `meta name="keywords"` を変更
+- [ ] `<title>` と `meta name="description"` を変更（`keywords` は検索エンジンの利用価値が低いため、トップでは未使用。任意で追加する場合は各ページの文脈に合わせる）
 - [ ] OGP（`og:title`, `og:description`, `og:image`, `og:url` 等）を変更
 - [ ] Twitter 用メタ（`twitter:card`, `twitter:title`, `twitter:image` 等）を変更
 - [ ] `application/ld+json` の ProfilePage / WebPage の名前・説明・`sameAs`（SNS 等）を変更
@@ -387,7 +433,7 @@ node meta-audit.js
 - **対応ブラウザ**: モダンブラウザ（Chrome, Firefox, Safari, Edge）。ES Modules 対応環境を想定
 - **レスポンシブ**: 対応（スマホ・タブレット・PC）。Safe Area（ノッチ・ホームインジケータ）を CSS 変数で考慮
 - **アクセシビリティ**: スキップリンク、`aria-label`（ナビ・ダイアログ・ライトボックス）、モーダル/ライトボックス内のフォーカストラップ、ESC で閉じる
-- **SEO**: `robots.txt`、`sitemap.xml`、メタタグ（OGP・Twitter）、構造化データ（ProfilePage / WebPage + ItemList）、視覚非表示の実績一覧テキスト。詳細は `SEO_RECOMMENDATIONS.md` を参照
+- **SEO**: `robots.txt`、`sitemap.xml`、メタタグ（OGP・Twitter）、構造化データ（ProfilePage / WebPage + ItemList）、視覚非表示の実績一覧テキスト。案件別は **`/{pageSlug}/`** の静的HTML（ビルドスクリプト生成）。詳細は `SEO_RECOMMENDATIONS.md` を参照
 - **動画読み込み**: 形式は WebM のみ。ヒーロー・モーダル・ライトボックスで同一 URL の二重取得を減らすため、`videoCache.js` による Blob キャッシュと `<link rel="preload" as="video">` を利用（サーバー側は CORS でクロスオリジン読み取り可能にすると Blob 化しやすくなります）
 
 ---

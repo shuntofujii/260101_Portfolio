@@ -79,6 +79,21 @@ function audit() {
   const errors = [];
   const warnings = [];
 
+  const slugToId = new Map();
+  for (const p of projects) {
+    const label = summarizeProject(p);
+    if (!p.pageSlug || !String(p.pageSlug).trim()) {
+      errors.push(`${label}: pageSlug が未設定です（/{slug}/ の静的URL用）`);
+    } else {
+      const slug = String(p.pageSlug).trim();
+      if (slugToId.has(slug)) {
+        errors.push(`${label}: pageSlug '${slug}' が重複しています（${slugToId.get(slug)} と）`);
+      } else {
+        slugToId.set(slug, p.id);
+      }
+    }
+  }
+
   // 「肩書き」要素は廃止（全プロジェクト共通）
   const forbiddenLabels = new Set([
     'Direction',

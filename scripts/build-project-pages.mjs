@@ -1,52 +1,105 @@
-<!doctype html>
+/**
+ * projects.json から /{pageSlug}/index.html を生成する（静的サイト用・フラットURL）
+ * 実行: node scripts/build-project-pages.mjs
+ */
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const root = path.join(__dirname, '..');
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function clipMeta(s, max = 155) {
+  const raw = String(s || '')
+    .replace(/\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (raw.length <= max) return raw;
+  return `${raw.slice(0, max - 3)}...`;
+}
+
+function buildJsonLd(project, canonical, thumb) {
+  const graph = [
+    {
+      '@type': 'CreativeWork',
+      '@id': `${canonical}#work`,
+      name: project.title,
+      headline: project.tagline || undefined,
+      description: clipMeta(project.description || project.tagline || '', 300),
+      url: canonical,
+      image: thumb,
+      creator: { '@id': 'https://shuntofujii.com/#person' },
+      inLanguage: 'ja-JP'
+    },
+    {
+      '@type': 'WebPage',
+      '@id': `${canonical}#webpage`,
+      url: canonical,
+      name: `${project.title} | SHUNTO FUJII`,
+      description: clipMeta(project.description || project.tagline || ''),
+      isPartOf: { '@id': 'https://shuntofujii.com/#website' },
+      primaryImageOfPage: { '@type': 'ImageObject', url: thumb },
+      mainEntity: { '@id': `${canonical}#work` },
+      inLanguage: 'ja-JP'
+    }
+  ];
+  return JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }, null, 2);
+}
+
+function pageHtml(project) {
+  const slug = project.pageSlug;
+  const canonical = `https://shuntofujii.com/${encodeURIComponent(slug)}/`;
+  const title = `${project.title} | SHUNTO FUJII`;
+  const desc = clipMeta(project.description || project.tagline || '');
+  const thumb =
+    project.thumbnail || 'https://assets.shuntofujii.com/top/ogp.webp';
+  const ogTitle = escapeHtml(title);
+  const ogDesc = escapeHtml(desc);
+  const jsonLd = buildJsonLd(project, canonical, thumb);
+
+  return `<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    <title>SHUNTO FUJII | Creative Director & Service Designer Portfolio</title>
-    <meta
-      name="description"
-      content="藤井洵斗（SHUNTO FUJII）のポートフォリオサイト。Creative Direction, Service Design, Marketing Strategy, Business Devの領域で、本質的な課題解決と価値創造を行うプロジェクト実績を紹介します。"
-    />
+    <title>${escapeHtml(title)}</title>
+    <meta name="description" content="${escapeHtml(desc)}" />
     <meta name="author" content="SHUNTO FUJII（藤井 洵斗）" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    <link rel="canonical" href="https://shuntofujii.com/" />
-    <link rel="alternate" hreflang="ja" href="https://shuntofujii.com/" />
-    <link rel="alternate" hreflang="x-default" href="https://shuntofujii.com/" />
+    <link rel="canonical" href="${canonical}" />
+    <link rel="alternate" hreflang="ja" href="${canonical}" />
+    <link rel="alternate" hreflang="x-default" href="${canonical}" />
 
     <meta name="theme-color" content="#0a0a0a" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
 
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="SHUNTO FUJII | Creative Director &amp; Service Designer Portfolio" />
-    <meta
-      property="og:description"
-      content="藤井洵斗（SHUNTO FUJII）のポートフォリオ。Creative Direction, Service Design, Marketing Strategy, Business Devの実績を紹介。"
-    />
-    <meta property="og:url" content="https://shuntofujii.com/" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="${ogTitle}" />
+    <meta property="og:description" content="${ogDesc}" />
+    <meta property="og:url" content="${canonical}" />
     <meta property="og:site_name" content="SHUNTO FUJII Portfolio" />
     <meta property="og:locale" content="ja_JP" />
-    <meta
-      property="og:image"
-      content="https://assets.shuntofujii.com/top/ogp.webp"
-    />
+    <meta property="og:image" content="${escapeHtml(thumb)}" />
     <meta property="og:image:type" content="image/webp" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="SHUNTO FUJII Portfolio" />
+    <meta property="og:image:alt" content="${escapeHtml(project.title)}" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@shuntofujii" />
-    <meta name="twitter:title" content="SHUNTO FUJII | Creative Director &amp; Service Designer Portfolio" />
-    <meta
-      name="twitter:description"
-      content="藤井洵斗のポートフォリオ。Creative Direction / Service Design / Strategy"
-    />
-    <meta name="twitter:image" content="https://assets.shuntofujii.com/top/ogp.webp" />
-    <meta name="twitter:image:alt" content="SHUNTO FUJII Portfolio" />
+    <meta name="twitter:title" content="${ogTitle}" />
+    <meta name="twitter:description" content="${ogDesc}" />
+    <meta name="twitter:image" content="${escapeHtml(thumb)}" />
+    <meta name="twitter:image:alt" content="${escapeHtml(project.title)}" />
 
     <link rel="icon" href="https://assets.shuntofujii.com/top/favicon.ico" />
     <link rel="apple-touch-icon" href="https://assets.shuntofujii.com/top/favicon.ico" />
@@ -61,7 +114,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- レイアウト・配色を先に適用し、Inter は非ブロッキングで読み込む（display=swap は Fonts のクエリで指定） -->
     <link rel="stylesheet" href="/styles.css" />
     <link
       rel="preload"
@@ -77,68 +129,10 @@
     </noscript>
 
     <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@graph": [
-          {
-            "@type": "Person",
-            "@id": "https://shuntofujii.com/#person",
-            "name": "SHUNTO FUJII",
-            "alternateName": "藤井 洵斗",
-            "jobTitle": "Creative Director / Service Designer / Marketing Strategist",
-            "url": "https://shuntofujii.com/",
-            "image": {
-              "@type": "ImageObject",
-              "url": "https://assets.shuntofujii.com/top/ogp.webp",
-              "width": 1200,
-              "height": 630
-            },
-            "description": "Creative Direction, Service Design, Marketing Strategy, Business Devを横断するクリエイター。",
-            "sameAs": [
-              "https://x.com/shuntofujii",
-              "https://www.facebook.com/shuntofujii/",
-              "https://www.linkedin.com/in/shuntofujii/",
-              "https://shuntofujii.myportfolio.com/"
-            ]
-          },
-          {
-            "@type": "WebSite",
-            "@id": "https://shuntofujii.com/#website",
-            "url": "https://shuntofujii.com/",
-            "name": "SHUNTO FUJII Portfolio",
-            "description": "藤井洵斗（SHUNTO FUJII）のポートフォリオ。Creative Direction, Service Design, Marketing Strategyの実績。",
-            "inLanguage": "ja-JP",
-            "publisher": { "@id": "https://shuntofujii.com/#person" }
-          },
-          {
-            "@type": "ProfilePage",
-            "@id": "https://shuntofujii.com/#profile",
-            "url": "https://shuntofujii.com/",
-            "name": "SHUNTO FUJII | Creative Director & Service Designer Portfolio",
-            "description": "藤井洵斗のポートフォリオ。Creative Direction, Service Design, Marketing Strategyの実績一覧。",
-            "inLanguage": "ja-JP",
-            "isPartOf": { "@id": "https://shuntofujii.com/#website" },
-            "mainEntity": { "@id": "https://shuntofujii.com/#person" },
-            "about": {
-              "@type": "ItemList",
-              "numberOfItems": 8,
-              "itemListElement": [
-                { "@type": "ListItem", "position": 1, "name": "DATEs", "url": "https://shuntofujii.com/dates/" },
-                { "@type": "ListItem", "position": 2, "name": "EJIC", "url": "https://shuntofujii.com/ejic/" },
-                { "@type": "ListItem", "position": 3, "name": "IZUMO", "url": "https://shuntofujii.com/izumo/" },
-                { "@type": "ListItem", "position": 4, "name": "デテクル", "url": "https://shuntofujii.com/deteqle/" },
-                { "@type": "ListItem", "position": 5, "name": "グーチョキデッド", "url": "https://shuntofujii.com/rockpaperdead/" },
-                { "@type": "ListItem", "position": 6, "name": "SEPILA", "url": "https://shuntofujii.com/sepila/" },
-                { "@type": "ListItem", "position": 7, "name": "久次米珈琲焙煎所", "url": "https://shuntofujii.com/kujico/" },
-                { "@type": "ListItem", "position": 8, "name": "Others", "url": "https://shuntofujii.com/others/" }
-              ]
-            }
-          }
-        ]
-      }
+${jsonLd}
     </script>
   </head>
-  <body>
+  <body data-portfolio-page-slug="${escapeHtml(slug)}">
     <a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
     <header class="portfolio-title" id="portfolioTitle">
       <h1 class="portfolio-title-text">SHUNTO FUJII</h1>
@@ -264,3 +258,31 @@
     -->
   </body>
 </html>
+`;
+}
+
+const projectsPath = path.join(root, 'projects.json');
+const raw = fs.readFileSync(projectsPath, 'utf8');
+const projects = JSON.parse(raw);
+
+if (!Array.isArray(projects)) {
+  console.error('projects.json が配列ではありません');
+  process.exit(1);
+}
+
+let written = 0;
+for (const project of projects) {
+  const slug = project.pageSlug;
+  if (!slug) {
+    console.warn('skip (pageSlug なし):', project.id);
+    continue;
+  }
+  const dir = path.join(root, slug);
+  fs.mkdirSync(dir, { recursive: true });
+  const html = pageHtml(project);
+  fs.writeFileSync(path.join(dir, 'index.html'), html, 'utf8');
+  written += 1;
+  console.log('wrote', `/${slug}/index.html`);
+}
+
+console.log(`done: ${written} project pages`);

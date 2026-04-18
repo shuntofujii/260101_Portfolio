@@ -25,6 +25,123 @@ import { openLightbox, openLightboxVideo, closeLightbox } from './lightbox.js';
 import { stopAllInlineVideos } from './media.js';
 import { injectVideoLinkPreloads, scheduleIdleVideoPreload, ensureVideoPlayUrl } from './videoCache.js';
 import { collectProjectVideoUrls } from './projectVideoUrls.js';
+import { pathForProjectSlug, parseProjectSlugFromPath } from './routing.js';
+
+const BASE_PAGE_TITLE = document.title;
+const metaDescriptionEl = document.querySelector('meta[name="description"]');
+const BASE_META_DESCRIPTION = metaDescriptionEl?.getAttribute('content') ?? '';
+
+function normalizePathname(pathname) {
+  if (!pathname || pathname === '/') return pathname;
+  return pathname.replace(/\/+$/, '');
+}
+
+/** 静的プロジェクトページの data 属性、または URL パスから pageSlug を取得 */
+function getPathnameProjectSlug() {
+  const fromBody = document.body?.dataset?.portfolioPageSlug;
+  if (fromBody) return fromBody;
+  return parseProjectSlugFromPath(normalizePathname(window.location.pathname));
+}
+
+function findProjectByPageSlug(slug) {
+  if (!slug || !state.projects?.length) return null;
+  return state.projects.find((p) => p.pageSlug === slug) || null;
+}
+
+/** 旧URL互換: #ejic や #project-02 など */
+function findLegacyProjectFromHash() {
+  const raw = location.hash.replace(/^#/, '');
+  if (!raw) return null;
+  const key = decodeURIComponent(raw);
+  return (
+    state.projects.find(
+      (p) =>
+        (p.pageSlug && p.pageSlug === key) ||
+        (p.projectSlug && p.projectSlug === key) ||
+        p.id === key
+    ) || null
+  );
+}
+
+function onPortfolioModalOpen(e) {
+  const project = e.detail?.project;
+  if (!project || !project.pageSlug) return;
+
+  const targetPath = pathForProjectSlug(project.pageSlug);
+  const cur = normalizePathname(window.location.pathname);
+  const expected = normalizePathname(targetPath);
+
+  if (cur !== expected) {
+    history.pushState({ portfolioModal: true }, '', targetPath);
+  }
+
+  document.title = `${project.title} | SHUNTO FUJII`;
+
+  if (metaDescriptionEl) {
+    const raw = (project.description || project.tagline || '')
+      .replace(/\n/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (raw) {
+      const clipped = raw.length > 155 ? `${raw.slice(0, 152)}...` : raw;
+      metaDescriptionEl.setAttribute('content', clipped);
+    }
+  }
+}
+
+function onPortfolioModalClose() {
+  if (document.body.dataset.portfolioPageSlug) {
+    window.location.replace('/');
+    return;
+  }
+
+  if (parseProjectSlugFromPath(normalizePathname(window.location.pathname))) {
+    history.replaceState(null, BASE_PAGE_TITLE, '/');
+  } else if (location.hash) {
+    history.replaceState(null, BASE_PAGE_TITLE, `${location.pathname}${location.search}`);
+  }
+  document.title = BASE_PAGE_TITLE;
+  if (metaDescriptionEl && BASE_META_DESCRIPTION) {
+    metaDescriptionEl.setAttribute('content', BASE_META_DESCRIPTION);
+  }
+}
+
+function onPopState() {
+  const slug = parseProjectSlugFromPath(normalizePathname(window.location.pathname));
+  const project = slug ? findProjectByPageSlug(slug) : null;
+
+  if (state.currentState === 'modal' && !project) {
+    closeModal(stopAllInlineVideos);
+    return;
+  }
+  if (project && state.currentState !== 'modal') {
+    const item = document.querySelector(`[data-project-id="${project.id}"]`);
+    if (item) openModal(project, item);
+  }
+}
+
+function applyInitialRoute() {
+  let slug = getPathnameProjectSlug();
+  if (slug) {
+    const project = findProjectByPageSlug(slug);
+    if (project) {
+      const item = document.querySelector(`[data-project-id="${project.id}"]`);
+      if (item) openModal(project, item);
+    }
+    return;
+  }
+
+  const legacy = findLegacyProjectFromHash();
+  if (legacy && legacy.pageSlug) {
+    history.replaceState(null, '', pathForProjectSlug(legacy.pageSlug));
+    const item = document.querySelector(`[data-project-id="${legacy.id}"]`);
+    if (item) openModal(legacy, item);
+  }
+}
+
+document.addEventListener('portfolio:modalopen', onPortfolioModalOpen);
+document.addEventListener('portfolio:modalclose', onPortfolioModalClose);
+window.addEventListener('popstate', onPopState);
 
 // DOM参照を取得し、refs に登録（他モジュールから getRefs() で参照）
 const portfolioTitle = document.getElementById('portfolioTitle');
@@ -105,7 +222,7 @@ function scheduleCursorEffectInit() {
 // ============================================
 async function init() {
   try {
-    const response = await fetch('projects.json');
+    const response = await fetch('/projects.json');
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
@@ -130,6 +247,7 @@ async function init() {
     renderInitialState();
     renderProjectNavigation();
     setupEventListeners();
+    applyInitialRoute();
     await scheduleCursorEffectInit();
   } catch (error) {
     console.error('Error loading projects:', error);
@@ -253,6 +371,14 @@ function setupEventListeners() {
   }
 
   refs.portfolioTitle.addEventListener('click', () => {
+    if (document.body.dataset.portfolioPageSlug) {
+      window.location.href = '/';
+      return;
+    }
+    if (state.currentState === 'modal') {
+      closeModal(stopAllInlineVideos);
+      return;
+    }
     resetToInitialState();
   });
 
