@@ -163,13 +163,12 @@ export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 
 #### 構成要素（肩書き要素は廃止）
 
-プロジェクトごとのmeta構成要素は次の8種です（存在しない要素は省略してOK）。
+プロジェクトごとのmeta構成要素は次の7種です（存在しない要素は省略してOK）。**モーダルmetaでは役職ラベル（例: `Founder` / `Co-Founder`）は使わず、名前だけを別ラベルで載せる必要もありません**（役職情報は `role` / `scope` 由来の `Focus` に含めます）。
 
 - `Client`
 - `Domain`
 - `Prize`
 - `Year`
-- `Founder`
 - `Focus`
 - `Toolkits`
 - `Team`

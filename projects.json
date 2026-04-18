@@ -16,7 +16,6 @@
     "modalMetaItems": [
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Founder", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
       { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
       { "label": "Team", "value": "Marketing：小泉 昂也 / Development：橋口 健志、山下 郁矢 / SNS：久次米 啓佑", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
@@ -494,7 +493,6 @@
     "modalMetaItems": [
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Founder", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
       { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
     ],
@@ -567,7 +565,6 @@
     "modalMetaItems": [
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Founder", "value": "藤井 洵斗", "icon": "https://assets.shuntofujii.com/icons/created.svg" },
       { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
     ],

@@ -88,6 +88,7 @@ function audit() {
     'Director',
     'Designer',
     'Art Director',
+    'Founder',
     'Co-Founder'
   ]);
 
