@@ -542,6 +542,33 @@ export function appendExplicitModal(project, parentEl) {
       const forceHorizontal = seg.files.length > 1;
       const grid = createImageGrid(images, null, forceHorizontal, null, null, 0, altPrefix);
       if (grid) parentEl.appendChild(grid);
+      return;
+    }
+
+    if (seg.type === 'mediaRow' && Array.isArray(seg.items) && seg.items.length > 0) {
+      const row = document.createElement('div');
+      row.className = 'explicit-media-row';
+      row.style.gridTemplateColumns = `repeat(${seg.items.length}, minmax(0, 1fr))`;
+
+      seg.items.forEach((item) => {
+        if (!item || !item.type) return;
+        if (item.type === 'image' && item.file) {
+          const grid = createImageGrid(
+            [{ src: `${base}/${item.file}` }],
+            null,
+            true,
+            null,
+            null,
+            0,
+            altPrefix
+          );
+          if (grid) row.appendChild(grid);
+        } else if (item.type === 'video' && item.file) {
+          row.appendChild(createInteractiveVideoShell(`${base}/${item.file}`));
+        }
+      });
+
+      parentEl.appendChild(row);
     }
   });
 }

@@ -43,6 +43,13 @@ export function collectProjectVideoUrls(projects) {
         if (seg?.type === 'video' && seg.file) {
           all.add(`${baseAssetsUrl}/${project.projectSlug}/${seg.file}`);
         }
+        if (seg?.type === 'mediaRow' && Array.isArray(seg.items)) {
+          seg.items.forEach((item) => {
+            if (item?.type === 'video' && item.file) {
+              all.add(`${baseAssetsUrl}/${project.projectSlug}/${item.file}`);
+            }
+          });
+        }
       });
     }
   });

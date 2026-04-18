@@ -331,7 +331,6 @@ body.modal-open .context-panel {
   left: 0;
   width: 100vw;
   height: 100svh;
-  height: 100dvh;
   z-index: var(--z-focus-visual);
   overflow: hidden;
   transition: opacity var(--transition-video);
@@ -349,7 +348,6 @@ body.modal-open .context-panel {
   left: 0;
   width: 100vw;
   height: 100svh;
-  height: 100dvh;
   z-index: 0;
   pointer-events: none;
 }
@@ -361,7 +359,6 @@ body.modal-open .context-panel {
   left: 0;
   width: 100vw;
   height: 100svh;
-  height: 100dvh;
   z-index: 0;
 }
 
@@ -390,7 +387,6 @@ body.modal-open .context-panel {
   left: 0;
   width: 100vw;
   height: 100svh;
-  height: 100dvh;
   pointer-events: none;
   opacity: 1;
   transition: opacity 420ms ease;
@@ -1543,16 +1539,40 @@ body.modal-open .modal-overlay {
   margin-top: 0.75rem;
 }
 
+/* 画像＋動画など異種メディアの同一行（explicitModal mediaRow） */
+.explicit-media-row {
+  display: grid;
+  gap: var(--img-gap-sp);
+  width: 100%;
+  margin-bottom: var(--modal-block-gap-sp);
+  align-items: start;
+}
+
+.explicit-media-row .mediaGrid {
+  margin-bottom: 0;
+}
+
+.explicit-media-row .video-shell {
+  min-width: 0;
+  margin-bottom: 0;
+}
+
 .explicit-modal .mediaGrid {
   margin-bottom: var(--modal-block-gap-sp);
 }
 
-.explicit-modal .mediaGrid:last-child {
+.explicit-modal .mediaGrid:last-child,
+.explicit-modal .explicit-media-row:last-child {
   margin-bottom: 0;
 }
 
 @media (min-width: 900px) {
   .explicit-modal .mediaGrid {
+    margin-bottom: var(--img-gap-pc);
+  }
+
+  .explicit-media-row {
+    gap: var(--img-gap-pc);
     margin-bottom: var(--img-gap-pc);
   }
 }
@@ -1640,7 +1660,6 @@ body.modal-open .modal-overlay {
   .focus-visual {
     width: 100%;
     height: 100svh;
-    height: 100dvh;
     top: 0;
   }
 
@@ -1685,6 +1704,11 @@ body.modal-open .modal-overlay {
     padding-right: 1.125rem; /* 18px */
     padding-bottom: 2.375rem; /* 38px */
     padding-left: 1.125rem; /* 18px */
+  }
+
+  .modal-close {
+    top: calc(16px + var(--safe-top));
+    right: calc(16px + var(--safe-right));
   }
 
   .modal-title {
@@ -1766,8 +1790,8 @@ body.modal-open .modal-overlay {
   }
 
   .modal-close {
-    top: calc(1rem + var(--safe-top));
-    right: calc(1rem + var(--safe-right));
+    top: calc(16px + var(--safe-top));
+    right: calc(16px + var(--safe-right));
     width: 36px;
     height: 36px;
     font-size: 1.3rem;

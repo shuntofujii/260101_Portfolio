@@ -310,10 +310,6 @@ function handleProjectLeave() {
         clearTimeout(refs.heroVideoBase._showFallbackId);
         refs.heroVideoBase._showFallbackId = null;
       }
-      if (refs.heroVideoBase._resizeHandler) {
-        window.removeEventListener('resize', refs.heroVideoBase._resizeHandler);
-        refs.heroVideoBase._resizeHandler = null;
-      }
       refs.heroVideoBase.pause();
       refs.heroVideoBase.currentTime = 0;
       refs.heroVideoBase.style.display = 'none';
@@ -385,10 +381,6 @@ function updateHeroMedia(heroMedia) {
         if (video._showFallbackId) {
           clearTimeout(video._showFallbackId);
           video._showFallbackId = null;
-        }
-        if (video._resizeHandler) {
-          window.removeEventListener('resize', video._resizeHandler);
-          video._resizeHandler = null;
         }
         const existingListeners = ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough', 'playing', 'error'];
         existingListeners.forEach(eventType => {

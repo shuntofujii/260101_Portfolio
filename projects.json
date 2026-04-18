@@ -408,7 +408,92 @@
       "Figma"
     ],
     "tagline": "国産映画を世界へ",
-    "description": "全編英語長編映画「グーチョキデッド」の美術監督ならびに実行（デザイン、衣装調達、小道具など）、またマーケティングなど幅広い領域を担当しております。\n作品は \"ゆうばり国際ファンタスティック映画祭2025\" にノミネートされました。",
+    "description": "全編英語長編映画「グーチョキデッド」において、美術監督ならびに実行（デザイン、衣装調達、小道具など）、またマーケティングなど幅広い領域を担当しております。\n作品は \"ゆうばり国際ファンタスティック映画祭2025\" にノミネートされました。",
+    "projectSlug": "rockpaperdead",
+    "explicitModal": {
+      "segments": [
+        { "type": "sectionTitle", "text": "Trailer" },
+        { "type": "video", "file": "Trailer_m_1.webm" },
+        { "type": "sectionTitle", "text": "◼︎Brian's House" },
+        { "type": "imageRow", "files": ["brianhouse_p_1.webp"] },
+        {
+          "type": "mediaRow",
+          "items": [
+            { "type": "video", "file": "brianhouseprocess_m_1.webm" },
+            { "type": "video", "file": "brianhouseprocess_m_2.webm" }
+          ]
+        },
+        { "type": "sectionTitle", "text": "GPS君" },
+        { "type": "imageRow", "files": ["gps_p_1.webp"] },
+        {
+          "type": "mediaRow",
+          "items": [
+            { "type": "image", "file": "gpsprocess_p_1.webp" },
+            { "type": "video", "file": "gpsprocess_m_2.webm" }
+          ]
+        },
+        { "type": "sectionTitle", "text": "Colosseum" },
+        { "type": "imageRow", "files": ["colosseum_p_1.webp"] },
+        { "type": "imageRow", "files": ["colosseumprocess_p_1.webp", "colosseumprocess_p_2.webp"] },
+        { "type": "sectionTitle", "text": "◼︎SWAT" },
+        { "type": "imageRow", "files": ["swat_p_1.webp"] },
+        {
+          "type": "mediaRow",
+          "items": [
+            { "type": "image", "file": "swatprocess_p_1.webp" },
+            { "type": "video", "file": "swatprocess_m_2.webm" }
+          ]
+        },
+        { "type": "sectionTitle", "text": "◼︎GanGoe's House" },
+        { "type": "imageRow", "files": ["gangoehouse_p_1.webp"] },
+        { "type": "subtitle", "text": "・Process" },
+        {
+          "type": "mediaRow",
+          "items": [
+            { "type": "image", "file": "gangoehouseprocess_p_2.webp" },
+            { "type": "video", "file": "gangoehouseprocess_m_6.webm" }
+          ]
+        },
+        { "type": "imageRow", "files": ["gangoehouseprocess_p_3.webp"] },
+        { "type": "video", "file": "gangoehouseprocess_m_1.webm" },
+        { "type": "imageRow", "files": ["gangoehouseprocess_p_4.webp", "gangoehouseprocess_p_5.webp"] },
+        {
+          "type": "mediaRow",
+          "items": [
+            { "type": "video", "file": "gangoehouseprocess_m_7.webm" },
+            { "type": "video", "file": "gangoehouseprocess_m_8.webm" }
+          ]
+        },
+        { "type": "sectionTitle", "text": "◼︎Red Carpet" },
+        { "type": "imageRow", "files": ["interview_p_1.webp"] },
+        {
+          "type": "mediaRow",
+          "items": [
+            { "type": "video", "file": "interviewprocess_m_1.webm" },
+            { "type": "image", "file": "interviewprocess_p_1.webp" }
+          ]
+        },
+        { "type": "imageRow", "files": ["interviewprocess_p_2.webp"] },
+        { "type": "sectionTitle", "text": "Cars" },
+        { "type": "imageRow", "files": ["numberplate_p_1.webp", "numberplate_p_2.webp", "numberplate_p_3.webp"] },
+        {
+          "type": "imageRow",
+          "files": ["numberplateprocess_p_1.webp", "numberplateprocess_p_2.webp", "numberplateprocess_p_3.webp"]
+        },
+        { "type": "sectionTitle", "text": "Team" },
+        { "type": "imageRow", "files": ["groupphoto_p_1.webp"] },
+        { "type": "sectionTitle", "text": "グーチョキデッド" },
+        { "type": "imageRow", "files": ["rockpaperdead_p_1.webp"] },
+        { "type": "imageRow", "files": ["rockpaperdeadprocess_p_1.webp", "rockpaperdeadprocess_p_2.webp"] },
+        { "type": "imageRow", "files": ["rockpaperdeadprocess_p_3.webp"] },
+        { "type": "sectionTitle", "text": "◼︎ZFILMS" },
+        { "type": "imageRow", "files": ["logo_p_1.webp"] },
+        { "type": "imageRow", "files": ["logoprocess_p_1.webp", "logoprocess_p_2.webp"] },
+        { "type": "sectionTitle", "text": "ディレクターズ葛藤" },
+        { "type": "imageRow", "files": ["katto_p_1.webp"] },
+        { "type": "imageRow", "files": ["katto_p_2.webp", "katto_p_3.webp"] }
+      ]
+    },
     "modalMetaItems": [
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
@@ -424,7 +509,7 @@
     "gallery": [
       {
         "type": "image",
-        "src": "https://assets.shuntofujii.com/rockpaperdead/placeholder-image.jpg",
+        "src": "https://assets.shuntofujii.com/rockpaperdead/rockpaperdead_p_1.webp",
         "caption": "メインビジュアル"
       },
       {
