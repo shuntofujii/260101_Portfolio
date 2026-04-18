@@ -323,7 +323,7 @@ function createInteractiveVideoShell(canonicalSrc, posterOverride = null) {
   video.preload = 'metadata';
   video.poster = posterUrl;
   attachVideoElement(video, canonicalSrc);
-  video.muted = true;
+  video.muted = false;
   video.loop = true;
   video.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
   video.setAttribute('disablepictureinpicture', 'true');
