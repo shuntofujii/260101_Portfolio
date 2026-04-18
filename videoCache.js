@@ -1,10 +1,8 @@
-// 動画のフェッチ→Blob URL キャッシュ（同一URLは1回だけネットワーク取得）
+// 動画のフェッチ→Blob URL キャッシュ（同一URLは1回だけネットワーク取得）。再生形式は WebM のみ。
 const inflight = new Map();
-/** @type {Map<string, string>} canonicalUrl -> playUrl (blob: またはフォールバックの元URL) */
+/** @type {Map<string, string>} canonicalUrl -> playUrl（blob: または fetch 失敗時は同一 URL の直参照） */
 const resolved = new Map();
 const blobUrls = new Set();
-let webmSupportChecked = false;
-let canPlayWebm = true;
 
 let pagehideHooked = false;
 function hookPageHideForRevoke() {
@@ -23,30 +21,6 @@ function rememberBlobUrl(url) {
   }
 }
 
-function supportsWebmPlayback() {
-  if (webmSupportChecked) return canPlayWebm;
-  webmSupportChecked = true;
-  if (typeof document === 'undefined') {
-    canPlayWebm = true;
-    return canPlayWebm;
-  }
-  const probe = document.createElement('video');
-  if (!probe || typeof probe.canPlayType !== 'function') {
-    canPlayWebm = true;
-    return canPlayWebm;
-  }
-  const vp9 = probe.canPlayType('video/webm; codecs="vp9,opus"');
-  const generic = probe.canPlayType('video/webm');
-  canPlayWebm = Boolean(vp9 || generic);
-  return canPlayWebm;
-}
-
-export function resolvePlayableVideoUrl(canonicalUrl) {
-  if (!canonicalUrl || typeof canonicalUrl !== 'string') return canonicalUrl;
-  if (!canonicalUrl.endsWith('.webm')) return canonicalUrl;
-  return supportsWebmPlayback() ? canonicalUrl : canonicalUrl.replace(/\.webm(\?.*)?$/i, '.mp4$1');
-}
-
 function getPlayUrlIfCached(canonicalUrl) {
   if (!canonicalUrl) return null;
   const v = resolved.get(canonicalUrl);
@@ -62,11 +36,10 @@ export function ensureVideoPlayUrl(canonicalUrl) {
   if (!canonicalUrl || typeof canonicalUrl !== 'string') return Promise.resolve(canonicalUrl);
   if (resolved.has(canonicalUrl)) return Promise.resolve(resolved.get(canonicalUrl));
   if (inflight.has(canonicalUrl)) return inflight.get(canonicalUrl);
-  const fetchTargetUrl = resolvePlayableVideoUrl(canonicalUrl);
 
   const p = (async () => {
     try {
-      const res = await fetch(fetchTargetUrl, {
+      const res = await fetch(canonicalUrl, {
         mode: 'cors',
         credentials: 'omit',
         cache: 'force-cache',
@@ -79,9 +52,9 @@ export function ensureVideoPlayUrl(canonicalUrl) {
       resolved.set(canonicalUrl, objectUrl);
       return objectUrl;
     } catch (e) {
-      console.warn('Video preload (fetch) failed, using direct URL:', fetchTargetUrl, e);
-      resolved.set(canonicalUrl, fetchTargetUrl);
-      return fetchTargetUrl;
+      console.warn('Video preload (fetch) failed, using direct URL:', canonicalUrl, e);
+      resolved.set(canonicalUrl, canonicalUrl);
+      return canonicalUrl;
     } finally {
       inflight.delete(canonicalUrl);
     }

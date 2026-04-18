@@ -1916,6 +1916,26 @@ body.modal-open .modal-overlay {
   display: none;
 }
 
+.lightbox-video-error {
+  display: none;
+  max-width: min(32rem, calc(100vw - 3rem));
+  margin: 0;
+  padding: 1rem 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
+  text-align: center;
+  background: rgba(30, 30, 30, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  z-index: calc(var(--z-lightbox-close) - 1);
+}
+
+.lightbox-video-error:not([hidden]) {
+  display: block;
+}
+
 @media (max-width: 768px) {
   .lightbox-overlay {
     padding: calc(1rem + var(--safe-top)) calc(1rem + var(--safe-right)) calc(1rem + var(--safe-bottom)) calc(1rem + var(--safe-left));

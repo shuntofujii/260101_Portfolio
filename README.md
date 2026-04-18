@@ -17,7 +17,7 @@
 ├── modal.js            # モーダルの開閉・コンテンツ組み立て
 ├── lightbox.js         # ライトボックス（画像・動画の拡大表示）
 ├── media.js            # メディア表示（画像/動画グリッド、cases 用カード、動画プレイヤー）
-├── videoCache.js       # 動画の fetch→Blob URL キャッシュ・`<link rel="preload">`・アイドル時プリロード
+├── videoCache.js       # 動画（WebM のみ）の fetch→Blob URL キャッシュ・`<link rel="preload">`・アイドル時プリロード
 ├── projectVideoUrls.js # projects.json からヒーロー・cases・gallery の動画 URL を列挙（上記と連携）
 ├── cursorEffect.js     # カーソル軌跡エフェクト・アクセント色の時間変化（Three.js を CDN から動的 import）
 ├── meta-audit.js       # meta監査（hover左上/モーダルmeta の乖離防止）
@@ -33,7 +33,7 @@
 ### モジュールの役割（データの流れ）
 
 1. **`app.js`** … `projects.json` を取得後、`collectProjectVideoUrls` で動画 URL 一覧を作り、`injectVideoLinkPreloads`（先読みヒント）と `ensureVideoPlayUrl` / `scheduleIdleVideoPreload`（Blob キャッシュ）を起動。その後 UI 描画と `initCursorEffect`。
-2. **`videoCache.js`** … 同一 URL の動画は `fetch` で一度だけ取得し、可能なら Blob URL を `video.src` に割り当て（CORS 失敗時は元 URL のまま）。モーダル内 `<video>` は `attachVideoElement` でキャッシュ済みになるまで `src` を遅延。`pagehide` で Blob URL を `revoke`。
+2. **`videoCache.js`** … 同一 URL の WebM を `fetch` で一度だけ取得し、可能なら Blob URL を `video.src` に割り当て（CORS 失敗時は元 URL のまま）。モーダル内 `<video>` は `attachVideoElement` でキャッシュ済みになるまで `src` を遅延。`pagehide` で Blob URL を `revoke`。
 3. **`projectVideoUrls.js`** … `heroMedia`、トップレベル `initiatives`、`cases` 内の `videos` / `hasVideo`、および `gallery` 内の動画 URL を集約（`media.js` の `buildVideoUrl` と命名規則を共有）。
 4. **`media.js`** … モーダル用の画像グリッド・動画グリッド・インラインプレイヤー。`modal.js` から `createCaseSection` 等が呼ばれる。
 5. **`lightbox.js`** … 拡大表示の動画も `ensureVideoPlayUrl` 経由でキャッシュを再利用。
@@ -359,6 +359,7 @@ node meta-audit.js
 ### 動画が再生されない
 
 - ヒーロー用は `.webm` を推奨。モーダル内インライン動画も `.webm` + ポスター `.webp` を想定
+- **cases の `assetPrefix` と実ファイル名**: `buildVideoUrl` は `https://{base}/{projectSlug}/{assetPrefix}_m_{番号}.webm` を要求します。CDN にその名前のファイルが無いと（HTTP 404）再生できません。ブラウザの開発者ツールの Network で該当 URL を確認するか、ターミナルで `curl -I` してステータスを確認してください。実ファイル名に合わせて `projects.json` の `assetPrefix` を直すか、アップロード側のファイル名を規則に揃えてください。
 - ファイルサイズが大きすぎないか確認
 - ブラウザが対応しているコーデックか確認
 
@@ -387,7 +388,7 @@ node meta-audit.js
 - **レスポンシブ**: 対応（スマホ・タブレット・PC）。Safe Area（ノッチ・ホームインジケータ）を CSS 変数で考慮
 - **アクセシビリティ**: スキップリンク、`aria-label`（ナビ・ダイアログ・ライトボックス）、モーダル/ライトボックス内のフォーカストラップ、ESC で閉じる
 - **SEO**: `robots.txt`、`sitemap.xml`、メタタグ（OGP・Twitter）、構造化データ（ProfilePage / WebPage + ItemList）、視覚非表示の実績一覧テキスト。詳細は `SEO_RECOMMENDATIONS.md` を参照
-- **動画読み込み**: ヒーロー・モーダル・ライトボックスで同一 URL の二重取得を減らすため、`videoCache.js` による Blob キャッシュと `<link rel="preload" as="video">` を利用（サーバー側は CORS でクロスオリジン読み取り可能にすると Blob 化しやすくなります）
+- **動画読み込み**: 形式は WebM のみ。ヒーロー・モーダル・ライトボックスで同一 URL の二重取得を減らすため、`videoCache.js` による Blob キャッシュと `<link rel="preload" as="video">` を利用（サーバー側は CORS でクロスオリジン読み取り可能にすると Blob 化しやすくなります）
 
 ---
 

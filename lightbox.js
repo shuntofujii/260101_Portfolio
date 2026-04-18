@@ -5,6 +5,26 @@ import { createFocusTrap } from './utils.js';
 import { LIGHTBOX_CLOSE_DURATION_MS, LIGHTBOX_VIDEO_PLAY_DELAY_MS } from './constants.js';
 import { ensureVideoPlayUrl } from './videoCache.js';
 
+const LIGHTBOX_VIDEO_ERROR_MSG =
+  '動画を読み込めませんでした。ネットワークのほか、CDN 上のファイル名が `assetPrefix` と一致しているか（`{prefix}_m_1.webm`）もご確認ください。';
+
+function clearLightboxVideoError(refs) {
+  if (refs.lightboxVideoError) {
+    refs.lightboxVideoError.textContent = '';
+    refs.lightboxVideoError.hidden = true;
+  }
+}
+
+function showLightboxVideoError(refs) {
+  if (refs.lightboxVideoError) {
+    refs.lightboxVideoError.textContent = LIGHTBOX_VIDEO_ERROR_MSG;
+    refs.lightboxVideoError.hidden = false;
+  }
+  if (refs.lightboxVideo) {
+    refs.lightboxVideo.style.display = 'none';
+  }
+}
+
 function finishLightboxClose(mediaType) {
   const refs = getRefs();
   refs.lightboxOverlay.setAttribute('hidden', '');
@@ -22,6 +42,7 @@ function finishLightboxClose(mediaType) {
     refs.lightboxVideo.style.transformOrigin = '';
     refs.lightboxVideo.style.transition = '';
     refs.lightboxVideo.style.objectFit = '';
+    clearLightboxVideoError(refs);
   }
   if (mediaType === 'image' && refs.lightboxImage) {
     refs.lightboxImage.src = '';
@@ -97,6 +118,8 @@ export function openLightboxVideo(videoSrc, originElement) {
   state.lightboxType = 'video';
   state.lightboxTriggerElement = originElement || null;
 
+  clearLightboxVideoError(refs);
+
   if (originElement) {
     const rect = originElement.getBoundingClientRect();
     state.lightboxOriginRect = {
@@ -113,7 +136,7 @@ export function openLightboxVideo(videoSrc, originElement) {
   refs.lightboxVideo.style.display = 'block';
   refs.lightboxVideo.removeAttribute('src');
   refs.lightboxVideo.dataset.lightboxCanonicalSrc = videoSrc;
-  refs.lightboxVideo.muted = true;
+  refs.lightboxVideo.muted = false;
   refs.lightboxVideo.playsInline = true;
   refs.lightboxVideo.setAttribute('playsinline', 'true');
   refs.lightboxVideo.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
@@ -128,14 +151,22 @@ export function openLightboxVideo(videoSrc, originElement) {
     document.addEventListener('keydown', state.lightboxFocusTrapHandler);
   });
 
-  const handleVideoLoad = () => {
+  let layoutApplied = false;
+
+  const runVideoLayout = () => {
+    if (layoutApplied) return;
+    const vw = refs.lightboxVideo.videoWidth;
+    const vh = refs.lightboxVideo.videoHeight;
+    if (!vw || !vh) return;
+    layoutApplied = true;
+
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     if (state.lightboxOriginRect) {
       const { x: originX, y: originY, width: originWidth, height: originHeight } = state.lightboxOriginRect;
       const finalX = viewportWidth / 2;
       const finalY = viewportHeight / 2;
-      const videoAspectRatio = refs.lightboxVideo.videoWidth / refs.lightboxVideo.videoHeight;
+      const videoAspectRatio = vw / vh;
       let finalWidth = viewportWidth * 0.9;
       let finalHeight = finalWidth / videoAspectRatio;
       if (finalHeight > viewportHeight * 0.9) {
@@ -180,9 +211,29 @@ export function openLightboxVideo(videoSrc, originElement) {
   const applySrc = (playUrl) => {
     if (state.lightboxType !== 'video') return;
     if (refs.lightboxVideo.dataset.lightboxCanonicalSrc !== videoSrc) return;
+
+    const onVideoError = () => {
+      if (state.lightboxType !== 'video') return;
+      if (refs.lightboxVideo.dataset.lightboxCanonicalSrc !== videoSrc) return;
+      layoutApplied = true;
+      console.warn('Lightbox video error:', refs.lightboxVideo.error, videoSrc);
+      showLightboxVideoError(refs);
+    };
+
+    const tryLayout = () => {
+      runVideoLayout();
+    };
+
+    // src 代入より前に付ける（即時デコード・キャッシュ時の競合を避ける）
+    refs.lightboxVideo.addEventListener('loadedmetadata', tryLayout, { once: true });
+    refs.lightboxVideo.addEventListener('loadeddata', tryLayout, { once: true });
+    refs.lightboxVideo.addEventListener('error', onVideoError, { once: true });
+
     refs.lightboxVideo.src = playUrl;
-    refs.lightboxVideo.addEventListener('loadedmetadata', handleVideoLoad, { once: true });
-    if (refs.lightboxVideo.readyState >= 1) handleVideoLoad();
+
+    if (refs.lightboxVideo.readyState >= 1) {
+      tryLayout();
+    }
   };
 
   ensureVideoPlayUrl(videoSrc).then(applySrc);
@@ -194,6 +245,8 @@ export function openLightbox(imageSrc, originElement) {
 
   state.lightboxType = 'image';
   state.lightboxTriggerElement = originElement || null;
+
+  clearLightboxVideoError(refs);
 
   if (originElement) {
     const rect = originElement.getBoundingClientRect();

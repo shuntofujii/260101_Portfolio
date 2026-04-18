@@ -43,6 +43,7 @@ const modalContent = document.getElementById('modalContent');
 const lightboxOverlay = document.getElementById('lightboxOverlay');
 const lightboxImage = document.getElementById('lightboxImage');
 const lightboxVideo = document.getElementById('lightboxVideo');
+const lightboxVideoError = document.getElementById('lightboxVideoError');
 const lightboxClose = document.getElementById('lightboxClose');
 
 setRefs({
@@ -62,6 +63,7 @@ setRefs({
   lightboxOverlay,
   lightboxImage,
   lightboxVideo,
+  lightboxVideoError,
   lightboxClose,
   openLightbox,
   openLightboxVideo
@@ -399,12 +401,12 @@ function updateHeroMedia(heroMedia) {
           if (video.dataset.canonicalVideoSrc !== canonical) return;
 
           video.src = playUrl;
-          video.muted = true;
+          video.muted = false;
           video.loop = true;
           video.playsInline = true;
           video.preload = 'auto';
           video.setAttribute('loop', 'true');
-          video.setAttribute('muted', 'true');
+          video.removeAttribute('muted');
           video.setAttribute('playsinline', 'true');
           video.style.display = 'block';
           video.style.opacity = '0';
