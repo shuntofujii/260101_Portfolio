@@ -4,11 +4,11 @@
  * 使い方:
  *   node meta-audit.js
  *
- * 監査方針（現状ルールに合わせる）:
- * - Focus は role + scope を統合した単一ソース（重複除外）であること
- * - モーダルmeta（modalMetaItems）には、最低限 Domain / Year / Focus が含まれること
+ * 監査方針:
+ * - projects.json の `disciplines` とモーダル内 Disciplines（$disciplines）が一致すること
+ * - モーダルmeta（modalMetaItems）には、最低限 Domain / Year / Disciplines が含まれること
  * - tools があるプロジェクトは Toolkits が含まれること
- * - 旧来の分離ラベル（Direction 等）が残っていないこと（Focusへ統合済みの想定）
+ * - 廃止ラベル（Direction 等）が残っていないこと
  */
 
 const fs = require('fs');
@@ -20,27 +20,16 @@ function readProjectsJson() {
   return JSON.parse(raw);
 }
 
-function buildUnifiedFocus(role, scope) {
-  const r = String(role || '').trim();
-  const s = String(scope || '').trim();
-  if (!r && !s) return '';
-  if (!r) return s;
-  if (!s) return r;
-  const parts = s.split(' / ').map(x => x.trim()).filter(Boolean);
-  if (parts.includes(r)) return parts.join(' / ');
-  return [r, ...parts].join(' / ');
-}
-
 function resolveTokens(project) {
   const category = project.category || '';
   const year = project.year || '';
   const toolkits = Array.isArray(project.tools) && project.tools.length > 0 ? project.tools.join(' / ') : '';
-  const focus = buildUnifiedFocus(project.role, project.scope);
+  const disciplines = String(project.disciplines ?? '').trim();
 
   return {
     $domain: category,
     $year: year,
-    $focus: focus,
+    $disciplines: disciplines,
     $toolkits: toolkits,
   };
 }
@@ -67,6 +56,16 @@ function summarizeProject(project) {
   const id = project.id || '(no id)';
   const title = project.title || '(no title)';
   return `${title} (${id})`;
+}
+
+/** explicitModal 内でセクション単位の meta（sectionMeta）がある場合はモーダル末尾の modalMetaItems を省略できる */
+function hasExplicitSectionMeta(project) {
+  const segments = project.explicitModal?.segments;
+  if (!Array.isArray(segments)) return false;
+  return segments.some((s) => {
+    if (!s || s.type !== 'sectionMeta' || !Array.isArray(s.items)) return false;
+    return s.items.some((it) => it && String(it.label ?? '').trim() && String(it.value ?? '').trim());
+  });
 }
 
 function audit() {
@@ -104,15 +103,31 @@ function audit() {
     'Designer',
     'Art Director',
     'Founder',
-    'Co-Founder'
+    'Co-Founder',
+    'Focus'
   ]);
 
   for (const p of projects) {
     const label = summarizeProject(p);
+
+    if ('role' in p || 'scope' in p) {
+      errors.push(`${label}: role / scope は廃止されました。disciplines に統合してください`);
+    }
+    if ('focus' in p) {
+      errors.push(`${label}: focus フィールドは廃止されました。disciplines を使用してください`);
+    }
+    if (!String(p.disciplines ?? '').trim()) {
+      errors.push(`${label}: disciplines が未設定または空です`);
+    }
+
     const resolved = resolveMetaItems(p);
 
-    if (!Array.isArray(p.modalMetaItems) || p.modalMetaItems.length === 0) {
+    if ((!Array.isArray(p.modalMetaItems) || p.modalMetaItems.length === 0) && !hasExplicitSectionMeta(p)) {
       errors.push(`${label}: modalMetaItems が未設定です（モーダルmetaに全て記載ルール）`);
+      continue;
+    }
+
+    if (hasExplicitSectionMeta(p) && (!Array.isArray(p.modalMetaItems) || p.modalMetaItems.length === 0)) {
       continue;
     }
 
@@ -123,7 +138,7 @@ function audit() {
     }
 
     // 必須（モーダルmetaは完全版）
-    for (const required of ['Domain', 'Year', 'Focus']) {
+    for (const required of ['Domain', 'Year', 'Disciplines']) {
       if (!byLabel.has(required)) {
         errors.push(`${label}: modalMetaItems に ${required} がありません`);
       } else {
@@ -142,11 +157,10 @@ function audit() {
       if (v) warnings.push(`${label}: tools が空だが Toolkits が表示されます（必要なら削除）`);
     }
 
-    // Focus 統合ルール（role/scope の重複排除）
-    const expectedFocus = buildUnifiedFocus(p.role, p.scope);
-    const focusItem = byLabel.get('Focus')?.[0];
-    if (focusItem && focusItem.value !== expectedFocus) {
-      errors.push(`${label}: Focus が統合ルールと不一致 (expected='${expectedFocus}', actual='${focusItem.value}')`);
+    const expectedDisciplines = String(p.disciplines ?? '').trim();
+    const disciplinesItem = byLabel.get('Disciplines')?.[0];
+    if (disciplinesItem && disciplinesItem.value !== expectedDisciplines) {
+      errors.push(`${label}: Disciplines が projects.json の disciplines と不一致 (expected='${expectedDisciplines}', actual='${disciplinesItem.value}')`);
     }
 
     // 禁止/廃止ラベルの残存チェック

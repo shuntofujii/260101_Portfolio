@@ -499,6 +499,44 @@ export function createCaseSection(caseData, projectSlug) {
   return section;
 }
 
+function appendSectionMeta(parentEl, items) {
+  if (!Array.isArray(items) || items.length === 0) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'modal-meta explicit-modal-meta';
+  items.forEach((it) => {
+    if (!it || !it.label) return;
+    const valueStr = String(it.value ?? '').trim();
+    if (!valueStr) return;
+    const row = document.createElement('div');
+    row.className = 'modal-meta-item';
+    const icon = String(it.icon || '').trim();
+    if (icon) {
+      const img = document.createElement('img');
+      img.src = icon;
+      img.alt = String(it.label).trim();
+      img.className = 'modal-meta-icon';
+      img.width = 18;
+      img.height = 18;
+      img.decoding = 'async';
+      img.loading = 'lazy';
+      row.appendChild(img);
+    }
+    const content = document.createElement('div');
+    content.className = 'modal-meta-content';
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'modal-meta-label';
+    labelSpan.textContent = String(it.label).trim();
+    const valueSpan = document.createElement('span');
+    valueSpan.className = 'modal-meta-value';
+    valueSpan.textContent = valueStr;
+    content.appendChild(labelSpan);
+    content.appendChild(valueSpan);
+    row.appendChild(content);
+    wrap.appendChild(row);
+  });
+  if (wrap.childElementCount > 0) parentEl.appendChild(wrap);
+}
+
 /**
  * projects.json の explicitModal.segments からモーダル本文を生成（ファイル名ベースの固定レイアウト）
  * @param {{ projectSlug?: string, explicitModal?: { segments?: Array<{ type: string, text?: string, file?: string, files?: string[] }> } }} project
@@ -528,6 +566,11 @@ export function appendExplicitModal(project, parentEl) {
       h.className = 'explicit-modal-subtitle';
       h.textContent = seg.text;
       parentEl.appendChild(h);
+      return;
+    }
+
+    if (seg.type === 'sectionMeta' && Array.isArray(seg.items)) {
+      appendSectionMeta(parentEl, seg.items);
       return;
     }
 

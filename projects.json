@@ -4,8 +4,7 @@
     "pageSlug": "dates",
     "title": "DATEs",
     "category": "Web App",
-    "role": "Founding",
-    "scope": "Service Design / UIUX Design / Business Dev",
+    "disciplines": "Founding / Service Design / UIUX Design / Business Dev",
     "year": "2019-2025",
     "tools": [
       "Figma",
@@ -17,7 +16,7 @@
     "modalMetaItems": [
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
       { "label": "Team", "value": "Marketing：小泉 昂也 / Development：橋口 健志、山下 郁矢 / SNS：久次米 啓佑", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
     ],
@@ -50,8 +49,7 @@
     "pageSlug": "ejic",
     "title": "EJIC",
     "category": "Business Event",
-    "role": "Creative Direction",
-    "scope": "Intro Video / Logo Design / Graphic Design",
+    "disciplines": "Creative Direction / Intro Video / Logo Design / Graphic Design",
     "year": "2021-2022",
     "tools": [
       "Blender",
@@ -66,7 +64,7 @@
       { "label": "Client", "value": "日本マイクロソフト株式会社", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
     ],
     "explicitModal": {
@@ -125,14 +123,14 @@
     "pageSlug": "izumo",
     "title": "IZUMO",
     "category": "Mobile App",
-    "role": "Marketing Strategy",
-    "scope": "Marketing Strategy / Community Management / Product Video",
+    "disciplines": "Marketing Strategy / Community Management / Product Video",
     "year": "2022-2023",
     "tools": [
       "After Effects",
       "DaVinci Resolve",
       "XD",
-      "Illustrator"
+      "Illustrator",
+      "Camera & Gear"
     ],
     "tagline": "ARの普及を見越したSNS",
     "description": "香港に拠点を置くAR×Web3の会社IZUMOxr.Ltdにて、Marketing Managerを務めました。\n2022年6月の事業立ち上げから、2023年12月までの1年半で、コミュニティ立ち上げ(Discord登録者約1万人)やSNS立ち上げ(𝕏フォロワー約2万人)、それらに関わるキャンペーン実施やクリエイティブ制作など幅広くプロジェクトに携わりました。",
@@ -140,7 +138,7 @@
       { "label": "Client", "value": "IZUMOxr Ltd.", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
     ],
     "heroMedia": {
@@ -269,14 +267,14 @@
     "pageSlug": "deteqle",
     "title": "デテクル",
     "category": "Web App",
-    "role": "Marketing Strategy",
-    "scope": "Business Dev / Product Video / Graphic Design",
+    "disciplines": "Marketing Strategy / Business Dev / Product Video / Graphic Design",
     "year": "2023-",
     "tools": [
       "DaVinci Resolve",
       "After Effects",
       "Figma",
-      "Illustrator"
+      "Illustrator",
+      "Camera & Gear"
     ],
     "tagline": "AR × 人から生まれる新体験",
     "description": "国内有数のMR開発会社MuuMu社のサービス「デテクル」のマーケティング戦略策定及び、その実行を担当しております。\n戦略策定のためのリサーチ、実行に伴う制作〜商談まで全てのプロセスを担っております。",
@@ -284,7 +282,7 @@
       { "label": "Client", "value": "株式会社MuuMu", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
     ],
     "heroMedia": {
@@ -361,8 +359,7 @@
     "pageSlug": "rockpaperdead",
     "title": "グーチョキデッド",
     "category": "Film Production",
-    "role": "Art Direction",
-    "scope": "Production Design / Costume Supervisor / Set Decorator",
+    "disciplines": "Art Direction / Production Design / Costume Supervisor / Set Decorator",
     "year": "2023-",
     "tools": [
       "Illustrator",
@@ -458,7 +455,7 @@
     "modalMetaItems": [
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
       { "label": "Team", "value": "Director & Producer：浅尾 尭洋 / Line Producer：渡邉 康裕", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
     ],
@@ -486,20 +483,20 @@
     "pageSlug": "sepila",
     "title": "SEPILA",
     "category": "Fitness Brand",
-    "role": "Creative Direction",
-    "scope": "Fitness Video",
+    "disciplines": "Creative Direction / Fitness Video",
     "year": "2024-",
     "tools": [
       "DaVinci Resolve",
       "After Effects",
-      "Figma"
+      "Figma",
+      "Camera & Gear"
     ],
     "tagline": "完全個室セルフマシンピラティス",
     "description": "セルフでピラティスを行うためのレッスン動画のディレクションを担っております。\n撮影〜画面UI制作〜編集の全工程を行っております。",
     "modalMetaItems": [
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
     ],
     "heroMedia": {
@@ -561,18 +558,19 @@
     "pageSlug": "kujico",
     "title": "久次米珈琲焙煎所",
     "category": "Coffee Shop",
-    "role": "Co-Founding",
+    "disciplines": "Co-Founding",
     "year": "2025 (Opening Soon)",
     "tools": [
       "Cursor",
-      "Illustrator"
+      "Illustrator",
+      "Camera & Gear"
     ],
     "tagline": "人間監査法人パイオニア",
     "description": "珈琲好きの友人と事業の立ち上げを行っております。",
     "modalMetaItems": [
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
     ],
     "heroMedia": {
@@ -608,16 +606,109 @@
     "pageSlug": "others",
     "title": "Others",
     "category": "Other Projects",
-    "role": "Graphic Design",
-    "scope": "Videography / Photography",
+    "disciplines": "Graphic Design / Videography / Photography",
     "year": "1995-",
     "tagline": "作ること全般が好きです。",
     "description": "色々楽しく作ってきました。AIの台頭により不要となったスキルばかりですが、楽しいからOK！",
-    "modalMetaItems": [
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" }
-    ],
+    "modalMetaItems": [],
+    "projectSlug": "others",
+    "explicitModal": {
+      "segments": [
+        { "type": "sectionTitle", "text": "EARN POKER" },
+        { "type": "video", "file": "EARNPOKER_m_1.webm" },
+        {
+          "type": "sectionMeta",
+          "items": [
+            { "label": "Client", "value": "StudioZ株式会社", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
+            { "label": "Domain", "value": "Mobile App", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+            { "label": "Year", "value": "2025", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+            { "label": "Disciplines", "value": "Product Video", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+            { "label": "Toolkits", "value": "After Effects / Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+          ]
+        },
+        { "type": "sectionTitle", "text": "YOKOLAB" },
+        { "type": "video", "file": "YOKOLAB_m_1.webm" },
+        {
+          "type": "sectionMeta",
+          "items": [
+            { "label": "Client", "value": "横瀬町", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
+            { "label": "Domain", "value": "Event", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+            { "label": "Year", "value": "2024", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+            { "label": "Disciplines", "value": "Highlight Video", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+            { "label": "Toolkits", "value": "Camera & Gear / After Effects", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+          ]
+        },
+        { "type": "sectionTitle", "text": "OMOROID" },
+        { "type": "imageRow", "files": ["omoroid_p_1.webp", "omoroid_p_2.webp"] },
+        { "type": "imageRow", "files": ["omoroid_p_3.webp", "omoroid_p_4.webp"] },
+        {
+          "type": "sectionMeta",
+          "items": [
+            { "label": "Client", "value": "株式会社NTTドコモ", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
+            { "label": "Domain", "value": "Web Media", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+            { "label": "Year", "value": "2023-2025", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+            { "label": "Disciplines", "value": "Creative Direction / Editorial Direction / Project Management", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+            { "label": "Toolkits", "value": "Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+          ]
+        },
+        { "type": "sectionTitle", "text": "ZABTON" },
+        { "type": "video", "file": "ZABTON_m_1.webm" },
+        { "type": "imageRow", "files": ["ZABTON_p_1.webp", "ZABTON_p_2.webp"] },
+        {
+          "type": "sectionMeta",
+          "items": [
+            { "label": "Domain", "value": "Mobile App", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+            { "label": "Prize", "value": "Tokyo Web3 Hackathon 2nd Prize", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+            { "label": "Year", "value": "2022", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+            { "label": "Disciplines", "value": "UIUX Design / Product Video", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+            { "label": "Toolkits", "value": "Camera & Gear / XD / After Effects / DaVinci Resolve", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
+            { "label": "Team", "value": "Concept：Harry So / Development：Luka Fujiwara", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
+          ]
+        },
+        { "type": "sectionTitle", "text": "FLAMMA" },
+        { "type": "video", "file": "FLAMMA_m_1.webm" },
+        { "type": "video", "file": "FLAMMABTS_m_1.webm" },
+        {
+          "type": "sectionMeta",
+          "items": [
+            { "label": "Domain", "value": "Film Production", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+            { "label": "Year", "value": "2021", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+            { "label": "Disciplines", "value": "Art Direction / Music / Actor", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+            { "label": "Toolkits", "value": "Photoshop / After Effects / Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
+            { "label": "Team", "value": "Director & Producer：浅尾 尭洋 / Director of Photography：中川 裕基", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
+          ]
+        },
+        { "type": "sectionTitle", "text": "IVS" },
+        { "type": "subtitle", "text": "IVS 2021 Spring" },
+        { "type": "imageRow", "files": ["IVS2021spring_p_1.webp"] },
+        { "type": "imageRow", "files": ["IVS2021spring_p_2.webp", "IVS2021spring_p_3.webp"] },
+        { "type": "subtitle", "text": "LAUNCHPAD Entertainment" },
+        { "type": "imageRow", "files": ["IVSEnt_p_1.webp"] },
+        { "type": "imageRow", "files": ["IVSEnt_p_2.webp", "IVSEnt_p_3.webp", "IVSEnt_p_4.webp"] },
+        { "type": "subtitle", "text": "IVS 2021" },
+        { "type": "imageRow", "files": ["IVSNasu_p_1.webp"] },
+        { "type": "imageRow", "files": ["IVSNasu_p_3.webp", "IVSNasu_p_4.webp"] },
+        { "type": "subtitle", "text": "IVS 2022" },
+        { "type": "imageRow", "files": ["IVSNahaJet_p_1.webp", "IVSNahaJet_p_2.webp"] },
+        { "type": "imageRow", "files": ["IVSNahaJet_p_3.webp", "IVSNahaJet_p_4.webp", "IVSNahaJet_p_5.webp"] },
+        { "type": "imageRow", "files": ["IVSNahaJet_p_6.webp", "IVSNahaJet_p_7.webp"] },
+        { "type": "imageRow", "files": ["IVSNahaPhoto_p_0.webp"] },
+        { "type": "imageRow", "files": ["IVSNahaPhoto_p_1.webp", "IVSNahaPhoto_p_2.webp", "IVSNahaPhoto_p_3.webp", "IVSNahaPhoto_p_4.webp", "IVSNahaPhoto_p_5.webp"] },
+        { "type": "imageRow", "files": ["IVSNahaT_p_1.webp"] },
+        { "type": "imageRow", "files": ["IVSNahaT_p_2.webp", "IVSNahaT_p_3.webp"] },
+        { "type": "imageRow", "files": ["IVSNahaT_p_4.webp", "IVSNahaT_p_5.webp", "IVSNahaT_p_6.webp"] },
+        {
+          "type": "sectionMeta",
+          "items": [
+            { "label": "Client", "value": "IVS株式会社", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
+            { "label": "Domain", "value": "Startup Conference", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
+            { "label": "Year", "value": "2021-2022", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+            { "label": "Disciplines", "value": "Graphic Design", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+            { "label": "Toolkits", "value": "Photoshop / Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+          ]
+        }
+      ]
+    },
     "heroMedia": {
       "type": "video",
       "src": "https://assets.shuntofujii.com/top/video-09.webm"
@@ -626,12 +717,12 @@
     "gallery": [
       {
         "type": "video",
-        "src": "https://assets.shuntofujii.com/other/placeholder-video.webm",
+        "src": "https://assets.shuntofujii.com/others/placeholder-video.webm",
         "caption": "メインモーション"
       },
       {
         "type": "image",
-        "src": "https://assets.shuntofujii.com/other/placeholder-image.jpg",
+        "src": "https://assets.shuntofujii.com/others/placeholder-image.jpg",
         "caption": "コンセプト"
       }
     ],

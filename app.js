@@ -633,20 +633,10 @@ function updateContextPanel(project) {
     categoryYear = `${project.category} (${project.year})`;
   }
 
-  const buildUnifiedFocus = (role, scope) => {
-    const r = String(role || '').trim();
-    const s = String(scope || '').trim();
-    if (!r && !s) return '';
-    if (!r) return s;
-    if (!s) return r;
-    const parts = s.split(' / ').map(x => x.trim()).filter(Boolean);
-    if (parts.includes(r)) return parts.join(' / ');
-    return [r, ...parts].join(' / ');
-  };
-  const focus = buildUnifiedFocus(project.role, project.scope);
+  const disciplines = String(project.disciplines ?? '').trim();
 
   const safeCategoryYear = escapeHtml(categoryYear);
-  const safeRoleScope = escapeHtml(focus);
+  const safeDisciplinesLine = escapeHtml(disciplines);
   const safeTools = tools ? escapeHtml(tools) : '';
 
   refs.contextPanel.innerHTML = `
@@ -656,7 +646,7 @@ function updateContextPanel(project) {
           <span class="context-info-value">${safeCategoryYear}</span>
         </div>
         <div class="context-info-item">
-          <span class="context-info-value value">${safeRoleScope}</span>
+          <span class="context-info-value value">${safeDisciplinesLine}</span>
         </div>
         ${safeTools ? `
         <div class="context-info-item row">

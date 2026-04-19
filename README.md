@@ -72,7 +72,7 @@ node scripts/build-project-pages.mjs
 
 `projects.json` を編集したあと、次の順序を踏むと抜け漏れが減ります。
 
-1. **`node meta-audit.js`** … モーダルmetaとFocusの整合を確認（エラー時は修正してから次へ）。
+1. **`node meta-audit.js`** … モーダルmetaとDisciplinesの整合を確認（エラー時は修正してから次へ）。
 2. **`node scripts/build-project-pages.mjs`** … 全 `{pageSlug}/index.html` を再生成。
 3. **`sitemap.xml`** … 必要に応じて `lastmod` やURL一覧を更新（案件の追加・削除・URL変更時）。
 4. **トップ `index.html`** … ItemListの `url` や `.seo-project-list` のリンクを、案件追加・削除に合わせて更新（手動）。
@@ -194,7 +194,7 @@ export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 
 - [ ] 各プロジェクトに **`pageSlug`** を設定（一意・**`projects` は使わない**・将来の固定ページ名と重複させない）
 - [ ] 各プロジェクトの `id` / `title` を実際のプロジェクト名に変更
-- [ ] `category` / `role` / `scope` / `year` を実際の内容に変更
+- [ ] `category` / `disciplines` / `year` を実際の内容に変更
 - [ ] `tools` 配列を実際に使用したツールに変更
 - [ ] `tagline` / `description` を各プロジェクトの説明に変更
 - [ ] `heroMedia`（`type`, `src`）をホバー時に表示する動画・画像に変更
@@ -207,31 +207,28 @@ export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 
 このプロジェクトでは「hover左上（コンテキストパネル）」と「モーダル最下部meta」で情報が乖離しないよう、次のルールで運用します。
 
-#### 構成要素（肩書き要素は廃止）
+#### 構成要素
 
-プロジェクトごとのmeta構成要素は次の7種です（存在しない要素は省略してOK）。**モーダルmetaでは役職ラベル（例: `Founder` / `Co-Founder`）は使わず、名前だけを別ラベルで載せる必要もありません**（役職情報は `role` / `scope` 由来の `Focus` に含めます）。
+プロジェクトごとのmeta構成要素は次の7種です（存在しない要素は省略してOK）。**自分の関わり方・担当領域の要約は `projects.json` の `disciplines` に書き、モーダルでは `Disciplines` として表示します**（チーム記載は `Team` に任せ、個人の肩書きだけを増やさない運用）。
 
 - `Client`
 - `Domain`
 - `Prize`
 - `Year`
-- `Focus`
+- `Disciplines`
 - `Toolkits`
 - `Team`
 
-#### Focus統合（Role/Scopeと同義）
+#### `disciplines` フィールド
 
-`Focus` は **Role/Scopeと同義**として扱い、表示用の `Focus` は次のルールで統合します。
-
-- `Focus = role + scope`（区切りは `" / "`）
-- ただし `scope` 側に `role` と同一の語が含まれている場合は **重複表示しない**
+各プロジェクトに **`disciplines`**（文字列）を1つ置きます。関わり方全体（Founding / Creative Direction / 具体的な担当領域など）をこの1行で表現し、ホバー左上の2行目・モーダルの `$disciplines` の参照元になります。
 
 #### 表示ルール
 
-- **hover左上（コンテキストパネル）**: 現行フォーマットのまま、次の4つのみ表示
+- **hover左上（コンテキストパネル）**: 次の4つのみ表示
   - `Domain`（= `category`）
   - `Year`（= `year`）
-  - `Focus`（= 上記統合ルールで生成）
+  - `Disciplines`（= `disciplines`）
   - `Toolkits`（= `tools` を `" / "` 連結）
 - **モーダルmeta（最下部）**: そのプロジェクトに存在する要素は **`projects.json` の `modalMetaItems` にすべて記載**
 
@@ -245,7 +242,7 @@ export const baseAssetsUrl = 'https://assets.shuntofujii.com';
     { "label": "Client", "value": "株式会社○○", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
     { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
     { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-    { "label": "Focus", "value": "$focus", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+    { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
     { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
     { "label": "Team", "value": "Role：Name / ...", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
   ]
@@ -256,7 +253,7 @@ export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 
 - `$domain`（= `category`）
 - `$year`（= `year`）
-- `$focus`（= 統合Focus）
+- `$disciplines`（= `disciplines`）
 - `$toolkits`（= `tools` を `" / "` 連結）
 
 #### 監査（乖離防止）

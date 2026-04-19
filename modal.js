@@ -9,20 +9,7 @@ export function openModal(project, triggerElement) {
   const refs = getRefs();
   state.modalTriggerElement = triggerElement || null;
 
-  const buildUnifiedFocus = (role, scope) => {
-    const r = String(role || '').trim();
-    const s = String(scope || '').trim();
-    if (!r && !s) return '';
-    if (!r) return s;
-    if (!s) return r;
-    const parts = s.split(' / ').map(x => x.trim()).filter(Boolean);
-    if (parts.includes(r)) return parts.join(' / ');
-    return [r, ...parts].join(' / ');
-  };
-
-  // Direction / Focus を分離（Focus は role+scope を統合）
-  const directionValue = project.role || '';
-  const focusValue = buildUnifiedFocus(project.role, project.scope);
+  const disciplinesValue = String(project.disciplines ?? '').trim();
 
   const safeTitle = escapeHtml(project.title);
   const safeTagline = project.tagline ? escapeHtml(project.tagline) : '';
@@ -37,19 +24,15 @@ export function openModal(project, triggerElement) {
   const metaTokens = {
     $domain: category,
     $year: year,
-    $direction: directionValue,
-    $focus: focusValue,
+    $disciplines: disciplinesValue,
     $toolkits: toolsStr
   };
 
   const rawMetaItems = Array.isArray(project.modalMetaItems) ? project.modalMetaItems : null;
   const defaultMetaItems = [
-    { label: 'Client', value: '日本マイクロソフト株式会社', icon: 'https://assets.shuntofujii.com/icons/client.svg' },
     { label: 'Domain', value: '$domain', icon: 'https://assets.shuntofujii.com/icons/domain.svg' },
     { label: 'Year', value: '$year', icon: 'https://assets.shuntofujii.com/icons/year.svg' },
-    { label: 'Direction', value: '$direction', icon: 'https://assets.shuntofujii.com/icons/focus.svg' },
-    { label: 'Direction & Created', value: '藤井 洵斗', icon: 'https://assets.shuntofujii.com/icons/created.svg' },
-    { label: 'Focus', value: '$focus', icon: 'https://assets.shuntofujii.com/icons/focus.svg' },
+    { label: 'Disciplines', value: '$disciplines', icon: 'https://assets.shuntofujii.com/icons/focus.svg' },
     { label: 'Toolkits', value: '$toolkits', icon: 'https://assets.shuntofujii.com/icons/toolkits.svg' }
   ];
 
