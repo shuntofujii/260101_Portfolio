@@ -243,12 +243,6 @@ ${jsonLd}
         controls
         playsinline
       ></video>
-      <p
-        class="lightbox-video-error"
-        id="lightboxVideoError"
-        hidden
-        role="alert"
-      ></p>
     </div>
 
     <script type="module" src="/app.js" defer></script>

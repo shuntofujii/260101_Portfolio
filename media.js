@@ -303,7 +303,7 @@ export function initVideoPlayer(videoShell) {
     updateMuteButton();
   });
 
-  video.addEventListener('error', () => { console.warn('Video load error:', video.src); updatePlayButton(); });
+  video.addEventListener('error', () => { updatePlayButton(); });
 
   updatePlayButton();
   updateMuteButton();

@@ -24,7 +24,7 @@ import { openModal, closeModal } from './modal.js';
 import { openLightbox, openLightboxVideo, closeLightbox } from './lightbox.js';
 import { stopAllInlineVideos } from './media.js';
 import { injectVideoLinkPreloads, scheduleIdleVideoPreload, ensureVideoPlayUrl } from './videoCache.js';
-import { collectProjectVideoUrls } from './projectVideoUrls.js';
+import { collectProjectVideoUrls, collectVideoUrlsForProject } from './projectVideoUrls.js';
 import { pathForProjectSlug, parseProjectSlugFromPath } from './routing.js';
 
 const BASE_PAGE_TITLE = document.title;
@@ -66,6 +66,8 @@ function findLegacyProjectFromHash() {
 function onPortfolioModalOpen(e) {
   const project = e.detail?.project;
   if (!project || !project.pageSlug) return;
+
+  preloadProjectVideos(project);
 
   const targetPath = pathForProjectSlug(project.pageSlug);
   const cur = normalizePathname(window.location.pathname);
@@ -160,7 +162,6 @@ const modalContent = document.getElementById('modalContent');
 const lightboxOverlay = document.getElementById('lightboxOverlay');
 const lightboxImage = document.getElementById('lightboxImage');
 const lightboxVideo = document.getElementById('lightboxVideo');
-const lightboxVideoError = document.getElementById('lightboxVideoError');
 const lightboxClose = document.getElementById('lightboxClose');
 
 setRefs({
@@ -180,7 +181,6 @@ setRefs({
   lightboxOverlay,
   lightboxImage,
   lightboxVideo,
-  lightboxVideoError,
   lightboxClose,
   openLightbox,
   openLightboxVideo
@@ -192,16 +192,29 @@ function isMobileViewport() {
   return window.matchMedia(`(max-width: ${BREAKPOINT_MOBILE_PX}px)`).matches;
 }
 
+/** データ節約モード・極低速回線では起動時の動画先読みを抑える（閲覧中の操作に任せる） */
+function isConservativeVideoPreload() {
+  try {
+    const c = navigator.connection;
+    if (c && c.saveData) return true;
+    const t = c && c.effectiveType;
+    if (t === 'slow-2g' || t === '2g') return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 /**
- * モバイルでは初回の帯域を画像 LCP に譲り、操作後にバックグラウンドで動画を順次温める
+ * 選択・閲覧中のプロジェクトの動画だけをアイドル時に順次温める（全件一括はしない）
+ * @param {object} project projects.json の1要素
  */
-function scheduleVideoPreloadAfterInteraction(allVideoUrls, heroVideoUrls) {
-  const start = () => {
-    scheduleIdleVideoPreload(allVideoUrls, heroVideoUrls);
-  };
-  const opts = { once: true, passive: true };
-  window.addEventListener('pointerdown', start, opts);
-  window.addEventListener('keydown', start, opts);
+function preloadProjectVideos(project) {
+  if (!project || isConservativeVideoPreload()) return;
+  const { urls, heroVideo } = collectVideoUrlsForProject(project);
+  if (!urls.length) return;
+  const priorityFirst = heroVideo ? [heroVideo] : [];
+  scheduleIdleVideoPreload(urls, priorityFirst);
 }
 
 function scheduleCursorEffectInit() {
@@ -228,20 +241,17 @@ async function init() {
     }
     state.projects = await response.json();
 
-    const { all: allVideoUrls, hero: heroVideoUrls } = collectProjectVideoUrls(state.projects);
+    const { hero: heroVideoUrls } = collectProjectVideoUrls(state.projects);
     const mobile = isMobileViewport();
+    const conservative = isConservativeVideoPreload();
     const linkMax = mobile ? VIDEO_PRELOAD_LINK_MAX_MOBILE : VIDEO_PRELOAD_LINK_MAX_DESKTOP;
     const heroPrefetchN = mobile ? HERO_VIDEO_PREFETCH_COUNT_MOBILE : HERO_VIDEO_PREFETCH_COUNT_DESKTOP;
 
-    injectVideoLinkPreloads(heroVideoUrls, linkMax);
-    heroVideoUrls.slice(0, heroPrefetchN).forEach((u) => {
-      ensureVideoPlayUrl(u).catch(() => {});
-    });
-
-    if (mobile) {
-      scheduleVideoPreloadAfterInteraction(allVideoUrls, heroVideoUrls);
-    } else {
-      scheduleIdleVideoPreload(allVideoUrls, heroVideoUrls);
+    if (!conservative) {
+      injectVideoLinkPreloads(heroVideoUrls, linkMax);
+      heroVideoUrls.slice(0, heroPrefetchN).forEach((u) => {
+        ensureVideoPlayUrl(u).catch(() => {});
+      });
     }
 
     renderInitialState();
@@ -406,6 +416,7 @@ function handleProjectHover(project, itemElement) {
   state.hoveredProject = project;
 
   updateHeroMedia(project.heroMedia);
+  preloadProjectVideos(project);
 
   if (refs.bgLayer) {
     if (state.bgLayerFadeCompleteHandler) {
@@ -583,8 +594,7 @@ function updateHeroMedia(heroMedia) {
           };
           video._playHandler = playHandler;
 
-          const errorHandler = (e) => {
-            console.error('Video load error:', e, heroMedia.src);
+          const errorHandler = () => {
             video.removeEventListener('error', errorHandler);
             video.style.opacity = '1';
             if (video._showFallbackId) {

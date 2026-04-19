@@ -19,6 +19,47 @@ function walkCases(set, projectSlug, cases) {
 }
 
 /**
+ * 1プロジェクトに紐づく動画 URL のみ抽出（一覧ホバー・モーダル時の先読み用）
+ * @param {object} project projects.json の1要素
+ * @returns {{ urls: string[], heroVideo: string | null }}
+ */
+export function collectVideoUrlsForProject(project) {
+  if (!project) return { urls: [], heroVideo: null };
+
+  const set = new Set();
+  let heroVideo = null;
+
+  if (project.heroMedia?.type === 'video' && project.heroMedia.src) {
+    set.add(project.heroMedia.src);
+    heroVideo = project.heroMedia.src;
+  }
+
+  project.gallery?.forEach((item) => {
+    if (item.type === 'video' && item.src) set.add(item.src);
+  });
+
+  const slug = project.projectSlug;
+  if (slug) {
+    walkCases(set, slug, project.cases);
+    project.initiatives?.forEach((init) => addInitiativeVideos(set, slug, init));
+    project.explicitModal?.segments?.forEach((seg) => {
+      if (seg?.type === 'video' && seg.file) {
+        set.add(`${baseAssetsUrl}/${slug}/${seg.file}`);
+      }
+      if (seg?.type === 'mediaRow' && Array.isArray(seg.items)) {
+        seg.items.forEach((item) => {
+          if (item?.type === 'video' && item.file) {
+            set.add(`${baseAssetsUrl}/${slug}/${item.file}`);
+          }
+        });
+      }
+    });
+  }
+
+  return { urls: [...set], heroVideo };
+}
+
+/**
  * @param {object[]} projects
  * @returns {{ all: string[], hero: string[] }}
  */
