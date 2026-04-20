@@ -705,8 +705,8 @@
           "items": [
             { "label": "Client", "value": "IVS株式会社", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
             { "label": "Domain", "value": "Startup Conference", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-            { "label": "Year", "value": "2021-2022", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-            { "label": "Disciplines", "value": "Graphic Design", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+            { "label": "Year", "value": "2021-2023", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
+            { "label": "Disciplines", "value": "Graphic Design / Crew", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
             { "label": "Toolkits", "value": "Photoshop / Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
           ]
         }

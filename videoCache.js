@@ -1,25 +1,6 @@
-// 動画のフェッチ→Blob URL キャッシュ（同一URLは1回だけネットワーク取得）。再生形式は WebM のみ。
-const inflight = new Map();
-/** @type {Map<string, string>} canonicalUrl -> playUrl（blob: または fetch 失敗時は同一 URL の直参照） */
+// 動画URLの正規化キャッシュ（過度な先読みを避け、再生はブラウザ標準に任せる）
+/** @type {Map<string, string>} canonicalUrl -> playUrl */
 const resolved = new Map();
-const blobUrls = new Set();
-
-let pagehideHooked = false;
-function hookPageHideForRevoke() {
-  if (pagehideHooked || typeof window === 'undefined') return;
-  pagehideHooked = true;
-  window.addEventListener('pagehide', () => {
-    blobUrls.forEach((u) => URL.revokeObjectURL(u));
-    blobUrls.clear();
-  });
-}
-
-function rememberBlobUrl(url) {
-  if (url && url.startsWith('blob:')) {
-    blobUrls.add(url);
-    hookPageHideForRevoke();
-  }
-}
 
 function getPlayUrlIfCached(canonicalUrl) {
   if (!canonicalUrl) return null;
@@ -28,67 +9,30 @@ function getPlayUrlIfCached(canonicalUrl) {
 }
 
 /**
- * 動画を取得し、可能なら Blob URL を返す。CORS失敗時は元URLを返す。
+ * 動画再生URLを返す（複雑な fetch 先読みは行わない）
  * @param {string} canonicalUrl
  * @returns {Promise<string>}
  */
 export function ensureVideoPlayUrl(canonicalUrl) {
   if (!canonicalUrl || typeof canonicalUrl !== 'string') return Promise.resolve(canonicalUrl);
-  if (resolved.has(canonicalUrl)) return Promise.resolve(resolved.get(canonicalUrl));
-  if (inflight.has(canonicalUrl)) return inflight.get(canonicalUrl);
-
-  const p = (async () => {
-    try {
-      const res = await fetch(canonicalUrl, {
-        mode: 'cors',
-        credentials: 'omit',
-        cache: 'force-cache',
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const blob = await res.blob();
-      if (!blob || !blob.size) throw new Error('empty body');
-      const objectUrl = URL.createObjectURL(blob);
-      rememberBlobUrl(objectUrl);
-      resolved.set(canonicalUrl, objectUrl);
-      return objectUrl;
-    } catch (e) {
-      console.warn('Video preload (fetch) failed, using direct URL:', canonicalUrl, e);
-      resolved.set(canonicalUrl, canonicalUrl);
-      return canonicalUrl;
-    } finally {
-      inflight.delete(canonicalUrl);
-    }
-  })();
-
-  inflight.set(canonicalUrl, p);
-  return p;
+  const cached = resolved.get(canonicalUrl);
+  if (cached) return Promise.resolve(cached);
+  resolved.set(canonicalUrl, canonicalUrl);
+  return Promise.resolve(canonicalUrl);
 }
 
 /**
- * モーダル内インライン動画: ネットワーク二重取得を避けるため、キャッシュ済みまで src を付けない（ポスターのみ表示）
+ * モーダル内インライン動画をシンプルに接続（src 直指定 + metadata）
  * @param {HTMLVideoElement} videoEl
  * @param {string} canonicalSrc
  */
 export function attachVideoElement(videoEl, canonicalSrc) {
   if (!videoEl || !canonicalSrc) return;
   videoEl.dataset.canonicalVideoSrc = canonicalSrc;
-
-  const cached = getPlayUrlIfCached(canonicalSrc);
-  if (cached) {
-    videoEl.src = cached;
-    videoEl.preload = cached.startsWith('blob:') ? 'auto' : 'metadata';
-    return;
-  }
-
-  videoEl.removeAttribute('src');
-  videoEl.preload = 'none';
-
-  ensureVideoPlayUrl(canonicalSrc).then((playUrl) => {
-    if (videoEl.dataset.canonicalVideoSrc !== canonicalSrc) return;
-    videoEl.src = playUrl;
-    videoEl.preload = 'auto';
-    videoEl.load();
-  });
+  const playUrl = getPlayUrlIfCached(canonicalSrc) || canonicalSrc;
+  videoEl.src = playUrl;
+  videoEl.preload = 'metadata';
+  videoEl.load();
 }
 
 const preloadQueue = [];
@@ -98,14 +42,14 @@ const MAX_PARALLEL_PRELOAD = 3;
 function pumpPreloadQueue() {
   while (preloadActive < MAX_PARALLEL_PRELOAD && preloadQueue.length > 0) {
     const url = preloadQueue.shift();
-    if (!url || resolved.has(url) || inflight.has(url)) continue;
+    if (!url || resolved.has(url)) continue;
     preloadActive += 1;
-    ensureVideoPlayUrl(url)
-      .catch(() => {})
-      .finally(() => {
-        preloadActive -= 1;
-        if (preloadQueue.length > 0) pumpPreloadQueue();
-      });
+    resolved.set(url, url);
+    injectVideoLinkPreloads([url], 1);
+    Promise.resolve().finally(() => {
+      preloadActive -= 1;
+      if (preloadQueue.length > 0) pumpPreloadQueue();
+    });
   }
 }
 
@@ -126,7 +70,7 @@ export function scheduleIdleVideoPreload(urls, priorityFirst = []) {
   const enqueueBatch = (start) => {
     for (let i = start; i < ordered.length; i++) {
       const u = ordered[i];
-      if (!resolved.has(u) && !inflight.has(u) && !preloadQueue.includes(u)) {
+      if (!resolved.has(u) && !preloadQueue.includes(u)) {
         preloadQueue.push(u);
       }
     }
