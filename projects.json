@@ -658,7 +658,7 @@
           "type": "sectionMeta",
           "items": [
             { "label": "Domain", "value": "Mobile App", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-            { "label": "Prize", "value": "Tokyo Web3 Hackathon 2nd Prize", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
+            { "label": "Prize", "value": "Tokyo Web3 Hackathon 2nd Prize", "icon": "https://assets.shuntofujii.com/icons/prize.svg" },
             { "label": "Year", "value": "2022", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
             { "label": "Disciplines", "value": "UIUX Design / Product Video", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
             { "label": "Toolkits", "value": "Camera & Gear / XD / After Effects / DaVinci Resolve", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
