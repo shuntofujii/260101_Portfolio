@@ -5,38 +5,27 @@ import { escapeHtml, createFocusTrap } from './utils.js';
 import { appendExplicitModal, createCaseSection, createInitiativeCard } from './media.js';
 import { closeLightbox } from './lightbox.js';
 
-export function openModal(project, triggerElement) {
-  const refs = getRefs();
-  state.modalTriggerElement = triggerElement || null;
+const DEFAULT_MODAL_META_ITEMS = [
+  { label: 'Domain', value: '$domain', icon: 'https://assets.shuntofujii.com/icons/domain.svg' },
+  { label: 'Year', value: '$year', icon: 'https://assets.shuntofujii.com/icons/year.svg' },
+  { label: 'Disciplines', value: '$disciplines', icon: 'https://assets.shuntofujii.com/icons/focus.svg' },
+  { label: 'Toolkits', value: '$toolkits', icon: 'https://assets.shuntofujii.com/icons/toolkits.svg' }
+];
 
+function buildModalMetaItems(project) {
   const disciplinesValue = String(project.disciplines ?? '').trim();
-
-  const safeTitle = escapeHtml(project.title);
-  const safeTagline = project.tagline ? escapeHtml(project.tagline) : '';
   const category = project.category || '';
   const year = project.year || '';
   const toolsStr = project.tools && project.tools.length > 0 ? project.tools.join(' / ') : '';
-  const safeDescription = project.description
-    ? escapeHtml(project.description).replace(/\n/g, '<br>')
-    : '';
-
-  /** projects.json の modalMetaItems を解決してHTML生成 */
   const metaTokens = {
     $domain: category,
     $year: year,
     $disciplines: disciplinesValue,
     $toolkits: toolsStr
   };
+  const rawMetaItems = Array.isArray(project.modalMetaItems) ? project.modalMetaItems : DEFAULT_MODAL_META_ITEMS;
 
-  const rawMetaItems = Array.isArray(project.modalMetaItems) ? project.modalMetaItems : null;
-  const defaultMetaItems = [
-    { label: 'Domain', value: '$domain', icon: 'https://assets.shuntofujii.com/icons/domain.svg' },
-    { label: 'Year', value: '$year', icon: 'https://assets.shuntofujii.com/icons/year.svg' },
-    { label: 'Disciplines', value: '$disciplines', icon: 'https://assets.shuntofujii.com/icons/focus.svg' },
-    { label: 'Toolkits', value: '$toolkits', icon: 'https://assets.shuntofujii.com/icons/toolkits.svg' }
-  ];
-
-  const metaItems = (rawMetaItems || defaultMetaItems)
+  return rawMetaItems
     .map((it) => {
       if (!it || !it.label) return null;
       const rawValue = it.value ?? '';
@@ -52,8 +41,11 @@ export function openModal(project, triggerElement) {
       };
     })
     .filter(Boolean);
+}
 
-  const modalMetaHtml = metaItems.length === 0 ? '' : `
+function buildModalMetaHtml(metaItems) {
+  if (!metaItems.length) return '';
+  return `
     <div class="modal-meta">
       ${metaItems.map((it) => `
       <div class="modal-meta-item">
@@ -66,6 +58,60 @@ export function openModal(project, triggerElement) {
       `).join('')}
     </div>
   `;
+}
+
+function appendProjectContentSections(project, modalContent) {
+  if (project.explicitModal && project.projectSlug) {
+    const explicitSection = document.createElement('section');
+    explicitSection.className = 'modal-initiatives explicit-modal';
+    appendExplicitModal(project, explicitSection);
+    modalContent.appendChild(explicitSection);
+    return;
+  }
+
+  if (project.cases && project.cases.length > 0 && project.projectSlug) {
+    const casesSection = document.createElement('section');
+    casesSection.className = 'modal-initiatives';
+    project.cases.forEach((caseData) => {
+      casesSection.appendChild(createCaseSection(caseData, project.projectSlug));
+    });
+    modalContent.appendChild(casesSection);
+    return;
+  }
+
+  if (project.initiatives && project.initiatives.length > 0 && project.projectSlug) {
+    const initiativesSection = document.createElement('section');
+    initiativesSection.className = 'modal-initiatives';
+    const initiativeList = document.createElement('div');
+    initiativeList.className = 'initiative-list';
+    project.initiatives.forEach((initiative) => {
+      initiativeList.appendChild(createInitiativeCard(initiative, project.projectSlug));
+    });
+    initiativesSection.appendChild(initiativeList);
+    modalContent.appendChild(initiativesSection);
+  }
+}
+
+function setBackgroundModalState(isModalOpen) {
+  const refs = getRefs();
+  const method = isModalOpen ? 'add' : 'remove';
+  if (refs.focusVisual) refs.focusVisual.classList[method]('modal-background');
+  if (refs.titleBackground) refs.titleBackground.classList[method]('modal-background');
+  if (refs.contextPanel) refs.contextPanel.classList[method]('modal-background');
+  if (refs.projectNavigation) refs.projectNavigation.classList[method]('modal-background');
+}
+
+export function openModal(project, triggerElement) {
+  const refs = getRefs();
+  state.modalTriggerElement = triggerElement || null;
+
+  const safeTitle = escapeHtml(project.title);
+  const safeTagline = project.tagline ? escapeHtml(project.tagline) : '';
+  const safeDescription = project.description
+    ? escapeHtml(project.description).replace(/\n/g, '<br>')
+    : '';
+  const modalMetaItems = buildModalMetaItems(project);
+  const modalMetaHtml = buildModalMetaHtml(modalMetaItems);
 
   refs.modalContent.innerHTML = `
     <div class="modal-header">
@@ -75,29 +121,7 @@ export function openModal(project, triggerElement) {
     ${safeDescription ? `<div class="modal-description">${safeDescription}</div>` : ''}
   `;
 
-  if (project.explicitModal && project.projectSlug) {
-    const explicitSection = document.createElement('section');
-    explicitSection.className = 'modal-initiatives explicit-modal';
-    appendExplicitModal(project, explicitSection);
-    refs.modalContent.appendChild(explicitSection);
-  } else if (project.cases && project.cases.length > 0 && project.projectSlug) {
-    const casesSection = document.createElement('section');
-    casesSection.className = 'modal-initiatives';
-    project.cases.forEach(caseData => {
-      casesSection.appendChild(createCaseSection(caseData, project.projectSlug));
-    });
-    refs.modalContent.appendChild(casesSection);
-  } else if (project.initiatives && project.initiatives.length > 0 && project.projectSlug) {
-    const initiativesSection = document.createElement('section');
-    initiativesSection.className = 'modal-initiatives';
-    const initiativeList = document.createElement('div');
-    initiativeList.className = 'initiative-list';
-    project.initiatives.forEach(initiative => {
-      initiativeList.appendChild(createInitiativeCard(initiative, project.projectSlug));
-    });
-    initiativesSection.appendChild(initiativeList);
-    refs.modalContent.appendChild(initiativesSection);
-  }
+  appendProjectContentSections(project, refs.modalContent);
 
   // modal-meta をモーダル内の最下部に寄せる（footer的配置）
   // modal-content の flex レイアウトにより、末尾に置いた要素が下に押し出される。
@@ -129,10 +153,7 @@ export function openModal(project, triggerElement) {
 
   document.body.style.overflow = 'hidden';
   if (refs.guidanceText) refs.guidanceText.classList.remove('visible');
-  if (refs.focusVisual) refs.focusVisual.classList.add('modal-background');
-  if (refs.titleBackground) refs.titleBackground.classList.add('modal-background');
-  if (refs.contextPanel) refs.contextPanel.classList.add('modal-background');
-  if (refs.projectNavigation) refs.projectNavigation.classList.add('modal-background');
+  setBackgroundModalState(true);
 }
 
 export function closeModal(stopAllInlineVideos) {
@@ -172,10 +193,7 @@ export function closeModal(stopAllInlineVideos) {
 
   document.body.style.overflow = '';
   if (refs.guidanceText) refs.guidanceText.classList.add('visible');
-  if (refs.focusVisual) refs.focusVisual.classList.remove('modal-background');
-  if (refs.titleBackground) refs.titleBackground.classList.remove('modal-background');
-  if (refs.contextPanel) refs.contextPanel.classList.remove('modal-background');
-  if (refs.projectNavigation) refs.projectNavigation.classList.remove('modal-background');
+  setBackgroundModalState(false);
 
   state.selectedProject = null;
   state.hoveredProject = null;

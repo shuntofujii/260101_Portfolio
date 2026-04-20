@@ -2,7 +2,23 @@
 
 ゲームのキャラクター選択 UI のように、8 つのプロジェクトを選んで体験できるポートフォリオサイトです。プロジェクトにホバーするとヒーロー動画と概要パネルが表示され、クリックでモーダルが開きます。モーダル内では案件（cases）ごとに画像・動画グリッドを表示でき、画像・動画のクリックでライトボックス表示に対応しています。
 
-## 📁 ファイル構成
+## 🧭 読み方ガイド
+
+### 初めて触る人向け（最短ルート）
+
+1. `🚀 ローカル起動方法` で起動
+2. `✅ 差し替えチェックリスト` の「1. プロジェクトデータ」を実施
+3. `🔁 デプロイ・データ更新時の推奨手順` を順に実施
+4. 問題があれば `🐛 トラブルシューティング` を確認
+
+### 運用・実装担当者向け
+
+- 実装構成を把握: `📁 ファイル構成` と `モジュールの役割（データの流れ）`
+- データ仕様を確認: `📦 アセットルール`
+- UIルールを確認: `🎨 カスタマイズ`
+- SEO運用を確認: `🔁 デプロイ・データ更新時の推奨手順`
+
+## 📁 ファイル構成（実装者向け）
 
 ```
 /260101_Portfolio/
@@ -12,8 +28,13 @@
 ├── {pageSlug}/         # 各案件の静的HTML（例: ejic/index.html → shuntofujii.com/ejic/）
 ├── scripts/
 │   └── build-project-pages.mjs  # projects.json から {pageSlug}/index.html を再生成
-├── routing.js          # /{pageSlug}/ のパス解釈（app.js から利用）
-├── app.js              # エントリポイント（初期化・ナビ描画・ホバー/クリック処理）
+├── routing.js          # /{pageSlug}/ のパス解釈（純粋なルーティング関数）
+├── app.js              # エントリポイント（初期化・各モジュールのオーケストレーション）
+├── appRouting.js       # URL/履歴/title・description更新の制御
+├── appNavigation.js    # プロジェクトナビ（サムネイルDOM生成・イベント紐付け）
+├── appHeroMedia.js     # ヒーロー動画の再生切替・表示タイミング制御
+├── appStateTransitions.js # hover/initial/modal の状態遷移ユーティリティ
+├── appEventBindings.js # グローバルイベント登録（ESC/クリック/touch）
 ├── state.js            # 状態管理（currentState, 選択中プロジェクト等）
 ├── domRefs.js          # DOM 参照の保持（setRefs / getRefs）
 ├── constants.js        # 定数（ブレークポイント・時間・カーソル設定・ベースURL）
@@ -21,7 +42,7 @@
 ├── modal.js            # モーダルの開閉・コンテンツ組み立て
 ├── lightbox.js         # ライトボックス（画像・動画の拡大表示）
 ├── media.js            # メディア表示（画像/動画グリッド、cases 用カード、動画プレイヤー）
-├── videoCache.js       # 動画（WebM のみ）の fetch→Blob URL キャッシュ・`<link rel="preload">`・アイドル時プリロード
+├── videoCache.js       # 動画URL解決・`<link rel="preload">`・アイドル時プリロード
 ├── projectVideoUrls.js # projects.json からヒーロー・cases・gallery の動画 URL を列挙（上記と連携）
 ├── cursorEffect.js     # カーソル軌跡エフェクト・アクセント色の時間変化（Three.js を CDN から動的 import）
 ├── meta-audit.js       # meta監査（hover左上/モーダルmeta の乖離防止）
@@ -36,11 +57,14 @@
 
 ### モジュールの役割（データの流れ）
 
-1. **`app.js`** … `projects.json` を取得後、`collectProjectVideoUrls` で動画 URL 一覧を作り、`injectVideoLinkPreloads`（先読みヒント）と `ensureVideoPlayUrl` / `scheduleIdleVideoPreload`（Blob キャッシュ）を起動。その後 UI 描画と `initCursorEffect`。
-2. **`videoCache.js`** … 同一 URL の WebM を `fetch` で一度だけ取得し、可能なら Blob URL を `video.src` に割り当て（CORS 失敗時は元 URL のまま）。モーダル内 `<video>` は `attachVideoElement` でキャッシュ済みになるまで `src` を遅延。`pagehide` で Blob URL を `revoke`。
-3. **`projectVideoUrls.js`** … `heroMedia`、トップレベル `initiatives`、`cases` 内の `videos` / `hasVideo`、および `gallery` 内の動画 URL を集約（`media.js` の `buildVideoUrl` と命名規則を共有）。
-4. **`media.js`** … モーダル用の画像グリッド・動画グリッド・インラインプレイヤー。`modal.js` から `createCaseSection` 等が呼ばれる。
-5. **`lightbox.js`** … 拡大表示の動画も `ensureVideoPlayUrl` 経由でキャッシュを再利用。
+1. **`app.js`** … エントリポイント。`projects.json` の取得、初期プリロード、初期UI起動を順序制御します（詳細処理は専用モジュールへ委譲）。
+2. **`appRouting.js`** … `/{pageSlug}/` ルートの解釈、履歴 API、モーダル開閉時の title/description 更新を担当します。
+3. **`appNavigation.js`** … 下部プロジェクトナビのDOM描画とアイテムのイベント紐付けを担当します。
+4. **`appHeroMedia.js`** … ホバー時ヒーロー動画の切替、再生、表示フォールバックを担当します。
+5. **`appStateTransitions.js` / `appEventBindings.js`** … 画面状態遷移ユーティリティとグローバルイベント登録を担当します。
+6. **`videoCache.js`** … 動画URL解決（現在は canonical URL ベース）と `<link rel="preload">`、アイドル時プリロードキューを提供します。
+7. **`projectVideoUrls.js`** … `heroMedia`、トップレベル `initiatives`、`cases` 内の `videos` / `hasVideo`、`gallery` 内の動画 URL を集約します。
+8. **`media.js` / `modal.js` / `lightbox.js`** … モーダル内メディア、モーダル開閉、拡大表示（ライトボックス）を分担します。
 
 ### プロジェクト別URL（静的ページ）
 
@@ -68,7 +92,7 @@ node scripts/build-project-pages.mjs
 
 案件を **追加・削除** した場合は、あわせて **`index.html`**（トップ）の構造化データ・SEO用実績リスト、**`sitemap.xml`** のURL一覧を手作業で整合させてください。
 
-## 🔁 デプロイ・データ更新時の推奨手順
+## 🔁 デプロイ・データ更新時の推奨手順（運用者向け）
 
 `projects.json` を編集したあと、次の順序を踏むと抜け漏れが減ります。
 
@@ -78,7 +102,7 @@ node scripts/build-project-pages.mjs
 4. **トップ `index.html`** … ItemListの `url` や `.seo-project-list` のリンクを、案件追加・削除に合わせて更新（手動）。
 5. 本番反映後、**Search Console** のサイトマップ送信済みであれば、必要に応じて再送信。
 
-## 🚀 ローカル起動方法
+## 🚀 ローカル起動方法（初めて触る人向け）
 
 ### 方法 1: Python（推奨）
 
@@ -120,7 +144,7 @@ http-server -p 8000
 
 `index.html` および各 `{pageSlug}/index.html` は **`/app.js`・`/styles.css`・`/projects.json`** のように **サイトルート基準の絶対パス**でリソースを読み込みます。**ドメイン直下（例: `https://shuntofujii.com/`）にホストする**想定です。サブディレクトリ配下だけに公開する場合は、パス解決を見直す必要があります。
 
-## 🎨 カスタマイズ
+## 🎨 カスタマイズ（実装者向け）
 
 ### アクセントカラー・テーマ
 
@@ -188,20 +212,50 @@ export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 
 特定プロジェクトだけカテゴリ行に `(Opening Soon)` を付けるには、`constants.js` の `OPENING_SOON_PROJECT_ID` を、そのプロジェクトの `projects.json` 上の `id` と一致させてください（デフォルトは `project-08`）。
 
-## ✅ 差し替えチェックリスト
+## ✅ 差し替えチェックリスト（運用者向け）
 
-### 1. プロジェクトデータ（`projects.json`）
+### 更新内容別の最短ルート
+
+#### A. 文言・リンク・画像差し替えだけ（案件数やURLは変えない）
+
+1. `projects.json` を更新（タイトル/説明/画像/リンクなど）
+2. `node meta-audit.js`
+3. `node scripts/build-project-pages.mjs`
+4. `5. 動作確認` の **必須最小チェック**
+
+#### B. 案件追加・削除・`pageSlug` 変更あり（URL構成が変わる）
+
+1. `projects.json` を更新（`pageSlug` を含む）
+2. `node meta-audit.js`
+3. `node scripts/build-project-pages.mjs`
+4. `sitemap.xml` のURLと `lastmod` を更新
+5. トップ `index.html` の ItemList / SEO実績リンクを整合
+6. `5. 動作確認` の **必須最小チェック** + 直リンク確認
+
+### 必須（公開前に必ず実施）
 
 - [ ] 各プロジェクトに **`pageSlug`** を設定（一意・**`projects` は使わない**・将来の固定ページ名と重複させない）
 - [ ] 各プロジェクトの `id` / `title` を実際のプロジェクト名に変更
 - [ ] `category` / `disciplines` / `year` を実際の内容に変更
-- [ ] `tools` 配列を実際に使用したツールに変更
 - [ ] `tagline` / `description` を各プロジェクトの説明に変更
 - [ ] `heroMedia`（`type`, `src`）をホバー時に表示する動画・画像に変更
 - [ ] `thumbnail` をサムネイル画像の URL に変更
+- [ ] 編集後 **`node meta-audit.js`** → **`node scripts/build-project-pages.mjs`** を実行
+- [ ] 案件追加・削除・URL変更時は、**`sitemap.xml`** とトップ **`index.html`**（ItemList・SEOリスト）を整合
+- [ ] 公開前に最低限の動作確認を実施（下記「5. 動作確認」）
+
+### 任意（必要な場合のみ）
+
+- [ ] `tools` 配列を実際に使用したツールに変更
 - [ ] `links` 配列に外部リンク（Behance / YouTube / Web など）を追加
-- [ ] **cases を使う場合**: `projectSlug` と `cases` を追加（後述「アセットルール」参照）。モーダル内に案件・施策ごとの画像・動画グリッドが表示されます。`cases` がないプロジェクトは、モーダルではヘッダー・メタ・説明文・リンクのみ表示されます。
-- [ ] 編集後 **`node meta-audit.js`** → **`node scripts/build-project-pages.mjs`** を実行し、**`sitemap.xml`** とトップ **`index.html`**（ItemList・SEOリスト）を案件数に合わせて更新
+- [ ] **cases を使う場合**: `projectSlug` と `cases` を追加（後述「アセットルール」参照）
+- [ ] メタ情報・構造化データ（`index.html`）を用途に合わせて調整
+- [ ] デザイン（`styles.css`）をブランドに合わせて調整
+
+### 1. プロジェクトデータ（`projects.json`）
+
+- [ ] 必須項目（`pageSlug`, `id`, `title`, `category`, `disciplines`, `year`, `tagline`, `description`, `heroMedia`, `thumbnail`）を更新
+- [ ] 任意項目（`tools`, `links`, `cases`, `modalMetaItems`）を必要に応じて更新
 
 ### プロジェクトmeta（hover左上 / モーダルmeta）運用ルール
 
@@ -286,6 +340,7 @@ node meta-audit.js
 
 ### 5. 動作確認
 
+- [ ] **必須最小チェック**: 起動 / hover表示 / モーダル開閉 / ESC閉じる / ライトボックス開閉 / 直リンク `/{pageSlug}/`
 - [ ] ローカルサーバーで起動できるか確認
 - [ ] プロジェクトにホバーでヒーロー動画・コンテキストパネルが表示されるか確認
 - [ ] プロジェクトをクリックでモーダルが開くか確認
@@ -297,7 +352,7 @@ node meta-audit.js
 
 ---
 
-## 📦 アセットルール（projectSlug / cases 型プロジェクト）
+## 📦 アセットルール（実装者向け）
 
 `projectSlug` と `cases` を持つプロジェクトは、案件・施策ごとにメディアを管理し、モーダル内にセクションとして表示されます。
 
@@ -391,7 +446,7 @@ node meta-audit.js
 
 ---
 
-## 🐛 トラブルシューティング
+## 🐛 トラブルシューティング（共通）
 
 ### 画像が表示されない
 
@@ -431,7 +486,7 @@ node meta-audit.js
 - **レスポンシブ**: 対応（スマホ・タブレット・PC）。Safe Area（ノッチ・ホームインジケータ）を CSS 変数で考慮
 - **アクセシビリティ**: スキップリンク、`aria-label`（ナビ・ダイアログ・ライトボックス）、モーダル/ライトボックス内のフォーカストラップ、ESC で閉じる
 - **SEO**: `robots.txt`、`sitemap.xml`、メタタグ（OGP・Twitter）、構造化データ（ProfilePage / WebPage + ItemList）、視覚非表示の実績一覧テキスト。案件別は **`/{pageSlug}/`** の静的HTML（ビルドスクリプト生成）。詳細は `SEO_RECOMMENDATIONS.md` を参照
-- **動画読み込み**: 形式は WebM のみ。ヒーロー・モーダル・ライトボックスで同一 URL の二重取得を減らすため、`videoCache.js` による Blob キャッシュと `<link rel="preload" as="video">` を利用（サーバー側は CORS でクロスオリジン読み取り可能にすると Blob 化しやすくなります）
+- **動画読み込み**: 形式は WebM のみ。`videoCache.js` により canonical URL の解決、`<link rel="preload" as="video">`、アイドル時プリロードキューを利用して初期体感を改善
 
 ---
 

@@ -5,6 +5,43 @@ import { createFocusTrap } from './utils.js';
 import { LIGHTBOX_CLOSE_DURATION_MS, LIGHTBOX_VIDEO_PLAY_DELAY_MS } from './constants.js';
 import { ensureVideoPlayUrl } from './videoCache.js';
 
+function clearElementInlineBoxStyles(el) {
+  if (!el) return;
+  el.style.position = '';
+  el.style.left = '';
+  el.style.top = '';
+  el.style.width = '';
+  el.style.height = '';
+  el.style.transform = '';
+  el.style.transformOrigin = '';
+  el.style.transition = '';
+  el.style.objectFit = '';
+}
+
+function setOriginRectFromElement(originElement) {
+  if (!originElement) {
+    state.lightboxOriginRect = null;
+    return;
+  }
+  const rect = originElement.getBoundingClientRect();
+  state.lightboxOriginRect = {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2,
+    width: rect.width,
+    height: rect.height
+  };
+}
+
+function setupLightboxFocusTrap() {
+  const refs = getRefs();
+  requestAnimationFrame(() => {
+    if (refs.lightboxClose) refs.lightboxClose.focus();
+    if (state.lightboxFocusTrapHandler) document.removeEventListener('keydown', state.lightboxFocusTrapHandler);
+    state.lightboxFocusTrapHandler = createFocusTrap(refs.lightboxOverlay);
+    document.addEventListener('keydown', state.lightboxFocusTrapHandler);
+  });
+}
+
 function finishLightboxClose(mediaType) {
   const refs = getRefs();
   refs.lightboxOverlay.setAttribute('hidden', '');
@@ -13,27 +50,11 @@ function finishLightboxClose(mediaType) {
     refs.lightboxVideo.src = '';
     refs.lightboxVideo.removeAttribute('data-lightbox-canonical-src');
     refs.lightboxVideo.style.display = 'none';
-    refs.lightboxVideo.style.position = '';
-    refs.lightboxVideo.style.left = '';
-    refs.lightboxVideo.style.top = '';
-    refs.lightboxVideo.style.width = '';
-    refs.lightboxVideo.style.height = '';
-    refs.lightboxVideo.style.transform = '';
-    refs.lightboxVideo.style.transformOrigin = '';
-    refs.lightboxVideo.style.transition = '';
-    refs.lightboxVideo.style.objectFit = '';
+    clearElementInlineBoxStyles(refs.lightboxVideo);
   }
   if (mediaType === 'image' && refs.lightboxImage) {
     refs.lightboxImage.src = '';
-    refs.lightboxImage.style.position = '';
-    refs.lightboxImage.style.left = '';
-    refs.lightboxImage.style.top = '';
-    refs.lightboxImage.style.width = '';
-    refs.lightboxImage.style.height = '';
-    refs.lightboxImage.style.transform = '';
-    refs.lightboxImage.style.transformOrigin = '';
-    refs.lightboxImage.style.transition = '';
-    refs.lightboxImage.style.objectFit = '';
+    clearElementInlineBoxStyles(refs.lightboxImage);
   }
   state.lightboxOriginRect = null;
 }
@@ -96,18 +117,7 @@ export function openLightboxVideo(videoSrc, originElement) {
 
   state.lightboxType = 'video';
   state.lightboxTriggerElement = originElement || null;
-
-  if (originElement) {
-    const rect = originElement.getBoundingClientRect();
-    state.lightboxOriginRect = {
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
-      width: rect.width,
-      height: rect.height
-    };
-  } else {
-    state.lightboxOriginRect = null;
-  }
+  setOriginRectFromElement(originElement);
 
   if (refs.lightboxImage) refs.lightboxImage.style.display = 'none';
   refs.lightboxVideo.style.display = 'block';
@@ -120,13 +130,7 @@ export function openLightboxVideo(videoSrc, originElement) {
   refs.lightboxVideo.setAttribute('disablepictureinpicture', 'true');
   refs.lightboxOverlay.removeAttribute('hidden');
   refs.lightboxOverlay.classList.remove('closing');
-
-  requestAnimationFrame(() => {
-    if (refs.lightboxClose) refs.lightboxClose.focus();
-    if (state.lightboxFocusTrapHandler) document.removeEventListener('keydown', state.lightboxFocusTrapHandler);
-    state.lightboxFocusTrapHandler = createFocusTrap(refs.lightboxOverlay);
-    document.addEventListener('keydown', state.lightboxFocusTrapHandler);
-  });
+  setupLightboxFocusTrap();
 
   let layoutApplied = false;
 
@@ -213,18 +217,7 @@ export function openLightbox(imageSrc, originElement) {
 
   state.lightboxType = 'image';
   state.lightboxTriggerElement = originElement || null;
-
-  if (originElement) {
-    const rect = originElement.getBoundingClientRect();
-    state.lightboxOriginRect = {
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
-      width: rect.width,
-      height: rect.height
-    };
-  } else {
-    state.lightboxOriginRect = null;
-  }
+  setOriginRectFromElement(originElement);
 
   if (refs.lightboxVideo) {
     refs.lightboxVideo.style.display = 'none';
@@ -238,13 +231,7 @@ export function openLightbox(imageSrc, originElement) {
   refs.lightboxImage.alt = (originImg && originImg.alt) ? originImg.alt : '画像の拡大表示';
   refs.lightboxOverlay.removeAttribute('hidden');
   refs.lightboxOverlay.classList.remove('closing');
-
-  requestAnimationFrame(() => {
-    if (refs.lightboxClose) refs.lightboxClose.focus();
-    if (state.lightboxFocusTrapHandler) document.removeEventListener('keydown', state.lightboxFocusTrapHandler);
-    state.lightboxFocusTrapHandler = createFocusTrap(refs.lightboxOverlay);
-    document.addEventListener('keydown', state.lightboxFocusTrapHandler);
-  });
+  setupLightboxFocusTrap();
 
   const handleImageLoad = () => {
     const viewportWidth = window.innerWidth;

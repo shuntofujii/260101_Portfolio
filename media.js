@@ -51,6 +51,11 @@ function getImageGridLayout(count, isMobile = null) {
   }
 }
 
+function getLayoutSpan(layout, index) {
+  if (!layout || !Array.isArray(layout.spans)) return null;
+  return layout.spans.find((s) => s.index === index) || null;
+}
+
 function equalizeMediaGridRowHeights(grid) {
   if (!grid.dataset.equalHeight) return;
   const items = Array.from(grid.querySelectorAll('.mediaItem'));
@@ -69,7 +74,8 @@ function equalizeMediaGridRowHeights(grid) {
   const rowForIndex = [];
   let row = 0, col = 0;
   for (let i = 0; i < count; i++) {
-    const span = (layout.spans && layout.spans.find(s => s.index === i)) ? layout.spans.find(s => s.index === i).span : 1;
+    const spanMeta = getLayoutSpan(layout, i);
+    const span = spanMeta ? spanMeta.span : 1;
     if (col + span > columns && col > 0) { row++; col = 0; }
     rowForIndex[i] = row;
     col += span;
@@ -83,7 +89,8 @@ function equalizeMediaGridRowHeights(grid) {
     const w = Number(items[i].dataset.naturalWidth);
     const h = Number(items[i].dataset.naturalHeight);
     if (!w || !h) continue;
-    const span = (layout.spans && layout.spans.find(s => s.index === i)) ? layout.spans.find(s => s.index === i).span : 1;
+    const spanMeta = getLayoutSpan(layout, i);
+    const span = spanMeta ? spanMeta.span : 1;
     const itemWidth = colWidth * span + (span - 1) * gap;
     const naturalHeight = itemWidth * (h / w);
     if (rowMaxHeights[r] == null || naturalHeight > rowMaxHeights[r]) rowMaxHeights[r] = naturalHeight;
@@ -123,7 +130,7 @@ export function createImageGrid(images, projectSlug, forceHorizontal = false, in
     item.setAttribute('aria-label', altText);
 
     if (!forceHorizontal && layout && layout.spans) {
-      const span = layout.spans.find(s => s.index === index);
+      const span = getLayoutSpan(layout, index);
       if (span) item.style.gridColumn = `span ${span.span}`;
     }
 

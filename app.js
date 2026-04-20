@@ -26,41 +26,44 @@ import { stopAllInlineVideos } from './media.js';
 import { injectVideoLinkPreloads, scheduleIdleVideoPreload, ensureVideoPlayUrl } from './videoCache.js';
 import { collectProjectVideoUrls, collectVideoUrlsForProject } from './projectVideoUrls.js';
 import { pathForProjectSlug, parseProjectSlugFromPath } from './routing.js';
+import { renderProjectNavigation as renderProjectNavigationView } from './appNavigation.js';
+import { updateHeroMedia as updateHeroMediaView } from './appHeroMedia.js';
+import { bindGlobalEventListeners } from './appEventBindings.js';
+import {
+  clearHoverLeaveTimer as clearHoverLeaveTimerState,
+  clearProjectSelections as clearProjectSelectionsView,
+  resetHeroVideoBase as resetHeroVideoBaseView,
+  beginBackgroundFadeOutToInitialState as beginBackgroundFadeOutToInitialStateView,
+  resetToInitialState as resetToInitialStateView
+} from './appStateTransitions.js';
+import {
+  normalizePathname,
+  getPathnameProjectSlug,
+  findLegacyProjectFromHash,
+  applyModalHistoryForProject,
+  restoreBaseHistoryOnModalClose,
+  applyModalDocumentMeta,
+  restoreBaseDocumentMeta
+} from './appRouting.js';
 
 const BASE_PAGE_TITLE = document.title;
 const metaDescriptionEl = document.querySelector('meta[name="description"]');
 const BASE_META_DESCRIPTION = metaDescriptionEl?.getAttribute('content') ?? '';
-
-function normalizePathname(pathname) {
-  if (!pathname || pathname === '/') return pathname;
-  return pathname.replace(/\/+$/, '');
-}
-
-/** 静的プロジェクトページの data 属性、または URL パスから pageSlug を取得 */
-function getPathnameProjectSlug() {
-  const fromBody = document.body?.dataset?.portfolioPageSlug;
-  if (fromBody) return fromBody;
-  return parseProjectSlugFromPath(normalizePathname(window.location.pathname));
-}
 
 function findProjectByPageSlug(slug) {
   if (!slug || !state.projects?.length) return null;
   return state.projects.find((p) => p.pageSlug === slug) || null;
 }
 
-/** 旧URL互換: #ejic や #project-02 など */
-function findLegacyProjectFromHash() {
-  const raw = location.hash.replace(/^#/, '');
-  if (!raw) return null;
-  const key = decodeURIComponent(raw);
-  return (
-    state.projects.find(
-      (p) =>
-        (p.pageSlug && p.pageSlug === key) ||
-        (p.projectSlug && p.projectSlug === key) ||
-        p.id === key
-    ) || null
-  );
+function findProjectItemElement(projectId) {
+  if (!projectId) return null;
+  return document.querySelector(`[data-project-id="${projectId}"]`);
+}
+
+function openProjectModalFromRoute(project) {
+  if (!project) return;
+  const item = findProjectItemElement(project.id);
+  if (item) openModal(project, item);
 }
 
 function onPortfolioModalOpen(e) {
@@ -68,27 +71,8 @@ function onPortfolioModalOpen(e) {
   if (!project || !project.pageSlug) return;
 
   preloadProjectVideos(project);
-
-  const targetPath = pathForProjectSlug(project.pageSlug);
-  const cur = normalizePathname(window.location.pathname);
-  const expected = normalizePathname(targetPath);
-
-  if (cur !== expected) {
-    history.pushState({ portfolioModal: true }, '', targetPath);
-  }
-
-  document.title = `${project.title} | SHUNTO FUJII`;
-
-  if (metaDescriptionEl) {
-    const raw = (project.description || project.tagline || '')
-      .replace(/\n/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    if (raw) {
-      const clipped = raw.length > 155 ? `${raw.slice(0, 152)}...` : raw;
-      metaDescriptionEl.setAttribute('content', clipped);
-    }
-  }
+  applyModalHistoryForProject(project);
+  applyModalDocumentMeta(project, metaDescriptionEl);
 }
 
 function onPortfolioModalClose() {
@@ -97,15 +81,8 @@ function onPortfolioModalClose() {
     return;
   }
 
-  if (parseProjectSlugFromPath(normalizePathname(window.location.pathname))) {
-    history.replaceState(null, BASE_PAGE_TITLE, '/');
-  } else if (location.hash) {
-    history.replaceState(null, BASE_PAGE_TITLE, `${location.pathname}${location.search}`);
-  }
-  document.title = BASE_PAGE_TITLE;
-  if (metaDescriptionEl && BASE_META_DESCRIPTION) {
-    metaDescriptionEl.setAttribute('content', BASE_META_DESCRIPTION);
-  }
+  restoreBaseHistoryOnModalClose(BASE_PAGE_TITLE);
+  restoreBaseDocumentMeta(BASE_PAGE_TITLE, BASE_META_DESCRIPTION, metaDescriptionEl);
 }
 
 function onPopState() {
@@ -117,8 +94,7 @@ function onPopState() {
     return;
   }
   if (project && state.currentState !== 'modal') {
-    const item = document.querySelector(`[data-project-id="${project.id}"]`);
-    if (item) openModal(project, item);
+    openProjectModalFromRoute(project);
   }
 }
 
@@ -126,18 +102,14 @@ function applyInitialRoute() {
   let slug = getPathnameProjectSlug();
   if (slug) {
     const project = findProjectByPageSlug(slug);
-    if (project) {
-      const item = document.querySelector(`[data-project-id="${project.id}"]`);
-      if (item) openModal(project, item);
-    }
+    openProjectModalFromRoute(project);
     return;
   }
 
-  const legacy = findLegacyProjectFromHash();
+  const legacy = findLegacyProjectFromHash(state.projects);
   if (legacy && legacy.pageSlug) {
     history.replaceState(null, '', pathForProjectSlug(legacy.pageSlug));
-    const item = document.querySelector(`[data-project-id="${legacy.id}"]`);
-    if (item) openModal(legacy, item);
+    openProjectModalFromRoute(legacy);
   }
 }
 
@@ -192,6 +164,121 @@ function isMobileViewport() {
   return window.matchMedia(`(max-width: ${BREAKPOINT_MOBILE_PX}px)`).matches;
 }
 
+function clearHoverLeaveTimer() {
+  clearHoverLeaveTimerState(state);
+}
+
+function clearProjectSelections() {
+  clearProjectSelectionsView();
+}
+
+function resetHeroVideoBase() {
+  resetHeroVideoBaseView(refs.heroVideoBase);
+}
+
+function closeModalAndStopVideos() {
+  closeModal(stopAllInlineVideos);
+}
+
+function handleEscapeKey() {
+  if (refs.lightboxOverlay && !refs.lightboxOverlay.hidden) {
+    closeLightbox();
+    return;
+  }
+  if (state.currentState === 'modal') {
+    closeModalAndStopVideos();
+  }
+}
+
+function openHomeFromStaticProjectPage() {
+  window.location.href = '/';
+}
+
+function shouldResetFromFocusVisualTouch(target) {
+  if (target?.closest('.project-item')) return false;
+  if (state.currentState === 'modal') return false;
+  return state.currentState === 'hover' && refs.heroVideoBase && !refs.heroVideoBase.paused;
+}
+
+function handlePortfolioTitleClick() {
+  if (document.body.dataset.portfolioPageSlug) {
+    openHomeFromStaticProjectPage();
+    return;
+  }
+  if (state.currentState === 'modal') {
+    closeModalAndStopVideos();
+    return;
+  }
+  resetToInitialState();
+}
+
+function handleFocusVisualTouchStart(e) {
+  if (shouldResetFromFocusVisualTouch(e.target)) {
+    resetToInitialState();
+  }
+}
+
+function shouldProcessProjectPointerInteraction() {
+  return state.currentState !== 'modal';
+}
+
+function handleProjectItemMouseEnter(project, item) {
+  if (shouldProcessProjectPointerInteraction()) {
+    handleProjectHover(project, item);
+  }
+}
+
+function handleProjectItemMouseLeave() {
+  if (shouldProcessProjectPointerInteraction()) {
+    handleProjectLeave();
+  }
+}
+
+function handleProjectItemTouchStart(project, item) {
+  if (shouldProcessProjectPointerInteraction()) {
+    handleProjectHover(project, item);
+  }
+}
+
+function beginBackgroundFadeOutToInitialState() {
+  beginBackgroundFadeOutToInitialStateView(state, refs.bgLayer, renderInitialState);
+}
+
+async function fetchProjectsData() {
+  const response = await fetch('/projects.json');
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+function getHeroVideoPreloadConfig() {
+  const mobile = isMobileViewport();
+  return {
+    linkMax: mobile ? VIDEO_PRELOAD_LINK_MAX_MOBILE : VIDEO_PRELOAD_LINK_MAX_DESKTOP,
+    heroPrefetchCount: mobile ? HERO_VIDEO_PREFETCH_COUNT_MOBILE : HERO_VIDEO_PREFETCH_COUNT_DESKTOP
+  };
+}
+
+function warmupInitialHeroVideos(projects) {
+  const { hero: heroVideoUrls } = collectProjectVideoUrls(projects);
+  const conservative = isConservativeVideoPreload();
+  if (conservative) return;
+
+  const { linkMax, heroPrefetchCount } = getHeroVideoPreloadConfig();
+  injectVideoLinkPreloads(heroVideoUrls, linkMax);
+  heroVideoUrls.slice(0, heroPrefetchCount).forEach((url) => {
+    ensureVideoPlayUrl(url).catch(() => {});
+  });
+}
+
+function bootstrapUiAfterDataReady() {
+  renderInitialState();
+  renderProjectNavigation();
+  setupEventListeners();
+  applyInitialRoute();
+}
+
 /** データ節約モード・極低速回線では起動時の動画先読みを抑える（閲覧中の操作に任せる） */
 function isConservativeVideoPreload() {
   try {
@@ -235,29 +322,9 @@ function scheduleCursorEffectInit() {
 // ============================================
 async function init() {
   try {
-    const response = await fetch('/projects.json');
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    state.projects = await response.json();
-
-    const { hero: heroVideoUrls } = collectProjectVideoUrls(state.projects);
-    const mobile = isMobileViewport();
-    const conservative = isConservativeVideoPreload();
-    const linkMax = mobile ? VIDEO_PRELOAD_LINK_MAX_MOBILE : VIDEO_PRELOAD_LINK_MAX_DESKTOP;
-    const heroPrefetchN = mobile ? HERO_VIDEO_PREFETCH_COUNT_MOBILE : HERO_VIDEO_PREFETCH_COUNT_DESKTOP;
-
-    if (!conservative) {
-      injectVideoLinkPreloads(heroVideoUrls, linkMax);
-      heroVideoUrls.slice(0, heroPrefetchN).forEach((u) => {
-        ensureVideoPlayUrl(u).catch(() => {});
-      });
-    }
-
-    renderInitialState();
-    renderProjectNavigation();
-    setupEventListeners();
-    applyInitialRoute();
+    state.projects = await fetchProjectsData();
+    warmupInitialHeroVideos(state.projects);
+    bootstrapUiAfterDataReady();
     await scheduleCursorEffectInit();
   } catch (error) {
     console.error('Error loading projects:', error);
@@ -270,14 +337,7 @@ async function init() {
 // ============================================
 function renderInitialState() {
   refs.contextPanel.classList.remove('visible');
-
-  if (refs.heroVideoBase) {
-    refs.heroVideoBase.style.display = 'none';
-    refs.heroVideoBase.pause();
-    refs.heroVideoBase.currentTime = 0;
-    refs.heroVideoBase.style.opacity = '0';
-    refs.heroVideoBase.removeAttribute('data-canonical-video-src');
-  }
+  resetHeroVideoBase();
 
   if (refs.bgLayer) {
     refs.bgLayer.style.opacity = '0';
@@ -292,63 +352,16 @@ function renderInitialState() {
 // プロジェクト選択UIの描画
 // ============================================
 function renderProjectNavigation() {
-  refs.projectNavigation.innerHTML = '';
-
-  state.projects.forEach((project, index) => {
-    const item = document.createElement('div');
-    item.className = 'project-item';
-    item.dataset.projectId = project.id;
-    item.dataset.projectIndex = index;
-
-    const thumbnail = document.createElement('img');
-    thumbnail.className = 'project-thumbnail';
-    thumbnail.src = project.thumbnail || `${baseAssetsUrl}/top/placeholder-image.jpg`;
-    thumbnail.alt = project.title;
-    thumbnail.width = PROJECT_THUMBNAIL_SIZE_PX;
-    thumbnail.height = PROJECT_THUMBNAIL_SIZE_PX;
-    thumbnail.decoding = 'async';
-    if (index < THUMBNAIL_FETCH_PRIORITY_COUNT) {
-      thumbnail.fetchPriority = 'high';
-    } else {
-      thumbnail.loading = 'lazy';
+  renderProjectNavigationView(refs.projectNavigation, state.projects, {
+    baseAssetsUrl,
+    projectThumbnailSizePx: PROJECT_THUMBNAIL_SIZE_PX,
+    thumbnailFetchPriorityCount: THUMBNAIL_FETCH_PRIORITY_COUNT,
+    handlers: {
+      onMouseEnter: handleProjectItemMouseEnter,
+      onMouseLeave: handleProjectItemMouseLeave,
+      onTouchStart: handleProjectItemTouchStart,
+      onClick: handleProjectClick
     }
-    thumbnail.onerror = function () {
-      this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23333" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="%23999" font-size="12"%3E' + project.title.substring(0, 2) + '%3C/text%3E%3C/svg%3E';
-    };
-
-    item.appendChild(thumbnail);
-    refs.projectNavigation.appendChild(item);
-  });
-
-  setupProjectItemListeners();
-}
-
-// ============================================
-// プロジェクトアイテムのイベントリスナー設定
-// ============================================
-function setupProjectItemListeners() {
-  const projectItems = document.querySelectorAll('.project-item');
-  projectItems.forEach(item => {
-    const projectIndex = parseInt(item.dataset.projectIndex, 10);
-    const project = state.projects[projectIndex];
-
-    if (!project) return;
-
-    item.addEventListener('mouseenter', () => {
-      if (state.currentState !== 'modal') handleProjectHover(project, item);
-    });
-
-    item.addEventListener('mouseleave', () => {
-      if (state.currentState !== 'modal') handleProjectLeave();
-    });
-
-    item.addEventListener('touchstart', () => {
-      if (state.currentState !== 'modal') handleProjectHover(project, item);
-    }, { passive: true });
-
-    item.addEventListener('click', () => {
-      handleProjectClick(project, item);
-    });
   });
 }
 
@@ -356,61 +369,20 @@ function setupProjectItemListeners() {
 // イベントリスナーの設定
 // ============================================
 function setupEventListeners() {
-  refs.modalClose.addEventListener('click', () => closeModal(stopAllInlineVideos));
-  refs.modalOverlay.addEventListener('click', (e) => {
-    if (e.target === refs.modalOverlay) closeModal(stopAllInlineVideos);
+  bindGlobalEventListeners(refs, {
+    onCloseModal: closeModalAndStopVideos,
+    onEscapeKey: handleEscapeKey,
+    onCloseLightbox: closeLightbox,
+    onPortfolioTitleClick: handlePortfolioTitleClick,
+    onFocusVisualTouchStart: handleFocusVisualTouchStart
   });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      if (refs.lightboxOverlay && !refs.lightboxOverlay.hidden) {
-        closeLightbox();
-      } else if (state.currentState === 'modal') {
-        closeModal(stopAllInlineVideos);
-      }
-    }
-  });
-
-  if (refs.lightboxClose) {
-    refs.lightboxClose.addEventListener('click', closeLightbox);
-  }
-  if (refs.lightboxOverlay) {
-    refs.lightboxOverlay.addEventListener('click', (e) => {
-      if (e.target === refs.lightboxOverlay) closeLightbox();
-    });
-  }
-
-  refs.portfolioTitle.addEventListener('click', () => {
-    if (document.body.dataset.portfolioPageSlug) {
-      window.location.href = '/';
-      return;
-    }
-    if (state.currentState === 'modal') {
-      closeModal(stopAllInlineVideos);
-      return;
-    }
-    resetToInitialState();
-  });
-
-  if (refs.focusVisual) {
-    refs.focusVisual.addEventListener('touchstart', (e) => {
-      if (e.target.closest('.project-item')) return;
-      if (state.currentState === 'modal') return;
-      if (state.currentState === 'hover' && refs.heroVideoBase && !refs.heroVideoBase.paused) {
-        resetToInitialState();
-      }
-    }, { passive: true });
-  }
 }
 
 // ============================================
 // プロジェクトhover処理（一時的フォーカス）
 // ============================================
 function handleProjectHover(project, itemElement) {
-  if (state.hoverLeaveTimer) {
-    clearTimeout(state.hoverLeaveTimer);
-    state.hoverLeaveTimer = null;
-  }
+  clearHoverLeaveTimer();
 
   state.currentState = 'hover';
   state.hoveredProject = project;
@@ -436,47 +408,19 @@ function handleProjectHover(project, itemElement) {
 // プロジェクトhover解除処理
 // ============================================
 function handleProjectLeave() {
-  if (state.hoverLeaveTimer) {
-    clearTimeout(state.hoverLeaveTimer);
-    state.hoverLeaveTimer = null;
-  }
+  clearHoverLeaveTimer();
 
   if (state.currentState !== 'modal' && !state.selectedProject) {
     refs.titleText.textContent = 'PORTFOLIO';
 
-    if (refs.heroVideoBase) {
-      if (refs.heroVideoBase._showFallbackId) {
-        clearTimeout(refs.heroVideoBase._showFallbackId);
-        refs.heroVideoBase._showFallbackId = null;
-      }
-      refs.heroVideoBase.pause();
-      refs.heroVideoBase.currentTime = 0;
-      refs.heroVideoBase.style.display = 'none';
-      refs.heroVideoBase.style.opacity = '0';
-      refs.heroVideoBase.removeAttribute('data-canonical-video-src');
-    }
+    resetHeroVideoBase();
 
     refs.guidanceText.classList.add('visible');
-
-    if (refs.bgLayer) {
-      refs.bgLayer.classList.add('isFading');
-      state.bgLayerFadeCompleteHandler = function fadeComplete(e) {
-        if (e.target !== refs.bgLayer) return;
-        refs.bgLayer.classList.remove('isFading');
-        refs.bgLayer.removeEventListener('transitionend', state.bgLayerFadeCompleteHandler);
-        state.bgLayerFadeCompleteHandler = null;
-        renderInitialState();
-      };
-      refs.bgLayer.addEventListener('transitionend', state.bgLayerFadeCompleteHandler);
-    } else {
-      renderInitialState();
-    }
+    beginBackgroundFadeOutToInitialState();
 
     refs.contextPanel.classList.remove('visible');
 
-    document.querySelectorAll('.project-item').forEach(item => {
-      item.classList.remove('selected');
-    });
+    clearProjectSelections();
   }
 }
 
@@ -487,14 +431,8 @@ function handleProjectClick(project, itemElement) {
   state.currentState = 'modal';
   state.selectedProject = project;
 
-  if (state.hoverLeaveTimer) {
-    clearTimeout(state.hoverLeaveTimer);
-    state.hoverLeaveTimer = null;
-  }
-
-  document.querySelectorAll('.project-item').forEach(item => {
-    item.classList.remove('selected');
-  });
+  clearHoverLeaveTimer();
+  clearProjectSelections();
   itemElement.classList.add('selected');
 
   openModal(project, itemElement);
@@ -504,120 +442,10 @@ function handleProjectClick(project, itemElement) {
 // ヒーローメディアの更新（動画を自動再生・遅めの切り替え）
 // ============================================
 function updateHeroMedia(heroMedia) {
-  if (!heroMedia) return;
-
-  if (heroMedia.type === 'video') {
-    if (refs.heroVideoBase && refs.heroVideoBase.dataset.canonicalVideoSrc === heroMedia.src) {
-      return;
-    }
-
-    const updateVideo = (video) => {
-      if (!video) return;
-
-      video.style.opacity = '0';
-
-      setTimeout(() => {
-        if (video._showFallbackId) {
-          clearTimeout(video._showFallbackId);
-          video._showFallbackId = null;
-        }
-        const existingListeners = ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough', 'playing', 'error'];
-        existingListeners.forEach(eventType => {
-          video.removeEventListener(eventType, video._playHandler);
-          video.removeEventListener(eventType, video._showHandler);
-          video.removeEventListener(eventType, video._errorHandler);
-        });
-        video._playHandler = null;
-        video._showHandler = null;
-        video._errorHandler = null;
-
-        const canonical = heroMedia.src;
-        video.dataset.canonicalVideoSrc = canonical;
-
-        ensureVideoPlayUrl(canonical).then((playUrl) => {
-          if (video.dataset.canonicalVideoSrc !== canonical) return;
-
-          video.src = playUrl;
-          video.muted = false;
-          video.loop = true;
-          video.playsInline = true;
-          video.preload = 'auto';
-          video.setAttribute('loop', 'true');
-          video.removeAttribute('muted');
-          video.setAttribute('playsinline', 'true');
-          video.style.display = 'block';
-          video.style.opacity = '0';
-
-          const loopHandler = function () {
-            video.currentTime = 0;
-            video.play().catch(e => { console.log('Video replay error:', e); });
-          };
-          video.removeEventListener('ended', loopHandler);
-          video.addEventListener('ended', loopHandler);
-
-          const attemptPlay = () => {
-            if (video.readyState >= 2) {
-              video.play().catch(e => {
-                console.log('Video autoplay prevented:', e);
-                const retryPlay = () => {
-                  video.play().catch(() => {});
-                  document.removeEventListener('pointerdown', retryPlay);
-                  document.removeEventListener('touchstart', retryPlay);
-                  document.removeEventListener('click', retryPlay);
-                };
-                document.addEventListener('pointerdown', retryPlay, { once: true });
-                document.addEventListener('touchstart', retryPlay, { once: true });
-                document.addEventListener('click', retryPlay, { once: true });
-              });
-            }
-          };
-
-          const showVideo = () => {
-            if (video.style.opacity === '1') return;
-            if (video._showFallbackId) {
-              clearTimeout(video._showFallbackId);
-              video._showFallbackId = null;
-            }
-            video.style.opacity = '1';
-            video.classList.remove('fade-in');
-            video.removeEventListener('playing', showVideo);
-          };
-          video._showHandler = showVideo;
-          video.addEventListener('playing', showVideo, { once: true });
-          video._showFallbackId = setTimeout(showVideo, VIDEO_SHOW_FALLBACK_MS);
-
-          const playHandler = () => {
-            attemptPlay();
-            video.removeEventListener('loadeddata', playHandler);
-            video.removeEventListener('canplay', playHandler);
-            video.removeEventListener('canplaythrough', playHandler);
-          };
-          video._playHandler = playHandler;
-
-          const errorHandler = () => {
-            video.removeEventListener('error', errorHandler);
-            video.style.opacity = '1';
-            if (video._showFallbackId) {
-              clearTimeout(video._showFallbackId);
-              video._showFallbackId = null;
-            }
-          };
-          video._errorHandler = errorHandler;
-          video.addEventListener('error', errorHandler);
-
-          video.addEventListener('loadeddata', playHandler, { once: true });
-          video.addEventListener('canplay', playHandler, { once: true });
-          video.addEventListener('canplaythrough', playHandler, { once: true });
-
-          video.load();
-
-          if (video.readyState >= 2) attemptPlay();
-        });
-      }, VIDEO_UPDATE_FADE_DELAY_MS);
-    };
-
-    updateVideo(refs.heroVideoBase);
-  }
+  updateHeroMediaView(heroMedia, refs.heroVideoBase, {
+    videoUpdateFadeDelayMs: VIDEO_UPDATE_FADE_DELAY_MS,
+    videoShowFallbackMs: VIDEO_SHOW_FALLBACK_MS
+  });
 }
 
 // ============================================
@@ -663,31 +491,7 @@ function updateContextPanel(project) {
 // State0（未選択状態）にリセット
 // ============================================
 function resetToInitialState() {
-  if (state.hoverLeaveTimer) {
-    clearTimeout(state.hoverLeaveTimer);
-    state.hoverLeaveTimer = null;
-  }
-
-  state.currentState = 'initial';
-  state.hoveredProject = null;
-  state.selectedProject = null;
-
-  refs.contextPanel.classList.remove('visible');
-
-  if (refs.heroVideoBase) {
-    refs.heroVideoBase.pause();
-    refs.heroVideoBase.currentTime = 0;
-    refs.heroVideoBase.style.display = 'none';
-    refs.heroVideoBase.style.opacity = '0';
-    refs.heroVideoBase.removeAttribute('data-canonical-video-src');
-  }
-
-  refs.titleText.textContent = 'PORTFOLIO';
-  refs.guidanceText.classList.add('visible');
-
-  document.querySelectorAll('.project-item').forEach(item => {
-    item.classList.remove('selected');
-  });
+  resetToInitialStateView(state, refs);
 }
 
 // ============================================
