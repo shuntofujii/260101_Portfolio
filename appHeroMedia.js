@@ -45,6 +45,7 @@ function setupHeroVideoVisibilityHandlers(video, videoShowFallbackMs) {
     video.removeEventListener('playing', showVideo);
   };
   video._showHandler = showVideo;
+  video.addEventListener('loadeddata', showVideo, { once: true });
   video.addEventListener('playing', showVideo, { once: true });
   video._showFallbackId = setTimeout(showVideo, videoShowFallbackMs);
 }
@@ -76,12 +77,13 @@ function setupHeroVideoPlayLifecycleHandlers(video) {
 
 function applyHeroVideoSource(video, canonical, playUrl) {
   video.src = playUrl;
-  video.muted = false;
+  // Hover背景動画は無音で自動再生し、ブラウザの autoplay 制約を回避する。
+  video.muted = true;
   video.loop = true;
   video.playsInline = true;
   video.preload = 'auto';
   video.setAttribute('loop', 'true');
-  video.removeAttribute('muted');
+  video.setAttribute('muted', 'true');
   video.setAttribute('playsinline', 'true');
   video.style.display = 'block';
   video.style.opacity = '0';
