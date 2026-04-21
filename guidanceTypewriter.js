@@ -19,7 +19,7 @@ import {
 } from './constants.js';
 
 /** 末尾の点滅 `_` は `.guidance-cursor` が担当（HTML）。本文のみ更新する */
-const FULL_PHRASE = 'Prease select a project';
+const FULL_PHRASE = 'Please select a project';
 
 const QWERTY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
 

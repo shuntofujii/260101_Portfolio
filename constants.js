@@ -46,7 +46,7 @@ export const PROJECT_THUMBNAIL_SIZE_PX = 90;
 /** 優先読み込みするサムネイル数（残りは lazy） */
 export const THUMBNAIL_FETCH_PRIORITY_COUNT = 2;
 
-/** ガイダンス「Prease select a project」タイプライター（文字追加・削除の間隔・停止） */
+/** ガイダンス「Please select a project」タイプライター（文字追加・削除の間隔・停止） */
 
 /** 通常入力の文字間隔（ms）の乱数範囲 */
 export const GUIDANCE_TYPE_MS_MIN = 68;

@@ -278,7 +278,10 @@ function bootstrapUiAfterDataReady() {
   renderProjectNavigation();
   setupEventListeners();
   applyInitialRoute();
-  initGuidanceTypewriter(refs.guidanceText);
+  // ガイダンスタイプライターはトップのみ（案件ページは body に data-portfolio-page-slug あり）
+  if (!document.body.dataset.portfolioPageSlug) {
+    initGuidanceTypewriter(refs.guidanceText);
+  }
 }
 
 /** データ節約モード・極低速回線では起動時の動画先読みを抑える（閲覧中の操作に任せる） */
