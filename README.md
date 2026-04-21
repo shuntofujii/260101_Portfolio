@@ -14,6 +14,7 @@
 ### 運用・実装担当者向け
 
 - 実装構成を把握: `📁 ファイル構成` と `モジュールの役割（データの流れ）`
+- 動画の先読み・ホバー再生の調整: `動画プリロード・ヒーロー再生（実装メモ）`
 - データ仕様を確認: `📦 アセットルール`
 - UIルールを確認: `🎨 カスタマイズ`
 - SEO運用を確認: `🔁 デプロイ・データ更新時の推奨手順`
@@ -65,6 +66,36 @@
 6. **`videoCache.js`** … 動画URL解決（現在は canonical URL ベース）と `<link rel="preload">`、アイドル時プリロードキューを提供します。
 7. **`projectVideoUrls.js`** … `heroMedia`、トップレベル `initiatives`、`cases` 内の `videos` / `hasVideo`、`gallery` 内の動画 URL を集約します。
 8. **`media.js` / `modal.js` / `lightbox.js`** … モーダル内メディア、モーダル開閉、拡大表示（ライトボックス）を分担します。
+
+### 動画プリロード・ヒーロー再生（実装メモ）
+
+ホバー時の体感は **ファイルサイズ・CDN・回線** に強く依存します。コード側では次で調整できます。
+
+#### `constants.js`（先読み本数・タイミング）
+
+| 定数 | 役割 |
+|------|------|
+| `VIDEO_PRELOAD_LINK_MAX_MOBILE` / `VIDEO_PRELOAD_LINK_MAX_DESKTOP` | 起動時に挿入する `<link rel="preload" as="video">` の最大本数 |
+| `HERO_VIDEO_PREFETCH_COUNT_MOBILE` / `HERO_VIDEO_PREFETCH_COUNT_DESKTOP` | 起動時に `ensureVideoPlayUrl` で登録するヒーロー動画の先頭 N 本 |
+| `VIDEO_UPDATE_FADE_DELAY_MS` | ホバー切替時、実際に `src` を差し替えるまでの遅延（ms） |
+| `VIDEO_SHOW_FALLBACK_MS` | 再生イベントが来ないときの表示フォールバックまでの待ち（ms） |
+
+ヒーロー動画URLの列挙順は `projectVideoUrls.js` → `collectProjectVideoUrls` の結果に従います（`projects.json` の並び・`heroMedia.src` が未設定の項目はスキップ）。存在する本数だけが先読み対象になります（例: `video-01` 未配置なら残りのみ）。
+
+#### 起動時の挙動（`app.js`）
+
+- `collectProjectVideoUrls` でヒーロー用 URL 一覧を取得し、`injectVideoLinkPreloads` と `ensureVideoPlayUrl`（先頭 N 本）で先読みヒントを張る。
+- **`isConservativeVideoPreload()`** が真のとき（`navigator.connection.saveData`、または `effectiveType` が `slow-2g` / `2g`）、起動時の先読みは行わない。極低速・データ節約時はホバーで初取得になる。
+
+#### ホバー時のヒーロー動画（`appHeroMedia.js`）
+
+- ブラウザの自動再生ポリシー対策のため、背景ヒーローは **muted** で再生する。
+- 表示は **`loadeddata` / `playing`** を使い、最初のフレーム取得後に見えやすくする。
+
+#### モーダル開閉と document meta（`appRouting.js`）
+
+- モーダル表示中は title / `meta name="description"` をプロジェクトに合わせ、閉じたときはトップの既定値へ戻す。
+- canonical / `sitemap.xml` は **`https://shuntofujii.com/`（非 www）** 前提でリポジトリ内を統一。**Search Console** のプロパティURLも同一ホストに揃えること。
 
 ### プロジェクト別URL（静的ページ）
 
@@ -486,7 +517,7 @@ node meta-audit.js
 - **レスポンシブ**: 対応（スマホ・タブレット・PC）。Safe Area（ノッチ・ホームインジケータ）を CSS 変数で考慮
 - **アクセシビリティ**: スキップリンク、`aria-label`（ナビ・ダイアログ・ライトボックス）、モーダル/ライトボックス内のフォーカストラップ、ESC で閉じる
 - **SEO**: `robots.txt`、`sitemap.xml`、メタタグ（OGP・Twitter）、構造化データ（ProfilePage / WebPage + ItemList）、視覚非表示の実績一覧テキスト。案件別は **`/{pageSlug}/`** の静的HTML（ビルドスクリプト生成）。詳細は `SEO_RECOMMENDATIONS.md` を参照
-- **動画読み込み**: 形式は WebM のみ。`videoCache.js` により canonical URL の解決、`<link rel="preload" as="video">`、アイドル時プリロードキューを利用して初期体感を改善
+- **動画読み込み**: 形式は WebM のみ。`videoCache.js` により canonical URL の解決、`<link rel="preload" as="video">`、アイドル時プリロードキューを利用。先読み本数・ホバー挙動の詳細は `動画プリロード・ヒーロー再生（実装メモ）` を参照
 
 ---
 

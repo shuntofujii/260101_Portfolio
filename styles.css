@@ -510,7 +510,6 @@ body.modal-open .context-panel {
 .guidance-cursor {
   display: inline-block;
   animation: blink 1s infinite;
-  margin-left: 2px;
 }
 
 @keyframes blink {

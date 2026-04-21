@@ -166,10 +166,7 @@ ${jsonLd}
         <div class="title-text" id="titleText">PORTFOLIO</div>
       </div>
 
-      <div class="guidance-text" id="guidanceText">
-        <span class="guidance-main">Please select a project</span>
-        <span class="guidance-cursor">_</span>
-      </div>
+      <div class="guidance-text" id="guidanceText"><span class="guidance-main">Prease select a project</span><span class="guidance-cursor">_</span></div>
 
       <div class="noise-overlay" aria-hidden="true"></div>
 

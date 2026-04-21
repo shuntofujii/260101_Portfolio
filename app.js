@@ -20,6 +20,7 @@ import {
 } from './constants.js';
 import { escapeHtml } from './utils.js';
 import { initCursorEffect } from './cursorEffect.js';
+import { initGuidanceTypewriter } from './guidanceTypewriter.js';
 import { openModal, closeModal } from './modal.js';
 import { openLightbox, openLightboxVideo, closeLightbox } from './lightbox.js';
 import { stopAllInlineVideos } from './media.js';
@@ -277,6 +278,7 @@ function bootstrapUiAfterDataReady() {
   renderProjectNavigation();
   setupEventListeners();
   applyInitialRoute();
+  initGuidanceTypewriter(refs.guidanceText);
 }
 
 /** データ節約モード・極低速回線では起動時の動画先読みを抑える（閲覧中の操作に任せる） */
