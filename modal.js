@@ -101,10 +101,7 @@ function setBackgroundModalState(isModalOpen) {
   if (refs.projectNavigation) refs.projectNavigation.classList[method]('modal-background');
 }
 
-export function openModal(project, triggerElement) {
-  const refs = getRefs();
-  state.modalTriggerElement = triggerElement || null;
-
+export function renderModalContent(project, modalContentEl) {
   const safeTitle = escapeHtml(project.title);
   const safeTagline = project.tagline ? escapeHtml(project.tagline) : '';
   const safeDescription = project.description
@@ -113,7 +110,7 @@ export function openModal(project, triggerElement) {
   const modalMetaItems = buildModalMetaItems(project);
   const modalMetaHtml = buildModalMetaHtml(modalMetaItems);
 
-  refs.modalContent.innerHTML = `
+  modalContentEl.innerHTML = `
     <div class="modal-header">
       <h2 class="modal-title" id="modalTitleHeading">${safeTitle}</h2>
       ${safeTagline ? `<p class="modal-tagline">${safeTagline}</p>` : ''}
@@ -121,7 +118,7 @@ export function openModal(project, triggerElement) {
     ${safeDescription ? `<div class="modal-description">${safeDescription}</div>` : ''}
   `;
 
-  appendProjectContentSections(project, refs.modalContent);
+  appendProjectContentSections(project, modalContentEl);
 
   // modal-meta をモーダル内の最下部に寄せる（footer的配置）
   // modal-content の flex レイアウトにより、末尾に置いた要素が下に押し出される。
@@ -129,8 +126,15 @@ export function openModal(project, triggerElement) {
     const tmp = document.createElement('div');
     tmp.innerHTML = modalMetaHtml.trim();
     const metaEl = tmp.firstElementChild;
-    if (metaEl) refs.modalContent.appendChild(metaEl);
+    if (metaEl) modalContentEl.appendChild(metaEl);
   }
+}
+
+export function openModal(project, triggerElement) {
+  const refs = getRefs();
+  state.modalTriggerElement = triggerElement || null;
+
+  renderModalContent(project, refs.modalContent);
 
   if (refs.modalOverlay && refs.modalContainer) {
     refs.modalOverlay.hidden = false;

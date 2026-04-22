@@ -5,6 +5,22 @@ import { createFocusTrap } from './utils.js';
 import { LIGHTBOX_CLOSE_DURATION_MS, LIGHTBOX_VIDEO_PLAY_DELAY_MS } from './constants.js';
 import { ensureVideoPlayUrl } from './videoCache.js';
 
+const LIGHTBOX_SWIPE_MIN_X = 48;
+const LIGHTBOX_SWIPE_MAX_Y = 64;
+const LIGHTBOX_SWIPE_MAX_VERTICAL_LOCK = 14;
+const LIGHTBOX_SWIPE_RETURN_MS = 220;
+const LIGHTBOX_SWIPE_COMMIT_MS = 260;
+const LIGHTBOX_SWIPE_ENTER_MS = 300;
+
+let lightboxTouchStartX = null;
+let lightboxTouchStartY = null;
+let lightboxSwipeDx = 0;
+let lightboxSwipeDirectionLocked = false;
+let lightboxSwipeHandlersBound = false;
+let lightboxSwipePreviewEl = null;
+let lightboxSwipePreviewDirection = 0;
+let lightboxSwipePreviewTargetEl = null;
+
 function clearElementInlineBoxStyles(el) {
   if (!el) return;
   el.style.position = '';
@@ -30,6 +46,250 @@ function setOriginRectFromElement(originElement) {
     width: rect.width,
     height: rect.height
   };
+}
+
+function getLightboxSequenceElements() {
+  const refs = getRefs();
+  if (!refs.modalContent) return [];
+  return Array.from(refs.modalContent.querySelectorAll('.mediaItem, .video-shell'));
+}
+
+function currentLightboxMediaElement() {
+  const refs = getRefs();
+  if (state.lightboxType === 'video' && refs.lightboxVideo && refs.lightboxVideo.style.display !== 'none') {
+    return refs.lightboxVideo;
+  }
+  if (refs.lightboxImage && refs.lightboxImage.style.display !== 'none') {
+    return refs.lightboxImage;
+  }
+  return null;
+}
+
+function clearLightboxSwipePreview() {
+  if (lightboxSwipePreviewEl) {
+    lightboxSwipePreviewEl.remove();
+  }
+  lightboxSwipePreviewEl = null;
+  lightboxSwipePreviewDirection = 0;
+  lightboxSwipePreviewTargetEl = null;
+}
+
+function createLightboxSwipePreviewElement(targetEl) {
+  if (!targetEl) return null;
+  if (targetEl.classList.contains('mediaItem')) {
+    const src = targetEl.querySelector('img')?.src;
+    if (!src) return null;
+    const img = document.createElement('img');
+    img.className = 'lightbox-image';
+    img.src = src;
+    img.alt = '';
+    img.style.display = 'block';
+    img.style.position = 'fixed';
+    img.style.left = '50%';
+    img.style.top = '50%';
+    img.style.opacity = '1';
+    img.style.pointerEvents = 'none';
+    return img;
+  }
+  if (targetEl.classList.contains('video-shell')) {
+    const videoEl = targetEl.querySelector('.video');
+    if (!videoEl) return null;
+    const previewSrc = videoEl.poster || videoEl.dataset.canonicalVideoSrc || videoEl.src;
+    if (!previewSrc) return null;
+    if (previewSrc.endsWith('.webm')) {
+      const v = document.createElement('video');
+      v.className = 'lightbox-video';
+      v.src = previewSrc;
+      v.muted = true;
+      v.playsInline = true;
+      v.loop = true;
+      v.preload = 'metadata';
+      v.style.display = 'block';
+      v.style.position = 'fixed';
+      v.style.left = '50%';
+      v.style.top = '50%';
+      v.style.opacity = '1';
+      v.style.pointerEvents = 'none';
+      return v;
+    }
+    const img = document.createElement('img');
+    img.className = 'lightbox-image';
+    img.src = previewSrc;
+    img.alt = '';
+    img.style.display = 'block';
+    img.style.position = 'fixed';
+    img.style.left = '50%';
+    img.style.top = '50%';
+    img.style.opacity = '1';
+    img.style.pointerEvents = 'none';
+    return img;
+  }
+  return null;
+}
+
+function ensureLightboxSwipePreview(direction) {
+  const seq = getLightboxSequenceElements();
+  if (!seq.length || !state.lightboxTriggerElement) return false;
+  const curIndex = seq.findIndex((el) => el === state.lightboxTriggerElement);
+  if (curIndex < 0) return false;
+  const nextIndex = curIndex + (direction > 0 ? 1 : -1);
+  if (nextIndex < 0 || nextIndex >= seq.length) return false;
+  const targetEl = seq[nextIndex];
+  if (lightboxSwipePreviewEl && lightboxSwipePreviewDirection === direction && lightboxSwipePreviewTargetEl === targetEl) {
+    return true;
+  }
+  clearLightboxSwipePreview();
+  const preview = createLightboxSwipePreviewElement(targetEl);
+  if (!preview) return false;
+  const refs = getRefs();
+  refs.lightboxOverlay.appendChild(preview);
+  lightboxSwipePreviewEl = preview;
+  lightboxSwipePreviewDirection = direction;
+  lightboxSwipePreviewTargetEl = targetEl;
+  return true;
+}
+
+function setLightboxDragTransform(dx) {
+  const mediaEl = currentLightboxMediaElement();
+  if (!mediaEl) return;
+  const abs = Math.abs(dx);
+  const scale = Math.max(0.94, 1 - abs / 1400);
+  mediaEl.style.transition = 'none';
+  mediaEl.style.transform = `translate(-50%, -50%) translateX(${dx}px) scale(${scale})`;
+  if (lightboxSwipePreviewEl && lightboxSwipePreviewDirection) {
+    const inScale = Math.min(1.06, 0.98 + abs / 1200);
+    lightboxSwipePreviewEl.style.transition = 'none';
+    lightboxSwipePreviewEl.style.transform = `translate(-50%, -50%) translateX(${(lightboxSwipePreviewDirection * (window.innerWidth || 390)) + dx}px) scale(${inScale})`;
+  }
+}
+
+function animateLightboxMediaToCenter() {
+  const mediaEl = currentLightboxMediaElement();
+  if (!mediaEl) return;
+  mediaEl.style.transition = `transform ${LIGHTBOX_SWIPE_RETURN_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+  mediaEl.style.transform = 'translate(-50%, -50%) translateX(0) scale(1)';
+  if (lightboxSwipePreviewEl && lightboxSwipePreviewDirection) {
+    lightboxSwipePreviewEl.style.transition = `transform ${LIGHTBOX_SWIPE_RETURN_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+    lightboxSwipePreviewEl.style.transform = `translate(-50%, -50%) translateX(${lightboxSwipePreviewDirection * (window.innerWidth || 390)}px) scale(1.06)`;
+    window.setTimeout(() => clearLightboxSwipePreview(), LIGHTBOX_SWIPE_RETURN_MS + 30);
+  }
+}
+
+function animateLightboxMediaOut(direction) {
+  const mediaEl = currentLightboxMediaElement();
+  if (!mediaEl) return;
+  const viewportWidth = window.innerWidth || 390;
+  const outX = direction > 0 ? viewportWidth * 1.15 : -viewportWidth * 1.15;
+  mediaEl.style.transition = `transform ${LIGHTBOX_SWIPE_COMMIT_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+  mediaEl.style.transform = `translate(-50%, -50%) translateX(${outX}px) scale(0.94)`;
+}
+
+function openLightboxByElement(el, options = {}) {
+  if (!el) return;
+  if (el.classList.contains('mediaItem')) {
+    const img = el.querySelector('img');
+    if (img?.src) openLightbox(img.src, el, options);
+    return;
+  }
+  if (el.classList.contains('video-shell')) {
+    const video = el.querySelector('.video');
+    const src = video?.dataset?.canonicalVideoSrc || video?.src;
+    if (src) openLightboxVideo(src, el, options);
+  }
+}
+
+function navigateLightboxByDelta(delta) {
+  if (!delta || !state.lightboxTriggerElement) return;
+  const seq = getLightboxSequenceElements();
+  if (!seq.length) return;
+  const curIndex = seq.findIndex((el) => el === state.lightboxTriggerElement);
+  if (curIndex < 0) return;
+  const nextIndex = curIndex + delta;
+  if (nextIndex < 0 || nextIndex >= seq.length) return;
+  const direction = delta > 0 ? 1 : -1;
+  const mediaEl = currentLightboxMediaElement();
+  if (mediaEl) {
+    const viewportWidth = window.innerWidth || 390;
+    const outX = direction > 0 ? -(viewportWidth * 1.15) : (viewportWidth * 1.15);
+    mediaEl.style.transition = `transform ${LIGHTBOX_SWIPE_COMMIT_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+    mediaEl.style.transform = `translate(-50%, -50%) translateX(${outX}px) scale(0.94)`;
+  }
+  if (lightboxSwipePreviewEl) {
+    lightboxSwipePreviewEl.style.transition = `transform ${LIGHTBOX_SWIPE_COMMIT_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+    lightboxSwipePreviewEl.style.transform = 'translate(-50%, -50%) translateX(0) scale(1)';
+  }
+  window.setTimeout(() => {
+    openLightboxByElement(seq[nextIndex], {
+      useOriginAnimation: false,
+      enterOffsetX: 0
+    });
+    clearLightboxSwipePreview();
+  }, Math.max(120, LIGHTBOX_SWIPE_COMMIT_MS - 80));
+}
+
+function bindLightboxSwipeHandlersOnce() {
+  if (lightboxSwipeHandlersBound) return;
+  const refs = getRefs();
+  if (!refs.lightboxOverlay) return;
+
+  refs.lightboxOverlay.addEventListener('touchstart', (e) => {
+    if (refs.lightboxOverlay.hidden) return;
+    if (!state.lightboxTriggerElement) return;
+    const t = e.changedTouches?.[0];
+    if (!t) return;
+    lightboxTouchStartX = t.clientX;
+    lightboxTouchStartY = t.clientY;
+    lightboxSwipeDx = 0;
+    lightboxSwipeDirectionLocked = false;
+    clearLightboxSwipePreview();
+  }, { passive: true });
+
+  refs.lightboxOverlay.addEventListener('touchmove', (e) => {
+    if (refs.lightboxOverlay.hidden) return;
+    if (lightboxTouchStartX == null || lightboxTouchStartY == null) return;
+    const t = e.changedTouches?.[0];
+    if (!t) return;
+    const dx = t.clientX - lightboxTouchStartX;
+    const dy = t.clientY - lightboxTouchStartY;
+
+    if (!lightboxSwipeDirectionLocked) {
+      if (Math.abs(dy) > LIGHTBOX_SWIPE_MAX_VERTICAL_LOCK && Math.abs(dy) > Math.abs(dx)) {
+        return;
+      }
+      if (Math.abs(dx) > 8) {
+        lightboxSwipeDirectionLocked = true;
+      }
+    }
+    if (!lightboxSwipeDirectionLocked) return;
+    e.preventDefault();
+    lightboxSwipeDx = dx;
+    const direction = dx < 0 ? 1 : -1;
+    ensureLightboxSwipePreview(direction);
+    setLightboxDragTransform(dx);
+  }, { passive: false });
+
+  refs.lightboxOverlay.addEventListener('touchend', (e) => {
+    if (refs.lightboxOverlay.hidden) return;
+    if (lightboxTouchStartX == null || lightboxTouchStartY == null) return;
+    const t = e.changedTouches?.[0];
+    if (!t) return;
+
+    const dx = lightboxSwipeDirectionLocked ? lightboxSwipeDx : (t.clientX - lightboxTouchStartX);
+    const dy = t.clientY - lightboxTouchStartY;
+    lightboxTouchStartX = null;
+    lightboxTouchStartY = null;
+    lightboxSwipeDx = 0;
+    lightboxSwipeDirectionLocked = false;
+
+    if (Math.abs(dy) > LIGHTBOX_SWIPE_MAX_Y) return;
+    if (Math.abs(dx) < LIGHTBOX_SWIPE_MIN_X) {
+      animateLightboxMediaToCenter();
+      return;
+    }
+    navigateLightboxByDelta(dx < 0 ? 1 : -1);
+  }, { passive: true });
+
+  lightboxSwipeHandlersBound = true;
 }
 
 function setupLightboxFocusTrap() {
@@ -72,6 +332,7 @@ export function closeLightbox() {
     state.lightboxTriggerElement.focus();
   }
   state.lightboxTriggerElement = null;
+  clearLightboxSwipePreview();
 
   refs.lightboxOverlay.classList.add('closing');
 
@@ -111,13 +372,15 @@ export function closeLightbox() {
   setTimeout(() => finishLightboxClose('image'), LIGHTBOX_CLOSE_DURATION_MS);
 }
 
-export function openLightboxVideo(videoSrc, originElement) {
+export function openLightboxVideo(videoSrc, originElement, options = {}) {
   const refs = getRefs();
   if (!refs.lightboxOverlay || !refs.lightboxVideo) return;
+  const { useOriginAnimation = true, enterOffsetX = 0 } = options;
 
   state.lightboxType = 'video';
   state.lightboxTriggerElement = originElement || null;
-  setOriginRectFromElement(originElement);
+  if (useOriginAnimation) setOriginRectFromElement(originElement);
+  else state.lightboxOriginRect = null;
 
   if (refs.lightboxImage) refs.lightboxImage.style.display = 'none';
   refs.lightboxVideo.style.display = 'block';
@@ -130,6 +393,7 @@ export function openLightboxVideo(videoSrc, originElement) {
   refs.lightboxVideo.setAttribute('disablepictureinpicture', 'true');
   refs.lightboxOverlay.removeAttribute('hidden');
   refs.lightboxOverlay.classList.remove('closing');
+  bindLightboxSwipeHandlersOnce();
   setupLightboxFocusTrap();
 
   let layoutApplied = false;
@@ -178,14 +442,23 @@ export function openLightboxVideo(videoSrc, originElement) {
         });
       });
     } else {
-      refs.lightboxVideo.style.position = '';
-      refs.lightboxVideo.style.left = '';
-      refs.lightboxVideo.style.top = '';
+      refs.lightboxVideo.style.position = 'fixed';
+      refs.lightboxVideo.style.left = '50%';
+      refs.lightboxVideo.style.top = '50%';
       refs.lightboxVideo.style.width = '';
       refs.lightboxVideo.style.height = '';
       refs.lightboxVideo.style.opacity = '1';
-      refs.lightboxVideo.style.transform = 'translate(-50%, -50%) scale(1)';
-      refs.lightboxVideo.style.transition = 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+      if (enterOffsetX) {
+        refs.lightboxVideo.style.transform = `translate(-50%, -50%) translateX(${enterOffsetX}px) scale(1.06)`;
+        refs.lightboxVideo.style.transition = 'none';
+        requestAnimationFrame(() => {
+          refs.lightboxVideo.style.transition = `transform ${LIGHTBOX_SWIPE_ENTER_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+          refs.lightboxVideo.style.transform = 'translate(-50%, -50%) translateX(0) scale(1)';
+        });
+      } else {
+        refs.lightboxVideo.style.transform = 'translate(-50%, -50%) scale(1)';
+        refs.lightboxVideo.style.transition = 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+      }
     }
   };
 
@@ -211,13 +484,15 @@ export function openLightboxVideo(videoSrc, originElement) {
   ensureVideoPlayUrl(videoSrc).then(applySrc);
 }
 
-export function openLightbox(imageSrc, originElement) {
+export function openLightbox(imageSrc, originElement, options = {}) {
   const refs = getRefs();
   if (!refs.lightboxOverlay || !refs.lightboxImage) return;
+  const { useOriginAnimation = true, enterOffsetX = 0 } = options;
 
   state.lightboxType = 'image';
   state.lightboxTriggerElement = originElement || null;
-  setOriginRectFromElement(originElement);
+  if (useOriginAnimation) setOriginRectFromElement(originElement);
+  else state.lightboxOriginRect = null;
 
   if (refs.lightboxVideo) {
     refs.lightboxVideo.style.display = 'none';
@@ -231,6 +506,7 @@ export function openLightbox(imageSrc, originElement) {
   refs.lightboxImage.alt = (originImg && originImg.alt) ? originImg.alt : '画像の拡大表示';
   refs.lightboxOverlay.removeAttribute('hidden');
   refs.lightboxOverlay.classList.remove('closing');
+  bindLightboxSwipeHandlersOnce();
   setupLightboxFocusTrap();
 
   const handleImageLoad = () => {
@@ -268,14 +544,23 @@ export function openLightbox(imageSrc, originElement) {
         });
       });
     } else {
-      refs.lightboxImage.style.position = '';
-      refs.lightboxImage.style.left = '';
-      refs.lightboxImage.style.top = '';
+      refs.lightboxImage.style.position = 'fixed';
+      refs.lightboxImage.style.left = '50%';
+      refs.lightboxImage.style.top = '50%';
       refs.lightboxImage.style.width = '';
       refs.lightboxImage.style.height = '';
       refs.lightboxImage.style.opacity = '1';
-      refs.lightboxImage.style.transform = 'translate(-50%, -50%) scale(1)';
-      refs.lightboxImage.style.transition = 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+      if (enterOffsetX) {
+        refs.lightboxImage.style.transform = `translate(-50%, -50%) translateX(${enterOffsetX}px) scale(1.06)`;
+        refs.lightboxImage.style.transition = 'none';
+        requestAnimationFrame(() => {
+          refs.lightboxImage.style.transition = `transform ${LIGHTBOX_SWIPE_ENTER_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+          refs.lightboxImage.style.transform = 'translate(-50%, -50%) translateX(0) scale(1)';
+        });
+      } else {
+        refs.lightboxImage.style.transform = 'translate(-50%, -50%) scale(1)';
+        refs.lightboxImage.style.transition = 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+      }
     }
   };
   refs.lightboxImage.onload = handleImageLoad;

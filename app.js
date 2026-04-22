@@ -21,7 +21,7 @@ import {
 import { escapeHtml } from './utils.js';
 import { initCursorEffect } from './cursorEffect.js';
 import { initGuidanceTypewriter } from './guidanceTypewriter.js';
-import { openModal, closeModal } from './modal.js';
+import { openModal, closeModal, renderModalContent } from './modal.js';
 import { openLightbox, openLightboxVideo, closeLightbox } from './lightbox.js';
 import { stopAllInlineVideos } from './media.js';
 import { injectVideoLinkPreloads, scheduleIdleVideoPreload, ensureVideoPlayUrl } from './videoCache.js';
@@ -50,6 +50,11 @@ import {
 const BASE_PAGE_TITLE = document.title;
 const metaDescriptionEl = document.querySelector('meta[name="description"]');
 const BASE_META_DESCRIPTION = metaDescriptionEl?.getAttribute('content') ?? '';
+const PROJECT_SWIPE_MIN_X = 56;
+const PROJECT_SWIPE_MAX_Y = 72;
+const PROJECT_SWIPE_LOCK_Y = 14;
+const PROJECT_SWIPE_ENTER_MS = 300;
+const PROJECT_SWIPE_COMMIT_MS = 260;
 
 function findProjectByPageSlug(slug) {
   if (!slug || !state.projects?.length) return null;
@@ -64,7 +69,12 @@ function findProjectItemElement(projectId) {
 function openProjectModalFromRoute(project) {
   if (!project) return;
   const item = findProjectItemElement(project.id);
-  if (item) openModal(project, item);
+  if (!item) return;
+  state.currentState = 'modal';
+  state.selectedProject = project;
+  clearProjectSelections();
+  item.classList.add('selected');
+  openModal(project, item);
 }
 
 function onPortfolioModalOpen(e) {
@@ -223,6 +233,33 @@ function shouldProcessProjectPointerInteraction() {
   return state.currentState !== 'modal';
 }
 
+/**
+ * モーダル内の前後案件スワイプ（モバイル）
+ * - 旧: `data-portfolio-page-slug` 付きページのみ有効にしていた。
+ * - 案件ページでモーダルを閉じると `portfolio:modalclose` で `/` へ遷移し、
+ *   トップの body には当該属性が無い → 再オープン後ずっとスワイプ不能になる。
+ * - そのため「モバイルかつ複数案件があれば」モーダル表示中は常に有効とする。
+ */
+function isMobileProjectPageSwipeEnabled() {
+  if (!isMobileViewport()) return false;
+  if (!Array.isArray(state.projects) || state.projects.length < 2) return false;
+  return true;
+}
+
+function getCurrentSelectedProjectIndex() {
+  if (!state.projects?.length || !state.selectedProject?.id) return -1;
+  return state.projects.findIndex((p) => p.id === state.selectedProject.id);
+}
+
+function navigateProjectByDelta(delta) {
+  if (!delta || !state.projects?.length) return;
+  const curIndex = getCurrentSelectedProjectIndex();
+  if (curIndex < 0) return;
+  const nextIndex = curIndex + delta;
+  if (nextIndex < 0 || nextIndex >= state.projects.length) return;
+  openProjectModalFromRoute(state.projects[nextIndex]);
+}
+
 function handleProjectItemMouseEnter(project, item) {
   if (shouldProcessProjectPointerInteraction()) {
     handleProjectHover(project, item);
@@ -374,12 +411,306 @@ function renderProjectNavigation() {
 // イベントリスナーの設定
 // ============================================
 function setupEventListeners() {
+  let modalTouchStartX = null;
+  let modalTouchStartY = null;
+  let modalSwipeDx = 0;
+  let modalSwipeLocked = false;
+  let modalSwipeIntent = false;
+  let modalSwipeGhostContainer = null;
+  let modalSwipeGhostContent = null;
+  let modalSwipeTargetProject = null;
+  let modalSwipeDirection = 0;
+
+  const clearModalSwipeInlineStyles = () => {
+    refs.modalContainer.style.transition = '';
+    refs.modalContainer.style.transform = '';
+    refs.modalContainer.style.transformOrigin = '';
+  };
+
+  /** ジェスチャ中断・異常時に必ず呼ぶ（touchend の早期 return で固まらないようにする） */
+  const finalizeModalSwipeGesture = () => {
+    modalTouchStartX = null;
+    modalTouchStartY = null;
+    modalSwipeDx = 0;
+    modalSwipeLocked = false;
+    modalSwipeIntent = false;
+    modalSwipeTargetProject = null;
+    modalSwipeDirection = 0;
+    clearModalSwipeInlineStyles();
+    hideModalSwipeGhost();
+  };
+
+  const ensureModalSwipeGhost = () => {
+    if (modalSwipeGhostContainer && modalSwipeGhostContent) return;
+    const ghost = document.createElement('div');
+    ghost.className = 'modal-container modal-swipe-ghost';
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.style.position = 'fixed';
+    ghost.style.margin = '0';
+    ghost.style.pointerEvents = 'none';
+    ghost.style.zIndex = '';
+    ghost.style.opacity = '1';
+    ghost.style.transition = 'none';
+    const ghostContent = document.createElement('div');
+    ghostContent.className = 'modal-content';
+    ghost.appendChild(ghostContent);
+    refs.modalOverlay.appendChild(ghost);
+    modalSwipeGhostContainer = ghost;
+    modalSwipeGhostContent = ghostContent;
+  };
+
+  const hideModalSwipeGhost = () => {
+    if (!modalSwipeGhostContainer) return;
+    modalSwipeGhostContainer.style.display = 'none';
+    modalSwipeGhostContainer.style.transform = '';
+    modalSwipeGhostContainer.style.transition = '';
+    modalSwipeGhostContainer.style.transformOrigin = '';
+    modalSwipeGhostContainer.style.left = '';
+    modalSwipeGhostContainer.style.top = '';
+    modalSwipeGhostContainer.style.width = '';
+    modalSwipeGhostContainer.style.height = '';
+    modalSwipeTargetProject = null;
+    modalSwipeDirection = 0;
+  };
+
+  /** 静止時と同じく左右マージンをギャップの下限にする（ライトボックスと同様、常に一枚分空ける） */
+  const computeModalSwipeGutter = (rect) => {
+    const vw = window.innerWidth;
+    return Math.max(12, Math.min(rect.left, vw - rect.right, (vw - rect.width) / 2));
+  };
+
+  const animateModalBackToCenter = () => {
+    refs.modalContainer.style.transition = 'transform 220ms cubic-bezier(0.22, 1, 0.36, 1)';
+    refs.modalContainer.style.transform = 'translateX(0) scale(1)';
+    if (modalSwipeGhostContainer && modalSwipeDirection) {
+      const rect = refs.modalContainer.getBoundingClientRect();
+      const gutter = computeModalSwipeGutter(rect);
+      const vw = window.innerWidth;
+      modalSwipeGhostContainer.style.transition = 'transform 220ms cubic-bezier(0.22, 1, 0.36, 1)';
+      modalSwipeGhostContainer.style.transformOrigin = 'center center';
+      if (modalSwipeDirection > 0) {
+        modalSwipeGhostContainer.style.left = `${rect.right + gutter}px`;
+        modalSwipeGhostContainer.style.top = `${rect.top}px`;
+        modalSwipeGhostContainer.style.transform = `translateX(${vw}px) scale(1)`;
+      } else {
+        modalSwipeGhostContainer.style.left = `${rect.left - gutter - rect.width}px`;
+        modalSwipeGhostContainer.style.top = `${rect.top}px`;
+        modalSwipeGhostContainer.style.transform = `translateX(${-vw}px) scale(1)`;
+      }
+    }
+    window.setTimeout(() => {
+      clearModalSwipeInlineStyles();
+      hideModalSwipeGhost();
+    }, 240);
+  };
+
+  const getProjectByDelta = (delta) => {
+    if (!delta || !state.projects?.length) return false;
+    const curIndex = getCurrentSelectedProjectIndex();
+    if (curIndex < 0) return null;
+    const nextIndex = curIndex + delta;
+    if (nextIndex < 0 || nextIndex >= state.projects.length) return null;
+    return state.projects[nextIndex];
+  };
+
+  const syncModalGhostTransform = () => {
+    if (!modalSwipeGhostContainer || !modalSwipeTargetProject || !modalSwipeDirection) return;
+    const rect = refs.modalContainer.getBoundingClientRect();
+    const gutter = computeModalSwipeGutter(rect);
+    const abs = Math.abs(modalSwipeDx);
+    const outScale = Math.max(0.94, 1 - abs / 1400);
+    const inScale = Math.min(1.02, 0.99 + abs / 1400);
+    refs.modalContainer.style.transition = 'none';
+    refs.modalContainer.style.transformOrigin = modalSwipeDirection > 0 ? 'right center' : 'left center';
+    refs.modalContainer.style.transform = `translateX(${modalSwipeDx}px) scale(${outScale})`;
+    modalSwipeGhostContainer.style.display = 'block';
+    modalSwipeGhostContainer.style.width = `${rect.width}px`;
+    modalSwipeGhostContainer.style.height = `${rect.height}px`;
+    modalSwipeGhostContainer.style.transition = 'none';
+    modalSwipeGhostContainer.style.transformOrigin = modalSwipeDirection > 0 ? 'left center' : 'right center';
+    /* 現在カードの見た目の境界（getBoundingClientRect）に対し gutter だけ外側へ置く。共通 left + translate(vw)+dx は scale/origin と相性が悪く重なる */
+    if (modalSwipeDirection > 0) {
+      modalSwipeGhostContainer.style.left = `${rect.right + gutter}px`;
+      modalSwipeGhostContainer.style.top = `${rect.top}px`;
+      modalSwipeGhostContainer.style.transform = `translateX(0) scale(${inScale})`;
+    } else {
+      modalSwipeGhostContainer.style.left = `${rect.left - gutter - rect.width}px`;
+      modalSwipeGhostContainer.style.top = `${rect.top}px`;
+      modalSwipeGhostContainer.style.transform = `translateX(0) scale(${inScale})`;
+    }
+  };
+
+  const handleModalSwipeTouchStart = (e) => {
+    if (!isMobileProjectPageSwipeEnabled()) return;
+    if (state.currentState !== 'modal') return;
+    if (refs.lightboxOverlay && !refs.lightboxOverlay.hidden) return;
+    const target = e.target;
+    if (target.closest('a, button, input, textarea, select, .mediaItem, .video-shell, .video-controls, .seek')) {
+      return;
+    }
+    const t = e.changedTouches?.[0];
+    if (!t) return;
+    modalTouchStartX = t.clientX;
+    modalTouchStartY = t.clientY;
+    modalSwipeDx = 0;
+    modalSwipeLocked = false;
+    modalSwipeIntent = true;
+    modalSwipeTargetProject = null;
+    modalSwipeDirection = 0;
+    ensureModalSwipeGhost();
+    hideModalSwipeGhost();
+  };
+
+  const handleModalSwipeTouchMove = (e) => {
+    if (!modalSwipeIntent) return;
+    if (!isMobileProjectPageSwipeEnabled()) return;
+    if (state.currentState !== 'modal') return;
+    if (refs.lightboxOverlay && !refs.lightboxOverlay.hidden) return;
+    if (modalTouchStartX == null || modalTouchStartY == null) return;
+    const t = e.changedTouches?.[0];
+    if (!t) return;
+    const dx = t.clientX - modalTouchStartX;
+    const dy = t.clientY - modalTouchStartY;
+
+    if (!modalSwipeLocked) {
+      if (Math.abs(dy) > PROJECT_SWIPE_LOCK_Y && Math.abs(dy) > Math.abs(dx)) {
+        modalSwipeIntent = false;
+        return;
+      }
+      if (Math.abs(dx) > 8) {
+        modalSwipeLocked = true;
+      }
+    }
+    if (!modalSwipeLocked) return;
+
+    e.preventDefault();
+    modalSwipeDx = dx;
+    const direction = dx < 0 ? 1 : -1;
+    if (direction !== modalSwipeDirection) {
+      modalSwipeDirection = direction;
+      modalSwipeTargetProject = getProjectByDelta(direction);
+      if (modalSwipeTargetProject && modalSwipeGhostContent) {
+        try {
+          renderModalContent(modalSwipeTargetProject, modalSwipeGhostContent);
+        } catch (err) {
+          console.warn('modal ghost render', err);
+          modalSwipeTargetProject = null;
+        }
+      }
+    }
+    if (!modalSwipeTargetProject) {
+      refs.modalContainer.style.transition = 'none';
+      refs.modalContainer.style.transformOrigin = 'center center';
+      refs.modalContainer.style.transform = `translateX(${dx}px) scale(${Math.max(0.96, 1 - Math.abs(dx) / 1600)})`;
+      return;
+    }
+    try {
+      syncModalGhostTransform();
+    } catch (err) {
+      console.warn('modal swipe sync', err);
+      finalizeModalSwipeGesture();
+    }
+  };
+
+  const handleModalSwipeTouchEnd = (e) => {
+    if (!modalSwipeIntent) {
+      finalizeModalSwipeGesture();
+      return;
+    }
+
+    const t = e.changedTouches?.[0] ?? e.touches?.[0];
+    const dx = modalSwipeLocked ? modalSwipeDx : (modalTouchStartX != null && t ? t.clientX - modalTouchStartX : 0);
+    const dy = modalTouchStartY != null && t ? t.clientY - modalTouchStartY : 0;
+
+    const savedDir = modalSwipeDirection;
+    const savedTarget = modalSwipeTargetProject;
+
+    modalTouchStartX = null;
+    modalTouchStartY = null;
+    modalSwipeDx = 0;
+    modalSwipeLocked = false;
+    modalSwipeIntent = false;
+
+    if (!isMobileProjectPageSwipeEnabled() || state.currentState !== 'modal' || (refs.lightboxOverlay && !refs.lightboxOverlay.hidden)) {
+      modalSwipeTargetProject = null;
+      modalSwipeDirection = 0;
+      clearModalSwipeInlineStyles();
+      hideModalSwipeGhost();
+      return;
+    }
+
+    if (Math.abs(dy) > PROJECT_SWIPE_MAX_Y || Math.abs(dx) < PROJECT_SWIPE_MIN_X || !savedTarget) {
+      modalSwipeDirection = savedDir;
+      modalSwipeTargetProject = savedTarget;
+      animateModalBackToCenter();
+      return;
+    }
+
+    const outX = savedDir > 0 ? -(window.innerWidth * 1.15) : (window.innerWidth * 1.15);
+    const ghostEl = modalSwipeGhostContainer;
+
+    try {
+      if (!ghostEl) {
+        modalSwipeDirection = savedDir;
+        modalSwipeTargetProject = savedTarget;
+        animateModalBackToCenter();
+        return;
+      }
+
+      const commitRect = refs.modalContainer.getBoundingClientRect();
+      const gRect = ghostEl.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const targetLeft = vw / 2 - commitRect.width / 2;
+      const deltaToCenter = targetLeft - gRect.left;
+
+      if (!Number.isFinite(deltaToCenter) || !Number.isFinite(commitRect.width) || commitRect.width <= 0) {
+        try {
+          openProjectModalFromRoute(savedTarget);
+        } finally {
+          finalizeModalSwipeGesture();
+        }
+        return;
+      }
+
+      modalSwipeDirection = savedDir;
+      modalSwipeTargetProject = savedTarget;
+
+      refs.modalContainer.style.transition = `transform ${PROJECT_SWIPE_COMMIT_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+      refs.modalContainer.style.transform = `translateX(${outX}px) scale(0.94)`;
+      ghostEl.style.transition = `transform ${PROJECT_SWIPE_COMMIT_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+      ghostEl.style.transformOrigin = 'center center';
+      ghostEl.style.transform = `translateX(${deltaToCenter}px) scale(1)`;
+
+      window.setTimeout(() => {
+        try {
+          openProjectModalFromRoute(savedTarget);
+        } finally {
+          clearModalSwipeInlineStyles();
+          hideModalSwipeGhost();
+        }
+      }, Math.max(140, PROJECT_SWIPE_COMMIT_MS - 70));
+    } catch (err) {
+      console.warn('modal swipe touchend', err);
+      modalSwipeDirection = savedDir;
+      modalSwipeTargetProject = savedTarget;
+      try {
+        if (savedTarget) openProjectModalFromRoute(savedTarget);
+      } catch (_) {
+        /* ignore */
+      }
+      finalizeModalSwipeGesture();
+    }
+  };
+
   bindGlobalEventListeners(refs, {
     onCloseModal: closeModalAndStopVideos,
     onEscapeKey: handleEscapeKey,
     onCloseLightbox: closeLightbox,
     onPortfolioTitleClick: handlePortfolioTitleClick,
-    onFocusVisualTouchStart: handleFocusVisualTouchStart
+    onFocusVisualTouchStart: handleFocusVisualTouchStart,
+    onModalTouchStart: handleModalSwipeTouchStart,
+    onModalTouchMove: handleModalSwipeTouchMove,
+    onModalTouchEnd: handleModalSwipeTouchEnd
   });
 }
 
@@ -432,15 +763,9 @@ function handleProjectLeave() {
 // ============================================
 // プロジェクトクリック処理（モーダルを開く）
 // ============================================
-function handleProjectClick(project, itemElement) {
-  state.currentState = 'modal';
-  state.selectedProject = project;
-
+function handleProjectClick(project) {
   clearHoverLeaveTimer();
-  clearProjectSelections();
-  itemElement.classList.add('selected');
-
-  openModal(project, itemElement);
+  openProjectModalFromRoute(project);
 }
 
 // ============================================
