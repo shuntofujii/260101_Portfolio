@@ -30,6 +30,10 @@ import { pathForProjectSlug, parseProjectSlugFromPath } from './routing.js';
 import { renderProjectNavigation as renderProjectNavigationView } from './appNavigation.js';
 import { updateHeroMedia as updateHeroMediaView } from './appHeroMedia.js';
 import { bindGlobalEventListeners } from './appEventBindings.js';
+import { createModalSwipeController } from './appModalSwipeController.js';
+import { createProjectInteractionController } from './appProjectInteractions.js';
+import { createAppBootstrapController } from './appBootstrap.js';
+import { createModalRoutingController } from './appModalRoutingController.js';
 import {
   clearHoverLeaveTimer as clearHoverLeaveTimerState,
   clearProjectSelections as clearProjectSelectionsView,
@@ -50,83 +54,9 @@ import {
 const BASE_PAGE_TITLE = document.title;
 const metaDescriptionEl = document.querySelector('meta[name="description"]');
 const BASE_META_DESCRIPTION = metaDescriptionEl?.getAttribute('content') ?? '';
-const PROJECT_SWIPE_MIN_X = 56;
 const PROJECT_SWIPE_MAX_Y = 72;
 const PROJECT_SWIPE_LOCK_Y = 14;
-const PROJECT_SWIPE_ENTER_MS = 300;
 const PROJECT_SWIPE_COMMIT_MS = 260;
-
-function findProjectByPageSlug(slug) {
-  if (!slug || !state.projects?.length) return null;
-  return state.projects.find((p) => p.pageSlug === slug) || null;
-}
-
-function findProjectItemElement(projectId) {
-  if (!projectId) return null;
-  return document.querySelector(`[data-project-id="${projectId}"]`);
-}
-
-function openProjectModalFromRoute(project) {
-  if (!project) return;
-  const item = findProjectItemElement(project.id);
-  if (!item) return;
-  state.currentState = 'modal';
-  state.selectedProject = project;
-  clearProjectSelections();
-  item.classList.add('selected');
-  openModal(project, item);
-}
-
-function onPortfolioModalOpen(e) {
-  const project = e.detail?.project;
-  if (!project || !project.pageSlug) return;
-
-  preloadProjectVideos(project);
-  applyModalHistoryForProject(project);
-  applyModalDocumentMeta(project, metaDescriptionEl);
-}
-
-function onPortfolioModalClose() {
-  if (document.body.dataset.portfolioPageSlug) {
-    window.location.replace('/');
-    return;
-  }
-
-  restoreBaseHistoryOnModalClose(BASE_PAGE_TITLE);
-  restoreBaseDocumentMeta(BASE_PAGE_TITLE, BASE_META_DESCRIPTION, metaDescriptionEl);
-}
-
-function onPopState() {
-  const slug = parseProjectSlugFromPath(normalizePathname(window.location.pathname));
-  const project = slug ? findProjectByPageSlug(slug) : null;
-
-  if (state.currentState === 'modal' && !project) {
-    closeModal(stopAllInlineVideos);
-    return;
-  }
-  if (project && state.currentState !== 'modal') {
-    openProjectModalFromRoute(project);
-  }
-}
-
-function applyInitialRoute() {
-  let slug = getPathnameProjectSlug();
-  if (slug) {
-    const project = findProjectByPageSlug(slug);
-    openProjectModalFromRoute(project);
-    return;
-  }
-
-  const legacy = findLegacyProjectFromHash(state.projects);
-  if (legacy && legacy.pageSlug) {
-    history.replaceState(null, '', pathForProjectSlug(legacy.pageSlug));
-    openProjectModalFromRoute(legacy);
-  }
-}
-
-document.addEventListener('portfolio:modalopen', onPortfolioModalOpen);
-document.addEventListener('portfolio:modalclose', onPortfolioModalClose);
-window.addEventListener('popstate', onPopState);
 
 // DOM参照を取得し、refs に登録（他モジュールから getRefs() で参照）
 const portfolioTitle = document.getElementById('portfolioTitle');
@@ -170,6 +100,67 @@ setRefs({
 });
 
 const refs = getRefs();
+
+const modalRoutingController = createModalRoutingController({
+  state,
+  refs,
+  basePageTitle: BASE_PAGE_TITLE,
+  baseMetaDescription: BASE_META_DESCRIPTION,
+  metaDescriptionEl,
+  clearProjectSelections,
+  preloadProjectVideos,
+  openModal,
+  closeModalAndStopVideos,
+  renderModalContent,
+  getProjects: () => state.projects,
+  parseProjectSlugFromPath,
+  normalizePathname,
+  getPathnameProjectSlug,
+  findLegacyProjectFromHash,
+  pathForProjectSlug,
+  applyModalHistoryForProject,
+  restoreBaseHistoryOnModalClose,
+  applyModalDocumentMeta,
+  restoreBaseDocumentMeta
+});
+modalRoutingController.bindRouteEventListeners();
+
+function applyInitialRoute() {
+  modalRoutingController.applyInitialRoute();
+}
+
+function openProjectModalFromRoute(project) {
+  modalRoutingController.openProjectModalFromRoute(project);
+}
+
+function updateModalProjectInPlace(project, options = {}) {
+  modalRoutingController.updateModalProjectInPlace(project, options);
+}
+
+const appBootstrapController = createAppBootstrapController({
+  state,
+  refs,
+  isMobileViewport,
+  constants: {
+    videoPreloadLinkMaxMobile: VIDEO_PRELOAD_LINK_MAX_MOBILE,
+    videoPreloadLinkMaxDesktop: VIDEO_PRELOAD_LINK_MAX_DESKTOP,
+    heroVideoPrefetchCountMobile: HERO_VIDEO_PREFETCH_COUNT_MOBILE,
+    heroVideoPrefetchCountDesktop: HERO_VIDEO_PREFETCH_COUNT_DESKTOP
+  },
+  collectProjectVideoUrls,
+  collectVideoUrlsForProject,
+  injectVideoLinkPreloads,
+  scheduleIdleVideoPreload,
+  ensureVideoPlayUrl,
+  initGuidanceTypewriter,
+  initCursorEffect,
+  applyInitialRoute,
+  renderInitialState,
+  renderProjectNavigation,
+  setupEventListeners,
+  fetchProjectsData,
+  showErrorState
+});
 
 function isMobileViewport() {
   return window.matchMedia(`(max-width: ${BREAKPOINT_MOBILE_PX}px)`).matches;
@@ -229,10 +220,6 @@ function handleFocusVisualTouchStart(e) {
   }
 }
 
-function shouldProcessProjectPointerInteraction() {
-  return state.currentState !== 'modal';
-}
-
 /**
  * モーダル内の前後案件スワイプ（モバイル）
  * - 旧: `data-portfolio-page-slug` 付きページのみ有効にしていた。
@@ -260,24 +247,6 @@ function navigateProjectByDelta(delta) {
   openProjectModalFromRoute(state.projects[nextIndex]);
 }
 
-function handleProjectItemMouseEnter(project, item) {
-  if (shouldProcessProjectPointerInteraction()) {
-    handleProjectHover(project, item);
-  }
-}
-
-function handleProjectItemMouseLeave() {
-  if (shouldProcessProjectPointerInteraction()) {
-    handleProjectLeave();
-  }
-}
-
-function handleProjectItemTouchStart(project, item) {
-  if (shouldProcessProjectPointerInteraction()) {
-    handleProjectHover(project, item);
-  }
-}
-
 function beginBackgroundFadeOutToInitialState() {
   beginBackgroundFadeOutToInitialStateView(state, refs.bgLayer, renderInitialState);
 }
@@ -290,88 +259,15 @@ async function fetchProjectsData() {
   return response.json();
 }
 
-function getHeroVideoPreloadConfig() {
-  const mobile = isMobileViewport();
-  return {
-    linkMax: mobile ? VIDEO_PRELOAD_LINK_MAX_MOBILE : VIDEO_PRELOAD_LINK_MAX_DESKTOP,
-    heroPrefetchCount: mobile ? HERO_VIDEO_PREFETCH_COUNT_MOBILE : HERO_VIDEO_PREFETCH_COUNT_DESKTOP
-  };
-}
-
-function warmupInitialHeroVideos(projects) {
-  const { hero: heroVideoUrls } = collectProjectVideoUrls(projects);
-  const conservative = isConservativeVideoPreload();
-  if (conservative) return;
-
-  const { linkMax, heroPrefetchCount } = getHeroVideoPreloadConfig();
-  injectVideoLinkPreloads(heroVideoUrls, linkMax);
-  heroVideoUrls.slice(0, heroPrefetchCount).forEach((url) => {
-    ensureVideoPlayUrl(url).catch(() => {});
-  });
-}
-
-function bootstrapUiAfterDataReady() {
-  renderInitialState();
-  renderProjectNavigation();
-  setupEventListeners();
-  applyInitialRoute();
-  // ガイダンスタイプライターはトップのみ（案件ページは body に data-portfolio-page-slug あり）
-  if (!document.body.dataset.portfolioPageSlug) {
-    initGuidanceTypewriter(refs.guidanceText);
-  }
-}
-
-/** データ節約モード・極低速回線では起動時の動画先読みを抑える（閲覧中の操作に任せる） */
-function isConservativeVideoPreload() {
-  try {
-    const c = navigator.connection;
-    if (c && c.saveData) return true;
-    const t = c && c.effectiveType;
-    if (t === 'slow-2g' || t === '2g') return true;
-    return false;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * 選択・閲覧中のプロジェクトの動画だけをアイドル時に順次温める（全件一括はしない）
- * @param {object} project projects.json の1要素
- */
 function preloadProjectVideos(project) {
-  if (!project || isConservativeVideoPreload()) return;
-  const { urls, heroVideo } = collectVideoUrlsForProject(project);
-  if (!urls.length) return;
-  const priorityFirst = heroVideo ? [heroVideo] : [];
-  scheduleIdleVideoPreload(urls, priorityFirst);
-}
-
-function scheduleCursorEffectInit() {
-  if (!isMobileViewport()) {
-    return initCursorEffect();
-  }
-  const run = () => initCursorEffect();
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(() => run(), { timeout: 2800 });
-  } else {
-    setTimeout(run, 200);
-  }
-  return Promise.resolve();
+  appBootstrapController.preloadProjectVideos(project);
 }
 
 // ============================================
 // 初期化
 // ============================================
 async function init() {
-  try {
-    state.projects = await fetchProjectsData();
-    warmupInitialHeroVideos(state.projects);
-    bootstrapUiAfterDataReady();
-    await scheduleCursorEffectInit();
-  } catch (error) {
-    console.error('Error loading projects:', error);
-    showErrorState();
-  }
+  await appBootstrapController.init();
 }
 
 // ============================================
@@ -394,15 +290,29 @@ function renderInitialState() {
 // プロジェクト選択UIの描画
 // ============================================
 function renderProjectNavigation() {
+  const projectInteractionController = createProjectInteractionController({
+    state,
+    refs,
+    openingSoonProjectId: OPENING_SOON_PROJECT_ID,
+    escapeHtml,
+    clearHoverLeaveTimer,
+    clearProjectSelections,
+    resetHeroVideoBase,
+    beginBackgroundFadeOutToInitialState,
+    updateHeroMedia,
+    preloadProjectVideos,
+    openProjectModalFromRoute
+  });
+
   renderProjectNavigationView(refs.projectNavigation, state.projects, {
     baseAssetsUrl,
     projectThumbnailSizePx: PROJECT_THUMBNAIL_SIZE_PX,
     thumbnailFetchPriorityCount: THUMBNAIL_FETCH_PRIORITY_COUNT,
     handlers: {
-      onMouseEnter: handleProjectItemMouseEnter,
-      onMouseLeave: handleProjectItemMouseLeave,
-      onTouchStart: handleProjectItemTouchStart,
-      onClick: handleProjectClick
+      onMouseEnter: projectInteractionController.handleProjectItemMouseEnter,
+      onMouseLeave: projectInteractionController.handleProjectItemMouseLeave,
+      onTouchStart: projectInteractionController.handleProjectItemTouchStart,
+      onClick: projectInteractionController.handleProjectClick
     }
   });
 }
@@ -411,296 +321,21 @@ function renderProjectNavigation() {
 // イベントリスナーの設定
 // ============================================
 function setupEventListeners() {
-  let modalTouchStartX = null;
-  let modalTouchStartY = null;
-  let modalSwipeDx = 0;
-  let modalSwipeLocked = false;
-  let modalSwipeIntent = false;
-  let modalSwipeGhostContainer = null;
-  let modalSwipeGhostContent = null;
-  let modalSwipeTargetProject = null;
-  let modalSwipeDirection = 0;
-
-  const clearModalSwipeInlineStyles = () => {
-    refs.modalContainer.style.transition = '';
-    refs.modalContainer.style.transform = '';
-    refs.modalContainer.style.transformOrigin = '';
-  };
-
-  /** ジェスチャ中断・異常時に必ず呼ぶ（touchend の早期 return で固まらないようにする） */
-  const finalizeModalSwipeGesture = () => {
-    modalTouchStartX = null;
-    modalTouchStartY = null;
-    modalSwipeDx = 0;
-    modalSwipeLocked = false;
-    modalSwipeIntent = false;
-    modalSwipeTargetProject = null;
-    modalSwipeDirection = 0;
-    clearModalSwipeInlineStyles();
-    hideModalSwipeGhost();
-  };
-
-  const ensureModalSwipeGhost = () => {
-    if (modalSwipeGhostContainer && modalSwipeGhostContent) return;
-    const ghost = document.createElement('div');
-    ghost.className = 'modal-container modal-swipe-ghost';
-    ghost.setAttribute('aria-hidden', 'true');
-    ghost.style.position = 'fixed';
-    ghost.style.margin = '0';
-    ghost.style.pointerEvents = 'none';
-    ghost.style.zIndex = '';
-    ghost.style.opacity = '1';
-    ghost.style.transition = 'none';
-    const ghostContent = document.createElement('div');
-    ghostContent.className = 'modal-content';
-    ghost.appendChild(ghostContent);
-    refs.modalOverlay.appendChild(ghost);
-    modalSwipeGhostContainer = ghost;
-    modalSwipeGhostContent = ghostContent;
-  };
-
-  const hideModalSwipeGhost = () => {
-    if (!modalSwipeGhostContainer) return;
-    modalSwipeGhostContainer.style.display = 'none';
-    modalSwipeGhostContainer.style.transform = '';
-    modalSwipeGhostContainer.style.transition = '';
-    modalSwipeGhostContainer.style.transformOrigin = '';
-    modalSwipeGhostContainer.style.left = '';
-    modalSwipeGhostContainer.style.top = '';
-    modalSwipeGhostContainer.style.width = '';
-    modalSwipeGhostContainer.style.height = '';
-    modalSwipeTargetProject = null;
-    modalSwipeDirection = 0;
-  };
-
-  /** 静止時と同じく左右マージンをギャップの下限にする（ライトボックスと同様、常に一枚分空ける） */
-  const computeModalSwipeGutter = (rect) => {
-    const vw = window.innerWidth;
-    return Math.max(12, Math.min(rect.left, vw - rect.right, (vw - rect.width) / 2));
-  };
-
-  const animateModalBackToCenter = () => {
-    refs.modalContainer.style.transition = 'transform 220ms cubic-bezier(0.22, 1, 0.36, 1)';
-    refs.modalContainer.style.transform = 'translateX(0) scale(1)';
-    if (modalSwipeGhostContainer && modalSwipeDirection) {
-      const rect = refs.modalContainer.getBoundingClientRect();
-      const gutter = computeModalSwipeGutter(rect);
-      const vw = window.innerWidth;
-      modalSwipeGhostContainer.style.transition = 'transform 220ms cubic-bezier(0.22, 1, 0.36, 1)';
-      modalSwipeGhostContainer.style.transformOrigin = 'center center';
-      if (modalSwipeDirection > 0) {
-        modalSwipeGhostContainer.style.left = `${rect.right + gutter}px`;
-        modalSwipeGhostContainer.style.top = `${rect.top}px`;
-        modalSwipeGhostContainer.style.transform = `translateX(${vw}px) scale(1)`;
-      } else {
-        modalSwipeGhostContainer.style.left = `${rect.left - gutter - rect.width}px`;
-        modalSwipeGhostContainer.style.top = `${rect.top}px`;
-        modalSwipeGhostContainer.style.transform = `translateX(${-vw}px) scale(1)`;
-      }
+  const modalSwipeController = createModalSwipeController({
+    refs,
+    state,
+    isMobileProjectPageSwipeEnabled,
+    isLightboxOpen: () => refs.lightboxOverlay && !refs.lightboxOverlay.hidden,
+    getCurrentSelectedProjectIndex,
+    getProjects: () => state.projects,
+    renderModalContent,
+    updateModalProjectInPlace,
+    config: {
+      swipeMaxY: PROJECT_SWIPE_MAX_Y,
+      swipeLockY: PROJECT_SWIPE_LOCK_Y,
+      swipeCommitMs: PROJECT_SWIPE_COMMIT_MS
     }
-    window.setTimeout(() => {
-      clearModalSwipeInlineStyles();
-      hideModalSwipeGhost();
-    }, 240);
-  };
-
-  const getProjectByDelta = (delta) => {
-    if (!delta || !state.projects?.length) return false;
-    const curIndex = getCurrentSelectedProjectIndex();
-    if (curIndex < 0) return null;
-    const nextIndex = curIndex + delta;
-    if (nextIndex < 0 || nextIndex >= state.projects.length) return null;
-    return state.projects[nextIndex];
-  };
-
-  const syncModalGhostTransform = () => {
-    if (!modalSwipeGhostContainer || !modalSwipeTargetProject || !modalSwipeDirection) return;
-    const rect = refs.modalContainer.getBoundingClientRect();
-    const gutter = computeModalSwipeGutter(rect);
-    const abs = Math.abs(modalSwipeDx);
-    const outScale = Math.max(0.94, 1 - abs / 1400);
-    const inScale = Math.min(1.02, 0.99 + abs / 1400);
-    refs.modalContainer.style.transition = 'none';
-    refs.modalContainer.style.transformOrigin = modalSwipeDirection > 0 ? 'right center' : 'left center';
-    refs.modalContainer.style.transform = `translateX(${modalSwipeDx}px) scale(${outScale})`;
-    modalSwipeGhostContainer.style.display = 'block';
-    modalSwipeGhostContainer.style.width = `${rect.width}px`;
-    modalSwipeGhostContainer.style.height = `${rect.height}px`;
-    modalSwipeGhostContainer.style.transition = 'none';
-    modalSwipeGhostContainer.style.transformOrigin = modalSwipeDirection > 0 ? 'left center' : 'right center';
-    /* 現在カードの見た目の境界（getBoundingClientRect）に対し gutter だけ外側へ置く。共通 left + translate(vw)+dx は scale/origin と相性が悪く重なる */
-    if (modalSwipeDirection > 0) {
-      modalSwipeGhostContainer.style.left = `${rect.right + gutter}px`;
-      modalSwipeGhostContainer.style.top = `${rect.top}px`;
-      modalSwipeGhostContainer.style.transform = `translateX(0) scale(${inScale})`;
-    } else {
-      modalSwipeGhostContainer.style.left = `${rect.left - gutter - rect.width}px`;
-      modalSwipeGhostContainer.style.top = `${rect.top}px`;
-      modalSwipeGhostContainer.style.transform = `translateX(0) scale(${inScale})`;
-    }
-  };
-
-  const handleModalSwipeTouchStart = (e) => {
-    if (!isMobileProjectPageSwipeEnabled()) return;
-    if (state.currentState !== 'modal') return;
-    if (refs.lightboxOverlay && !refs.lightboxOverlay.hidden) return;
-    const target = e.target;
-    if (target.closest('a, button, input, textarea, select, .mediaItem, .video-shell, .video-controls, .seek')) {
-      return;
-    }
-    const t = e.changedTouches?.[0];
-    if (!t) return;
-    modalTouchStartX = t.clientX;
-    modalTouchStartY = t.clientY;
-    modalSwipeDx = 0;
-    modalSwipeLocked = false;
-    modalSwipeIntent = true;
-    modalSwipeTargetProject = null;
-    modalSwipeDirection = 0;
-    ensureModalSwipeGhost();
-    hideModalSwipeGhost();
-  };
-
-  const handleModalSwipeTouchMove = (e) => {
-    if (!modalSwipeIntent) return;
-    if (!isMobileProjectPageSwipeEnabled()) return;
-    if (state.currentState !== 'modal') return;
-    if (refs.lightboxOverlay && !refs.lightboxOverlay.hidden) return;
-    if (modalTouchStartX == null || modalTouchStartY == null) return;
-    const t = e.changedTouches?.[0];
-    if (!t) return;
-    const dx = t.clientX - modalTouchStartX;
-    const dy = t.clientY - modalTouchStartY;
-
-    if (!modalSwipeLocked) {
-      if (Math.abs(dy) > PROJECT_SWIPE_LOCK_Y && Math.abs(dy) > Math.abs(dx)) {
-        modalSwipeIntent = false;
-        return;
-      }
-      if (Math.abs(dx) > 8) {
-        modalSwipeLocked = true;
-      }
-    }
-    if (!modalSwipeLocked) return;
-
-    e.preventDefault();
-    modalSwipeDx = dx;
-    const direction = dx < 0 ? 1 : -1;
-    if (direction !== modalSwipeDirection) {
-      modalSwipeDirection = direction;
-      modalSwipeTargetProject = getProjectByDelta(direction);
-      if (modalSwipeTargetProject && modalSwipeGhostContent) {
-        try {
-          renderModalContent(modalSwipeTargetProject, modalSwipeGhostContent);
-        } catch (err) {
-          console.warn('modal ghost render', err);
-          modalSwipeTargetProject = null;
-        }
-      }
-    }
-    if (!modalSwipeTargetProject) {
-      refs.modalContainer.style.transition = 'none';
-      refs.modalContainer.style.transformOrigin = 'center center';
-      refs.modalContainer.style.transform = `translateX(${dx}px) scale(${Math.max(0.96, 1 - Math.abs(dx) / 1600)})`;
-      return;
-    }
-    try {
-      syncModalGhostTransform();
-    } catch (err) {
-      console.warn('modal swipe sync', err);
-      finalizeModalSwipeGesture();
-    }
-  };
-
-  const handleModalSwipeTouchEnd = (e) => {
-    if (!modalSwipeIntent) {
-      finalizeModalSwipeGesture();
-      return;
-    }
-
-    const t = e.changedTouches?.[0] ?? e.touches?.[0];
-    const dx = modalSwipeLocked ? modalSwipeDx : (modalTouchStartX != null && t ? t.clientX - modalTouchStartX : 0);
-    const dy = modalTouchStartY != null && t ? t.clientY - modalTouchStartY : 0;
-
-    const savedDir = modalSwipeDirection;
-    const savedTarget = modalSwipeTargetProject;
-
-    modalTouchStartX = null;
-    modalTouchStartY = null;
-    modalSwipeDx = 0;
-    modalSwipeLocked = false;
-    modalSwipeIntent = false;
-
-    if (!isMobileProjectPageSwipeEnabled() || state.currentState !== 'modal' || (refs.lightboxOverlay && !refs.lightboxOverlay.hidden)) {
-      modalSwipeTargetProject = null;
-      modalSwipeDirection = 0;
-      clearModalSwipeInlineStyles();
-      hideModalSwipeGhost();
-      return;
-    }
-
-    if (Math.abs(dy) > PROJECT_SWIPE_MAX_Y || Math.abs(dx) < PROJECT_SWIPE_MIN_X || !savedTarget) {
-      modalSwipeDirection = savedDir;
-      modalSwipeTargetProject = savedTarget;
-      animateModalBackToCenter();
-      return;
-    }
-
-    const outX = savedDir > 0 ? -(window.innerWidth * 1.15) : (window.innerWidth * 1.15);
-    const ghostEl = modalSwipeGhostContainer;
-
-    try {
-      if (!ghostEl) {
-        modalSwipeDirection = savedDir;
-        modalSwipeTargetProject = savedTarget;
-        animateModalBackToCenter();
-        return;
-      }
-
-      const commitRect = refs.modalContainer.getBoundingClientRect();
-      const gRect = ghostEl.getBoundingClientRect();
-      const vw = window.innerWidth;
-      const targetLeft = vw / 2 - commitRect.width / 2;
-      const deltaToCenter = targetLeft - gRect.left;
-
-      if (!Number.isFinite(deltaToCenter) || !Number.isFinite(commitRect.width) || commitRect.width <= 0) {
-        try {
-          openProjectModalFromRoute(savedTarget);
-        } finally {
-          finalizeModalSwipeGesture();
-        }
-        return;
-      }
-
-      modalSwipeDirection = savedDir;
-      modalSwipeTargetProject = savedTarget;
-
-      refs.modalContainer.style.transition = `transform ${PROJECT_SWIPE_COMMIT_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
-      refs.modalContainer.style.transform = `translateX(${outX}px) scale(0.94)`;
-      ghostEl.style.transition = `transform ${PROJECT_SWIPE_COMMIT_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
-      ghostEl.style.transformOrigin = 'center center';
-      ghostEl.style.transform = `translateX(${deltaToCenter}px) scale(1)`;
-
-      window.setTimeout(() => {
-        try {
-          openProjectModalFromRoute(savedTarget);
-        } finally {
-          clearModalSwipeInlineStyles();
-          hideModalSwipeGhost();
-        }
-      }, Math.max(140, PROJECT_SWIPE_COMMIT_MS - 70));
-    } catch (err) {
-      console.warn('modal swipe touchend', err);
-      modalSwipeDirection = savedDir;
-      modalSwipeTargetProject = savedTarget;
-      try {
-        if (savedTarget) openProjectModalFromRoute(savedTarget);
-      } catch (_) {
-        /* ignore */
-      }
-      finalizeModalSwipeGesture();
-    }
-  };
+  });
 
   bindGlobalEventListeners(refs, {
     onCloseModal: closeModalAndStopVideos,
@@ -708,64 +343,12 @@ function setupEventListeners() {
     onCloseLightbox: closeLightbox,
     onPortfolioTitleClick: handlePortfolioTitleClick,
     onFocusVisualTouchStart: handleFocusVisualTouchStart,
-    onModalTouchStart: handleModalSwipeTouchStart,
-    onModalTouchMove: handleModalSwipeTouchMove,
-    onModalTouchEnd: handleModalSwipeTouchEnd
+    onModalTouchStart: modalSwipeController.onTouchStart,
+    onModalTouchMove: modalSwipeController.onTouchMove,
+    onModalTouchEnd: modalSwipeController.onTouchEnd
   });
-}
 
-// ============================================
-// プロジェクトhover処理（一時的フォーカス）
-// ============================================
-function handleProjectHover(project, itemElement) {
-  clearHoverLeaveTimer();
-
-  state.currentState = 'hover';
-  state.hoveredProject = project;
-
-  updateHeroMedia(project.heroMedia);
-  preloadProjectVideos(project);
-
-  if (refs.bgLayer) {
-    if (state.bgLayerFadeCompleteHandler) {
-      refs.bgLayer.removeEventListener('transitionend', state.bgLayerFadeCompleteHandler);
-      state.bgLayerFadeCompleteHandler = null;
-    }
-    refs.bgLayer.classList.remove('isFading');
-    refs.bgLayer.style.opacity = '1';
-  }
-
-  refs.guidanceText.classList.remove('visible');
-  refs.contextPanel.classList.add('visible');
-  updateContextPanel(project);
-}
-
-// ============================================
-// プロジェクトhover解除処理
-// ============================================
-function handleProjectLeave() {
-  clearHoverLeaveTimer();
-
-  if (state.currentState !== 'modal' && !state.selectedProject) {
-    refs.titleText.textContent = 'PORTFOLIO';
-
-    resetHeroVideoBase();
-
-    refs.guidanceText.classList.add('visible');
-    beginBackgroundFadeOutToInitialState();
-
-    refs.contextPanel.classList.remove('visible');
-
-    clearProjectSelections();
-  }
-}
-
-// ============================================
-// プロジェクトクリック処理（モーダルを開く）
-// ============================================
-function handleProjectClick(project) {
-  clearHoverLeaveTimer();
-  openProjectModalFromRoute(project);
+  document.addEventListener('portfolio:modalclose', modalSwipeController.onModalClosed);
 }
 
 // ============================================
@@ -776,45 +359,6 @@ function updateHeroMedia(heroMedia) {
     videoUpdateFadeDelayMs: VIDEO_UPDATE_FADE_DELAY_MS,
     videoShowFallbackMs: VIDEO_SHOW_FALLBACK_MS
   });
-}
-
-// ============================================
-// コンテキストパネルの更新
-// ============================================
-function updateContextPanel(project) {
-  const tools = project.tools ? project.tools.join(' / ') : null;
-
-  let categoryYear = '';
-  if (project.id === OPENING_SOON_PROJECT_ID) {
-    categoryYear = `${project.category} (Opening Soon)`;
-  } else {
-    categoryYear = `${project.category} (${project.year})`;
-  }
-
-  const disciplines = String(project.disciplines ?? '').trim();
-
-  const safeCategoryYear = escapeHtml(categoryYear);
-  const safeDisciplinesLine = escapeHtml(disciplines);
-  const safeTools = tools ? escapeHtml(tools) : '';
-
-  refs.contextPanel.innerHTML = `
-    <div class="context-content">
-      <div class="context-info">
-        <div class="context-info-item">
-          <span class="context-info-value">${safeCategoryYear}</span>
-        </div>
-        <div class="context-info-item">
-          <span class="context-info-value value">${safeDisciplinesLine}</span>
-        </div>
-        ${safeTools ? `
-        <div class="context-info-item row">
-          <img src="https://assets.shuntofujii.com/icons/toolkits.svg" alt="Toolkits" class="toolkit-icon" width="14" height="14" decoding="async" loading="lazy" />
-          <span class="context-info-value value">${safeTools}</span>
-        </div>
-        ` : ''}
-      </div>
-    </div>
-  `;
 }
 
 // ============================================

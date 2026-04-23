@@ -137,6 +137,10 @@ export function openModal(project, triggerElement) {
   renderModalContent(project, refs.modalContent);
 
   if (refs.modalOverlay && refs.modalContainer) {
+    // クローズ時に上書きした短縮トランジションを毎回リセット
+    refs.modalOverlay.style.transition = '';
+    refs.modalContainer.style.transition = '';
+    refs.modalContainer.dataset.swipeSettled = '';
     refs.modalOverlay.hidden = false;
     refs.modalContainer.hidden = false;
     state.isClosing = false;
@@ -168,14 +172,34 @@ export function closeModal(stopAllInlineVideos) {
   if (!refs.modalOverlay || !refs.modalContainer) return;
   if (state.isClosing) return;
   state.isClosing = true;
+  const closeAfterSwipe = refs.modalContainer.dataset.swipeSettled === '1';
+
+  if (closeAfterSwipe) {
+    refs.modalOverlay.style.transition = 'none';
+    refs.modalContainer.style.transition = 'none';
+  } else {
+    // 通常クローズは体感優先で短め
+    refs.modalOverlay.style.transition = 'opacity 180ms cubic-bezier(0.22, 1, 0.36, 1)';
+    refs.modalContainer.style.transition = 'transform 220ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms cubic-bezier(0.22, 1, 0.36, 1)';
+  }
+  refs.modalContainer.style.transform = '';
+  refs.modalContainer.style.transformOrigin = '';
 
   refs.modalContainer.dataset.state = 'closing';
   document.body.classList.remove('modal-open');
 
-  const onEnd = (e) => {
-    if (e.target !== refs.modalContainer || e.propertyName !== 'transform') return;
+  let didFinalize = false;
+  let fallbackTimer = null;
+  const finalizeClose = () => {
+    if (didFinalize) return;
+    didFinalize = true;
+    if (fallbackTimer) {
+      window.clearTimeout(fallbackTimer);
+      fallbackTimer = null;
+    }
     refs.modalContainer.removeEventListener('transitionend', onEnd);
     refs.modalContainer.dataset.state = 'closed';
+    refs.modalContainer.dataset.swipeSettled = '';
     refs.modalOverlay.hidden = true;
     refs.modalContainer.hidden = true;
 
@@ -193,7 +217,20 @@ export function closeModal(stopAllInlineVideos) {
     state.isClosing = false;
     document.dispatchEvent(new CustomEvent('portfolio:modalclose'));
   };
-  refs.modalContainer.addEventListener('transitionend', onEnd);
+
+  const onEnd = (e) => {
+    if (e.target !== refs.modalContainer) return;
+    if (e.propertyName !== 'transform' && e.propertyName !== 'opacity') return;
+    finalizeClose();
+  };
+  if (closeAfterSwipe) {
+    // スワイプ直後は間髪入れずクローズ（transitionなし）
+    finalizeClose();
+  } else {
+    refs.modalContainer.addEventListener('transitionend', onEnd);
+    // 保険: transitionend が来ない環境/状態でも必ずクローズを完了させる
+    fallbackTimer = window.setTimeout(finalizeClose, 320);
+  }
 
   document.body.style.overflow = '';
   if (refs.guidanceText) refs.guidanceText.classList.add('visible');

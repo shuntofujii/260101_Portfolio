@@ -152,25 +152,36 @@ function ensureLightboxSwipePreview(direction) {
 function setLightboxDragTransform(dx) {
   const mediaEl = currentLightboxMediaElement();
   if (!mediaEl) return;
-  const abs = Math.abs(dx);
-  const scale = Math.max(0.94, 1 - abs / 1400);
   mediaEl.style.transition = 'none';
-  mediaEl.style.transform = `translate(-50%, -50%) translateX(${dx}px) scale(${scale})`;
+  mediaEl.style.transform = `translate(-50%, -50%) translateX(${dx}px)`;
   if (lightboxSwipePreviewEl && lightboxSwipePreviewDirection) {
-    const inScale = Math.min(1.06, 0.98 + abs / 1200);
     lightboxSwipePreviewEl.style.transition = 'none';
-    lightboxSwipePreviewEl.style.transform = `translate(-50%, -50%) translateX(${(lightboxSwipePreviewDirection * (window.innerWidth || 390)) + dx}px) scale(${inScale})`;
+    lightboxSwipePreviewEl.style.transform = `translate(-50%, -50%) translateX(${(lightboxSwipePreviewDirection * (window.innerWidth || 390)) + dx}px)`;
   }
+}
+
+function getLightboxSwipeCommitThreshold() {
+  return (window.innerWidth || 390) / 3;
+}
+
+function canNavigateLightboxByDirection(direction) {
+  if (!direction || !state.lightboxTriggerElement) return false;
+  const seq = getLightboxSequenceElements();
+  if (!seq.length) return false;
+  const curIndex = seq.findIndex((el) => el === state.lightboxTriggerElement);
+  if (curIndex < 0) return false;
+  const nextIndex = curIndex + (direction > 0 ? 1 : -1);
+  return nextIndex >= 0 && nextIndex < seq.length;
 }
 
 function animateLightboxMediaToCenter() {
   const mediaEl = currentLightboxMediaElement();
   if (!mediaEl) return;
   mediaEl.style.transition = `transform ${LIGHTBOX_SWIPE_RETURN_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
-  mediaEl.style.transform = 'translate(-50%, -50%) translateX(0) scale(1)';
+  mediaEl.style.transform = 'translate(-50%, -50%) translateX(0)';
   if (lightboxSwipePreviewEl && lightboxSwipePreviewDirection) {
     lightboxSwipePreviewEl.style.transition = `transform ${LIGHTBOX_SWIPE_RETURN_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
-    lightboxSwipePreviewEl.style.transform = `translate(-50%, -50%) translateX(${lightboxSwipePreviewDirection * (window.innerWidth || 390)}px) scale(1.06)`;
+    lightboxSwipePreviewEl.style.transform = `translate(-50%, -50%) translateX(${lightboxSwipePreviewDirection * (window.innerWidth || 390)}px)`;
     window.setTimeout(() => clearLightboxSwipePreview(), LIGHTBOX_SWIPE_RETURN_MS + 30);
   }
 }
@@ -198,7 +209,7 @@ function openLightboxByElement(el, options = {}) {
   }
 }
 
-function navigateLightboxByDelta(delta) {
+function navigateLightboxByDelta(delta, releaseDx = 0) {
   if (!delta || !state.lightboxTriggerElement) return;
   const seq = getLightboxSequenceElements();
   if (!seq.length) return;
@@ -207,16 +218,18 @@ function navigateLightboxByDelta(delta) {
   const nextIndex = curIndex + delta;
   if (nextIndex < 0 || nextIndex >= seq.length) return;
   const direction = delta > 0 ? 1 : -1;
+  const viewportWidth = window.innerWidth || 390;
+  // プレビューを中央へ寄せるための共通移動量。
+  // 同じ量を現在メディアにも適用し、2枚の距離を一定に保つ。
+  const sharedDelta = -(direction * viewportWidth + releaseDx);
   const mediaEl = currentLightboxMediaElement();
   if (mediaEl) {
-    const viewportWidth = window.innerWidth || 390;
-    const outX = direction > 0 ? -(viewportWidth * 1.15) : (viewportWidth * 1.15);
     mediaEl.style.transition = `transform ${LIGHTBOX_SWIPE_COMMIT_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
-    mediaEl.style.transform = `translate(-50%, -50%) translateX(${outX}px) scale(0.94)`;
+    mediaEl.style.transform = `translate(-50%, -50%) translateX(${releaseDx + sharedDelta}px)`;
   }
   if (lightboxSwipePreviewEl) {
     lightboxSwipePreviewEl.style.transition = `transform ${LIGHTBOX_SWIPE_COMMIT_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
-    lightboxSwipePreviewEl.style.transform = 'translate(-50%, -50%) translateX(0) scale(1)';
+    lightboxSwipePreviewEl.style.transform = `translate(-50%, -50%) translateX(${(direction * viewportWidth) + releaseDx + sharedDelta}px)`;
   }
   window.setTimeout(() => {
     openLightboxByElement(seq[nextIndex], {
@@ -224,7 +237,7 @@ function navigateLightboxByDelta(delta) {
       enterOffsetX: 0
     });
     clearLightboxSwipePreview();
-  }, Math.max(120, LIGHTBOX_SWIPE_COMMIT_MS - 80));
+  }, LIGHTBOX_SWIPE_COMMIT_MS + 16);
 }
 
 function bindLightboxSwipeHandlersOnce() {
@@ -282,11 +295,12 @@ function bindLightboxSwipeHandlersOnce() {
     lightboxSwipeDirectionLocked = false;
 
     if (Math.abs(dy) > LIGHTBOX_SWIPE_MAX_Y) return;
-    if (Math.abs(dx) < LIGHTBOX_SWIPE_MIN_X) {
+    const direction = dx < 0 ? 1 : -1;
+    if (Math.abs(dx) < getLightboxSwipeCommitThreshold() || !canNavigateLightboxByDirection(direction)) {
       animateLightboxMediaToCenter();
       return;
     }
-    navigateLightboxByDelta(dx < 0 ? 1 : -1);
+    navigateLightboxByDelta(direction, dx);
   }, { passive: true });
 
   lightboxSwipeHandlersBound = true;
@@ -456,8 +470,9 @@ export function openLightboxVideo(videoSrc, originElement, options = {}) {
           refs.lightboxVideo.style.transform = 'translate(-50%, -50%) translateX(0) scale(1)';
         });
       } else {
-        refs.lightboxVideo.style.transform = 'translate(-50%, -50%) scale(1)';
-        refs.lightboxVideo.style.transition = 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+        /* スワイプ確定遷移では追加の再補間をさせない（バウンド抑止） */
+        refs.lightboxVideo.style.transition = 'none';
+        refs.lightboxVideo.style.transform = 'translate(-50%, -50%)';
       }
     }
   };
@@ -558,8 +573,9 @@ export function openLightbox(imageSrc, originElement, options = {}) {
           refs.lightboxImage.style.transform = 'translate(-50%, -50%) translateX(0) scale(1)';
         });
       } else {
-        refs.lightboxImage.style.transform = 'translate(-50%, -50%) scale(1)';
-        refs.lightboxImage.style.transition = 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+        /* スワイプ確定遷移では追加の再補間をさせない（バウンド抑止） */
+        refs.lightboxImage.style.transition = 'none';
+        refs.lightboxImage.style.transform = 'translate(-50%, -50%)';
       }
     }
   };

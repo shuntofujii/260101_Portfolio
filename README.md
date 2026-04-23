@@ -31,11 +31,15 @@
 │   └── build-project-pages.mjs  # projects.json から {pageSlug}/index.html を再生成
 ├── routing.js          # /{pageSlug}/ のパス解釈（純粋なルーティング関数）
 ├── app.js              # エントリポイント（初期化・各モジュールのオーケストレーション）
+├── appBootstrap.js     # 起動シーケンス（データ取得・初期先読み・UI起動順）を集約
 ├── appRouting.js       # URL/履歴/title・description更新の制御
 ├── appNavigation.js    # プロジェクトナビ（サムネイルDOM生成・イベント紐付け）
 ├── appHeroMedia.js     # ヒーロー動画の再生切替・表示タイミング制御
 ├── appStateTransitions.js # hover/initial/modal の状態遷移ユーティリティ
 ├── appEventBindings.js # グローバルイベント登録（ESC/クリック/touch）
+├── appModalRoutingController.js # ルート連動とモーダル副作用（履歴/タイトル/meta）を集約
+├── appModalSwipeController.js # モーダル内スワイプ遷移の制御を分離
+├── appProjectInteractions.js # hover/touch/click と context panel 更新を分離
 ├── state.js            # 状態管理（currentState, 選択中プロジェクト等）
 ├── domRefs.js          # DOM 参照の保持（setRefs / getRefs）
 ├── constants.js        # 定数（ブレークポイント・時間・カーソル設定・ベースURL）
@@ -51,6 +55,9 @@
 ├── robots.txt          # クローラー許可と Sitemap 指定
 ├── CNAME               # GitHub Pages などでドメイン指定する場合に使用
 ├── SEO_RECOMMENDATIONS.md  # SEO 実施内容と運用で推奨すること
+├── tests/              # Vitest による最小回帰テスト（routing / appRouting / 新コントローラ群）
+├── package.json        # テスト実行スクリプト（`npm test`, `npm run test:watch`）
+├── package-lock.json   # npm 依存ロック
 └── README.md           # このファイル
 ```
 
@@ -63,9 +70,20 @@
 3. **`appNavigation.js`** … 下部プロジェクトナビのDOM描画とアイテムのイベント紐付けを担当します。
 4. **`appHeroMedia.js`** … ホバー時ヒーロー動画の切替、再生、表示フォールバックを担当します。
 5. **`appStateTransitions.js` / `appEventBindings.js`** … 画面状態遷移ユーティリティとグローバルイベント登録を担当します。
-6. **`videoCache.js`** … 動画URL解決（現在は canonical URL ベース）と `<link rel="preload">`、アイドル時プリロードキューを提供します。
-7. **`projectVideoUrls.js`** … `heroMedia`、トップレベル `initiatives`、`cases` 内の `videos` / `hasVideo`、`gallery` 内の動画 URL を集約します。
-8. **`media.js` / `modal.js` / `lightbox.js`** … モーダル内メディア、モーダル開閉、拡大表示（ライトボックス）を分担します。
+6. **`appBootstrap.js`** … `projects.json` 取得後の起動順序、初期先読み、回線状態を見た保守的プリロード判定を担当します。
+7. **`appModalRoutingController.js`** … ルートとモーダルの連動（初期ルート適用、履歴更新、title/description 副作用）を担当します。
+8. **`appModalSwipeController.js`** … モーダルのスワイプ遷移（ゴースト表示・確定/キャンセル）を担当します。
+9. **`appProjectInteractions.js`** … プロジェクト hover/touch/click と context panel の更新を担当します。
+10. **`videoCache.js`** … 動画URL解決（現在は canonical URL ベース）と `<link rel="preload">`、アイドル時プリロードキューを提供します。
+11. **`projectVideoUrls.js`** … `heroMedia`、トップレベル `initiatives`、`cases` 内の `videos` / `hasVideo`、`gallery` 内の動画 URL を集約します。
+12. **`media.js` / `modal.js` / `lightbox.js`** … モーダル内メディア、モーダル開閉、拡大表示（ライトボックス）を分担します。
+
+### リファクタ運用メモ（2026-04）
+
+- `app.js` は「各モジュールを接続するオーケストレーション層」を目標に段階的に薄くしています。
+- 大きな分離は `appBootstrap.js` / `appModalRoutingController.js` / `appModalSwipeController.js` / `appProjectInteractions.js` に集約済みです。
+- 互換性最優先で進めるため、原則「ロジック変更より責務分離」を先に行い、挙動差分が出た場合は即ロールバックできる粒度（ファイル単位）で作業します。
+- `appEventBindings.js` は解除関数を返す構造に更新済みで、再初期化テストを追加しやすくなっています。
 
 ### 動画プリロード・ヒーロー再生（実装メモ）
 
@@ -170,6 +188,17 @@ http-server -p 8000
 - Ruby: `ruby -run -e httpd . -p 8000`
 
 **注意**: `file://` プロトコルでは `projects.json` の読み込みが CORS エラーで失敗するため、必ずローカルサーバーを使用してください。
+
+### テスト（最小回帰チェック）
+
+```bash
+npm install
+npm test
+```
+
+- 監視実行: `npm run test:watch`
+- 追加済みテストは `routing.js` / `appRouting.js` / `appBootstrap.js` / `appProjectInteractions.js` / `appModalSwipeController.js` / `appModalRoutingController.js` を対象に、URL解釈・履歴制御・モーダル遷移・初期化フローの回帰を検知します。
+- テスト基盤を撤去する場合は `tests/`, `package.json`, `package-lock.json`, `node_modules/` を削除してください。
 
 ### 本番URLの前提（ルート相対パス）
 

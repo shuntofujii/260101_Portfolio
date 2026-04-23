@@ -1,0 +1,26 @@
+{
+  "name": "260101_portfolio",
+  "version": "1.0.0",
+  "description": "ゲームのキャラクター選択 UI のように、8 つのプロジェクトを選んで体験できるポートフォリオサイトです。プロジェクトにホバーするとヒーロー動画と概要パネルが表示され、クリックでモーダルが開きます。モーダル内では案件（cases）ごとに画像・動画グリッドを表示でき、画像・動画のクリックでライトボックス表示に対応しています。",
+  "main": "app.js",
+  "scripts": {
+    "test": "vitest run --environment jsdom",
+    "test:watch": "vitest --environment jsdom"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shuntofujii/260101_Portfolio.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/shuntofujii/260101_Portfolio/issues"
+  },
+  "homepage": "https://github.com/shuntofujii/260101_Portfolio#readme",
+  "devDependencies": {
+    "jsdom": "^29.0.2",
+    "vitest": "^4.1.5"
+  }
+}
