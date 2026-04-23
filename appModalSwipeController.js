@@ -23,7 +23,7 @@ export function createModalSwipeController(deps) {
   let modalSwipeDirection = 0;
   let modalSwipeCommitTimer = null;
 
-  const getModalSwipeCommitThreshold = () => window.innerWidth / 3;
+  const getModalSwipeCommitThreshold = () => window.innerWidth / 4;
 
   const clearModalSwipeInlineStyles = () => {
     refs.modalContainer.style.transition = '';
