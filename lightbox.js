@@ -8,9 +8,13 @@ import { ensureVideoPlayUrl } from './videoCache.js';
 const LIGHTBOX_SWIPE_MIN_X = 48;
 const LIGHTBOX_SWIPE_MAX_Y = 64;
 const LIGHTBOX_SWIPE_MAX_VERTICAL_LOCK = 14;
-const LIGHTBOX_SWIPE_RETURN_MS = 220;
-const LIGHTBOX_SWIPE_COMMIT_MS = 260;
-const LIGHTBOX_SWIPE_ENTER_MS = 300;
+const LIGHTBOX_SWIPE_RETURN_MS = 280;
+const LIGHTBOX_SWIPE_COMMIT_MS = 340;
+const LIGHTBOX_SWIPE_ENTER_MS = 380;
+const LIGHTBOX_CLICK_SWIPE_COMMIT_MS = 520;
+const LIGHTBOX_SWIPE_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
+const LIGHTBOX_CLICK_SWIPE_EASING = 'cubic-bezier(0.16, 0.92, 0.22, 1)';
+const LIGHTBOX_CLICK_PREVIEW_START_MULTIPLIER = 1.18;
 
 let lightboxTouchStartX = null;
 let lightboxTouchStartY = null;
@@ -20,6 +24,7 @@ let lightboxSwipeHandlersBound = false;
 let lightboxSwipePreviewEl = null;
 let lightboxSwipePreviewDirection = 0;
 let lightboxSwipePreviewTargetEl = null;
+let lightboxClickNavigateQueued = false;
 
 function clearElementInlineBoxStyles(el) {
   if (!el) return;
@@ -72,6 +77,7 @@ function clearLightboxSwipePreview() {
   lightboxSwipePreviewEl = null;
   lightboxSwipePreviewDirection = 0;
   lightboxSwipePreviewTargetEl = null;
+  lightboxClickNavigateQueued = false;
 }
 
 function createLightboxSwipePreviewElement(targetEl) {
@@ -177,10 +183,10 @@ function canNavigateLightboxByDirection(direction) {
 function animateLightboxMediaToCenter() {
   const mediaEl = currentLightboxMediaElement();
   if (!mediaEl) return;
-  mediaEl.style.transition = `transform ${LIGHTBOX_SWIPE_RETURN_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+  mediaEl.style.transition = `transform ${LIGHTBOX_SWIPE_RETURN_MS}ms ${LIGHTBOX_SWIPE_EASING}`;
   mediaEl.style.transform = 'translate(-50%, -50%) translateX(0)';
   if (lightboxSwipePreviewEl && lightboxSwipePreviewDirection) {
-    lightboxSwipePreviewEl.style.transition = `transform ${LIGHTBOX_SWIPE_RETURN_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+    lightboxSwipePreviewEl.style.transition = `transform ${LIGHTBOX_SWIPE_RETURN_MS}ms ${LIGHTBOX_SWIPE_EASING}`;
     lightboxSwipePreviewEl.style.transform = `translate(-50%, -50%) translateX(${lightboxSwipePreviewDirection * (window.innerWidth || 390)}px)`;
     window.setTimeout(() => clearLightboxSwipePreview(), LIGHTBOX_SWIPE_RETURN_MS + 30);
   }
@@ -209,7 +215,7 @@ function openLightboxByElement(el, options = {}) {
   }
 }
 
-function navigateLightboxByDelta(delta, releaseDx = 0) {
+function navigateLightboxByDelta(delta, releaseDx = 0, options = {}) {
   if (!delta || !state.lightboxTriggerElement) return;
   const seq = getLightboxSequenceElements();
   if (!seq.length) return;
@@ -219,25 +225,78 @@ function navigateLightboxByDelta(delta, releaseDx = 0) {
   if (nextIndex < 0 || nextIndex >= seq.length) return;
   const direction = delta > 0 ? 1 : -1;
   const viewportWidth = window.innerWidth || 390;
+  const commitMs = Number.isFinite(options.commitMs) ? options.commitMs : LIGHTBOX_SWIPE_COMMIT_MS;
+  const easing = options.easing || LIGHTBOX_SWIPE_EASING;
+  const enterOffsetX = Number.isFinite(options.enterOffsetX) ? options.enterOffsetX : 0;
+  const enterWithScale = options.enterWithScale !== false;
+  const previewStartMultiplier = Number.isFinite(options.previewStartMultiplier)
+    ? options.previewStartMultiplier
+    : 1;
+  const previewStartX = direction * viewportWidth * previewStartMultiplier;
   // プレビューを中央へ寄せるための共通移動量。
   // 同じ量を現在メディアにも適用し、2枚の距離を一定に保つ。
-  const sharedDelta = -(direction * viewportWidth + releaseDx);
+  const sharedDelta = -(previewStartX + releaseDx);
   const mediaEl = currentLightboxMediaElement();
   if (mediaEl) {
-    mediaEl.style.transition = `transform ${LIGHTBOX_SWIPE_COMMIT_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+    mediaEl.style.transition = `transform ${commitMs}ms ${easing}`;
     mediaEl.style.transform = `translate(-50%, -50%) translateX(${releaseDx + sharedDelta}px)`;
   }
   if (lightboxSwipePreviewEl) {
-    lightboxSwipePreviewEl.style.transition = `transform ${LIGHTBOX_SWIPE_COMMIT_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
-    lightboxSwipePreviewEl.style.transform = `translate(-50%, -50%) translateX(${(direction * viewportWidth) + releaseDx + sharedDelta}px)`;
+    lightboxSwipePreviewEl.style.transition = `transform ${commitMs}ms ${easing}`;
+    lightboxSwipePreviewEl.style.transform = `translate(-50%, -50%) translateX(${previewStartX + releaseDx + sharedDelta}px)`;
   }
   window.setTimeout(() => {
     openLightboxByElement(seq[nextIndex], {
       useOriginAnimation: false,
-      enterOffsetX: 0
+      enterOffsetX,
+      enterWithScale
     });
     clearLightboxSwipePreview();
-  }, LIGHTBOX_SWIPE_COMMIT_MS + 16);
+  }, commitMs + 16);
+}
+
+function handleLightboxMediaClick(e) {
+  const refs = getRefs();
+  if (!refs.lightboxOverlay || refs.lightboxOverlay.hidden) return;
+  // PC版クリックスワイプは画像のみ有効。動画では無効化する。
+  if (state.lightboxType === 'video') return;
+  const mediaEl = currentLightboxMediaElement();
+  if (!mediaEl) return;
+  if (e.target !== mediaEl) return;
+  if (!state.lightboxTriggerElement) return;
+
+  const rect = mediaEl.getBoundingClientRect();
+  if (!rect || rect.width <= 0) return;
+  // 右半分クリック: 左スワイプ（次へ）/ 左半分クリック: 右スワイプ（前へ）
+  const direction = e.clientX >= rect.left + (rect.width / 2) ? 1 : -1;
+  if (!canNavigateLightboxByDirection(direction)) return;
+  if (lightboxClickNavigateQueued) return;
+
+  if (!ensureLightboxSwipePreview(direction)) return;
+  // クリック時は「現在=中央 / 次=画面外」の開始姿勢を1フレーム作ってから遷移する
+  // これにより、次メディアが中央に湧くような見え方を防ぐ。
+  const viewportWidth = window.innerWidth || 390;
+  mediaEl.style.transition = 'none';
+  mediaEl.style.transform = 'translate(-50%, -50%) translateX(0)';
+  if (lightboxSwipePreviewEl) {
+    lightboxSwipePreviewEl.style.transition = 'none';
+    lightboxSwipePreviewEl.style.transform = `translate(-50%, -50%) translateX(${direction * viewportWidth * LIGHTBOX_CLICK_PREVIEW_START_MULTIPLIER}px)`;
+  }
+  const mediaElForFlush = currentLightboxMediaElement();
+  if (mediaElForFlush) void mediaElForFlush.offsetWidth;
+  if (lightboxSwipePreviewEl) void lightboxSwipePreviewEl.offsetWidth;
+
+  lightboxClickNavigateQueued = true;
+  requestAnimationFrame(() => {
+    lightboxClickNavigateQueued = false;
+    navigateLightboxByDelta(direction, 0, {
+      commitMs: LIGHTBOX_CLICK_SWIPE_COMMIT_MS,
+      easing: LIGHTBOX_CLICK_SWIPE_EASING,
+      enterOffsetX: 0,
+      previewStartMultiplier: LIGHTBOX_CLICK_PREVIEW_START_MULTIPLIER,
+      enterWithScale: false
+    });
+  });
 }
 
 function bindLightboxSwipeHandlersOnce() {
@@ -302,6 +361,8 @@ function bindLightboxSwipeHandlersOnce() {
     }
     navigateLightboxByDelta(direction, dx);
   }, { passive: true });
+
+  refs.lightboxOverlay.addEventListener('click', handleLightboxMediaClick);
 
   lightboxSwipeHandlersBound = true;
 }
@@ -389,7 +450,7 @@ export function closeLightbox() {
 export function openLightboxVideo(videoSrc, originElement, options = {}) {
   const refs = getRefs();
   if (!refs.lightboxOverlay || !refs.lightboxVideo) return;
-  const { useOriginAnimation = true, enterOffsetX = 0 } = options;
+  const { useOriginAnimation = true, enterOffsetX = 0, enterWithScale = true } = options;
 
   state.lightboxType = 'video';
   state.lightboxTriggerElement = originElement || null;
@@ -463,11 +524,15 @@ export function openLightboxVideo(videoSrc, originElement, options = {}) {
       refs.lightboxVideo.style.height = '';
       refs.lightboxVideo.style.opacity = '1';
       if (enterOffsetX) {
-        refs.lightboxVideo.style.transform = `translate(-50%, -50%) translateX(${enterOffsetX}px) scale(1.06)`;
+        refs.lightboxVideo.style.transform = enterWithScale
+          ? `translate(-50%, -50%) translateX(${enterOffsetX}px) scale(1.06)`
+          : `translate(-50%, -50%) translateX(${enterOffsetX}px)`;
         refs.lightboxVideo.style.transition = 'none';
         requestAnimationFrame(() => {
           refs.lightboxVideo.style.transition = `transform ${LIGHTBOX_SWIPE_ENTER_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
-          refs.lightboxVideo.style.transform = 'translate(-50%, -50%) translateX(0) scale(1)';
+          refs.lightboxVideo.style.transform = enterWithScale
+            ? 'translate(-50%, -50%) translateX(0) scale(1)'
+            : 'translate(-50%, -50%) translateX(0)';
         });
       } else {
         /* スワイプ確定遷移では追加の再補間をさせない（バウンド抑止） */
@@ -502,7 +567,7 @@ export function openLightboxVideo(videoSrc, originElement, options = {}) {
 export function openLightbox(imageSrc, originElement, options = {}) {
   const refs = getRefs();
   if (!refs.lightboxOverlay || !refs.lightboxImage) return;
-  const { useOriginAnimation = true, enterOffsetX = 0 } = options;
+  const { useOriginAnimation = true, enterOffsetX = 0, enterWithScale = true } = options;
 
   state.lightboxType = 'image';
   state.lightboxTriggerElement = originElement || null;
@@ -566,11 +631,15 @@ export function openLightbox(imageSrc, originElement, options = {}) {
       refs.lightboxImage.style.height = '';
       refs.lightboxImage.style.opacity = '1';
       if (enterOffsetX) {
-        refs.lightboxImage.style.transform = `translate(-50%, -50%) translateX(${enterOffsetX}px) scale(1.06)`;
+        refs.lightboxImage.style.transform = enterWithScale
+          ? `translate(-50%, -50%) translateX(${enterOffsetX}px) scale(1.06)`
+          : `translate(-50%, -50%) translateX(${enterOffsetX}px)`;
         refs.lightboxImage.style.transition = 'none';
         requestAnimationFrame(() => {
           refs.lightboxImage.style.transition = `transform ${LIGHTBOX_SWIPE_ENTER_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
-          refs.lightboxImage.style.transform = 'translate(-50%, -50%) translateX(0) scale(1)';
+          refs.lightboxImage.style.transform = enterWithScale
+            ? 'translate(-50%, -50%) translateX(0) scale(1)'
+            : 'translate(-50%, -50%) translateX(0)';
         });
       } else {
         /* スワイプ確定遷移では追加の再補間をさせない（バウンド抑止） */
