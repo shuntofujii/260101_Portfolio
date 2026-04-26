@@ -12,14 +12,55 @@
       "After Effects"
     ],
     "tagline": "少子化対策 × 地域活性化 = デートプラン",
-    "description": "デートプラン投稿・評価サイト「DATEs」をリリースしました。\nサービス設計〜UI/UXデザイン〜フロントコーディング、また自治体との連携など、代表として必死に手を動かしました。",
+    "description": "デートプラン投稿・評価サイト「DATEs」をリリースしました。\nサービス設計〜UI/UXデザイン〜フロントコーディング、SNS運用、また自治体との連携など、代表として必死に手を動かしました。",
+    "projectSlug": "dates",
     "modalMetaItems": [
       { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
       { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
       { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
       { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
-      { "label": "Team", "value": "Marketing：小泉 昂也 / Development：橋口 健志、山下 郁矢 / SNS：久次米 啓佑", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
+      { "label": "Team", "value": "Marketing：小泉 昂也 / Development：橋口 健志、山下 郁矢 / Omine：久次米 啓佑", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
     ],
+    "explicitModal": {
+      "segments": [
+        { "type": "imageRow", "files": ["dates_p_1.webp", "dates_p_2.webp"] },
+        { "type": "imageRow", "files": ["dates_p_3.webp", "dates_p_4.webp", "dates_p_5.webp"] },
+        { "type": "sectionTitle", "text": "Media Deck" },
+        { "type": "imageRow", "files": ["deck_p_1.webp", "deck_p_2.webp"] },
+        { "type": "imageRow", "files": ["deck_p_3.webp", "deck_p_4.webp", "deck_p_5.webp"] },
+        { "type": "imageRow", "files": ["deck_p_6.webp", "deck_p_7.webp", "deck_p_8.webp"] },
+        { "type": "imageRow", "files": ["deck_p_9.webp", "deck_p_10.webp", "deck_p_11.webp"] },
+        { "type": "sectionTitle", "text": "Logo" },
+        { "type": "imageRow", "files": ["logoprocess_p_1.webp", "logoprocess_p_2.webp", "logoprocess_p_3.webp", "logoprocess_p_4.webp", "logoprocess_p_5.webp"] },
+        { "type": "sectionTitle", "text": "SNS" },
+        { "type": "imageRow", "files": ["plan_p_1.webp", "plan_p_2.webp"] },
+        { "type": "imageRow", "files": ["plan_p_3.webp", "plan_p_4.webp", "plan_p_5.webp"] },
+        { "type": "imageRow", "files": ["SNS_p_1.webp", "SNS_p_2.webp", "SNS_p_3.webp"] },
+        { "type": "imageRow", "files": ["SNS_p_4.webp", "SNS_p_5.webp", "SNS_p_6.webp"] },
+        { "type": "imageRow", "files": ["SNS_p_7.webp", "SNS_p_8.webp", "SNS_p_9.webp"] },
+        { "type": "imageRow", "files": ["SNS_p_10.webp", "SNS_p_11.webp", "SNS_p_12.webp"] },
+        { "type": "sectionTitle", "text": "YOKOLAB" },
+        { "type": "subtitle", "text": "Proposal 1" },
+        { "type": "imageRow", "files": ["proposal1_p_1.webp", "proposal1_p_2.webp"] },
+        { "type": "imageRow", "files": ["proposal1_p_3.webp", "proposal1_p_4.webp", "proposal1_p_5.webp"] },
+        { "type": "imageRow", "files": ["proposal1_p_6.webp", "proposal1_p_7.webp", "proposal1_p_8.webp"] },
+        { "type": "imageRow", "files": ["proposal1_p_9.webp", "proposal1_p_10.webp", "proposal1_p_11.webp"] },
+        { "type": "subtitle", "text": "Proposal 2" },
+        { "type": "imageRow", "files": ["proposal2_p_1.webp", "proposal2_p_2.webp"] },
+        { "type": "imageRow", "files": ["proposal2_p_3.webp", "proposal2_p_4.webp", "proposal2_p_5.webp"] },
+        { "type": "imageRow", "files": ["proposal2_p_6.webp", "proposal2_p_7.webp", "proposal2_p_8.webp"] },
+        { "type": "imageRow", "files": ["proposal2_p_9.webp", "proposal2_p_10.webp", "proposal2_p_11.webp"] },
+        { "type": "imageRow", "files": ["proposal2_p_12.webp", "proposal2_p_13.webp", "proposal2_p_14.webp"] },
+        { "type": "subtitle", "text": "News" },
+        { "type": "imageRow", "files": ["news_p_1.webp", "news_p_2.webp"] },
+        { "type": "sectionTitle", "text": "Others" },
+        { "type": "imageRow", "files": ["DATEsT_p_1.webp", "DATEsT_p_2.webp"] },
+        { "type": "imageRow", "files": ["others_p_1.webp", "others_p_2.webp", "others_p_3.webp"] },
+        { "type": "sectionTitle", "text": "Team" },
+        { "type": "imageRow", "files": ["member_p_1.webp"] },
+        { "type": "imageRow", "files": ["member_2.webp", "member_3.webp", "member_4.webp", "member_5.webp"], "imageStyle": "circle" }
+      ]
+    },
     "heroMedia": {
       "type": "video",
       "src": "https://assets.shuntofujii.com/top/video-01.webm"
@@ -447,6 +488,7 @@
         { "type": "sectionTitle", "text": "ZFILMS" },
         { "type": "imageRow", "files": ["logo_p_1.webp"] },
         { "type": "imageRow", "files": ["logoprocess_p_1.webp", "logoprocess_p_2.webp"] },
+        { "type": "imageRow", "files": ["logoprocess_p_3.webp"] },
         { "type": "sectionTitle", "text": "ディレクターズ葛藤" },
         { "type": "imageRow", "files": ["katto_p_1.webp"] },
         { "type": "imageRow", "files": ["katto_p_2.webp", "katto_p_3.webp"] }

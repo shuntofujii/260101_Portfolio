@@ -591,7 +591,12 @@ export function appendExplicitModal(project, parentEl) {
       const images = seg.files.map((f) => ({ src: `${base}/${f}` }));
       const forceHorizontal = seg.files.length > 1;
       const grid = createImageGrid(images, null, forceHorizontal, null, null, 0, altPrefix);
-      if (grid) parentEl.appendChild(grid);
+      if (grid) {
+        if (seg.imageStyle === 'circle') {
+          grid.dataset.imageStyle = 'circle';
+        }
+        parentEl.appendChild(grid);
+      }
       return;
     }
 

@@ -1434,6 +1434,15 @@ body.modal-open .modal-overlay {
   background: #000;
 }
 
+.mediaGrid[data-image-style="circle"] .mediaItem {
+  border-radius: 9999px;
+  aspect-ratio: 1 / 1;
+}
+
+.mediaGrid[data-image-style="circle"] .mediaItem img {
+  border-radius: 9999px;
+}
+
 /* 左右で高さを揃える場合：アイテムは行の高さいっぱいにし、画像は拡大・左右トリミング */
 .mediaGrid[data-equal-height="true"] .mediaItem {
   min-height: 0;
