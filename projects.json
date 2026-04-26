@@ -35,6 +35,7 @@
         { "type": "sectionTitle", "text": "SNS" },
         { "type": "imageRow", "files": ["plan_p_1.webp", "plan_p_2.webp"] },
         { "type": "imageRow", "files": ["plan_p_3.webp", "plan_p_4.webp", "plan_p_5.webp"] },
+        { "type": "subtitle", "text": "Plans" },
         { "type": "imageRow", "files": ["SNS_p_1.webp", "SNS_p_2.webp", "SNS_p_3.webp"] },
         { "type": "imageRow", "files": ["SNS_p_4.webp", "SNS_p_5.webp", "SNS_p_6.webp"] },
         { "type": "imageRow", "files": ["SNS_p_7.webp", "SNS_p_8.webp", "SNS_p_9.webp"] },
