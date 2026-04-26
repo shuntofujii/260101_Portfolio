@@ -7,6 +7,7 @@ import {
   CURSOR_CONFIG,
   CURSOR_Z_INDEX
 } from './constants.js';
+import { sleepTrajectoryParams, trajectoryR } from './sleepTrajectory.js';
 
 function hexToRgb(hex) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -341,6 +342,7 @@ function createCustomCursorEffect(THREE, initialColor) {
     const curveLerpNow = pointerOverThumb ? config.curveLerpOnThumbnail : config.curveLerp;
 
     if (isMouseActive) {
+      sleepModeStartTime = null;
       if (pointerOverThumb) {
         // サムネ上: 追従しない（mouse / curvePoints は更新しない）
       } else if (wasPointerOverThumb) {
@@ -363,24 +365,20 @@ function createCustomCursorEffect(THREE, initialColor) {
 
       if (sleepModeStartTime === null) {
         sleepModeStartTime = time;
-        const initialAngleX = -Math.PI / 2;
-        const initialAngleY = -Math.PI / 2;
-        const initialCosX = Math.cos(initialAngleX);
-        const initialSinY = Math.sin(initialAngleY);
-        const initialD = I * initialCosX;
-        const initialV = F * initialSinY;
+        const { theta: th0, tForR: tr0 } = sleepTrajectoryParams(0, config);
+        const R0 = trajectoryR(tr0);
+        const initialD = I * R0 * Math.cos(th0);
+        const initialV = F * R0 * Math.sin(th0);
         const initialX = initialD / (wWidth / 2);
         const initialY = -initialV / (wHeight / 2);
         for (let i = 0; i < config.curvePoints; i++) curvePoints[i].set(initialX, initialY);
       }
 
       const elapsedSinceSleep = time - sleepModeStartTime;
-      const angleX = -Math.PI / 2 + elapsedSinceSleep * config.sleepTimeCoefX;
-      const angleY = -Math.PI / 2 + elapsedSinceSleep * config.sleepTimeCoefY;
-      const cosX = Math.cos(angleX);
-      const sinY = Math.sin(angleY);
-      const D = I * cosX;
-      const V = F * sinY;
+      const { theta, tForR } = sleepTrajectoryParams(elapsedSinceSleep, config);
+      const R = trajectoryR(tForR);
+      const D = I * R * Math.cos(theta);
+      const V = F * R * Math.sin(theta);
       const x = D / (wWidth / 2);
       const y = -V / (wHeight / 2);
 

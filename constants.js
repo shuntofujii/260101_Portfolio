@@ -19,8 +19,19 @@ export const CURSOR_CONFIG = {
   curveLerpOnThumbnail: 1,
   radius1: 3,
   radius2: 5,
-  sleepTimeCoefX: 1.0,
-  sleepTimeCoefY: 1.0,
+  /** 角 θ の初期位相（x = R cos θ の θ 開始値） */
+  trajectoryThetaMin: 1,
+  /** R(t) に渡す t：0 ↔ 1000 を同じレートで往復 */
+  trajectoryRMin: 0,
+  trajectoryRMax: 1000,
+  /** この秒数までは R 用 t のみ極めて緩やか（見た目は長く真円に近い） */
+  trajectoryQuietHoldSec: 9,
+  /** ホールド中の R 用 t の増加速度（秒あたり・小さいほど真円が長持ち） */
+  trajectoryNoiseQuietRate: 0.035,
+  /** 描画の角速度（rad/秒）。ホールド前後で一定＝最初から崩れ始めと同程度の速さで円を描く */
+  trajectoryAngularRate: 1.15,
+  /** ホールド後の R 用 t の増加速度（ノイズが大きくなる） */
+  trajectoryChaosRate: 1.15,
   /** .project-item の矩形に足す余白（0 なら拡大前レイアウト枠ぴったり） */
   thumbnailOverlapPadPx: 0,
   /** 重なり時の不透明度を 0/1 に近づける補間係数（毎フレーム） */
