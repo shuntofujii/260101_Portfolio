@@ -20,6 +20,10 @@ export function resetHeroVideoBase(heroVideoBase) {
   heroVideoBase.currentTime = 0;
   heroVideoBase.style.display = 'none';
   heroVideoBase.style.opacity = '0';
+  heroVideoBase.style.objectFit = '';
+  heroVideoBase.classList.remove('hero-video-custom-size');
+  heroVideoBase.style.removeProperty('--hero-video-width');
+  heroVideoBase.style.removeProperty('--hero-video-height');
   heroVideoBase.removeAttribute('data-canonical-video-src');
 }
 

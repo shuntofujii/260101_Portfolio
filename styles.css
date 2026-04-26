@@ -412,6 +412,19 @@ body.modal-open .context-panel {
   transition: opacity 0.35s ease-out;
 }
 
+/* プロジェクト単位でヒーロー動画サイズを固定したい場合に使用 */
+#bgVideo.hero-video-custom-size {
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: var(--hero-video-width, 100%) !important;
+  height: var(--hero-video-height, 100%) !important;
+  max-width: none;
+  max-height: none;
+  transform: translate(-50%, -50%);
+}
+
 #bgLayer.isFading {
   opacity: 0;
 }

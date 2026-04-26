@@ -90,6 +90,15 @@ function applyHeroVideoSource(video, canonical, playUrl) {
   video.dataset.canonicalVideoSrc = canonical;
 }
 
+function applyHeroVideoBaseLayout(video) {
+  // ヒーロー背景は常に同一レイアウトに固定し、
+  // データ定義（fit/width/height）による見え方の揺れを排除する。
+  video.classList.remove('hero-video-custom-size');
+  video.style.removeProperty('--hero-video-width');
+  video.style.removeProperty('--hero-video-height');
+  video.style.objectFit = 'cover';
+}
+
 function setupHeroVideoLoopHandler(video) {
   const loopHandler = function () {
     video.currentTime = 0;
@@ -102,6 +111,7 @@ function setupHeroVideoLoopHandler(video) {
 function updateHeroVideoElement(video, heroMedia, config) {
   const { videoUpdateFadeDelayMs, videoShowFallbackMs } = config;
   if (!video || !heroMedia?.src) return;
+  applyHeroVideoBaseLayout(video);
 
   video.style.opacity = '0';
 
