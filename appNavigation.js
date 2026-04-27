@@ -103,6 +103,26 @@ function bindInfiniteHorizontalScroll(projectNavigationEl, projectCount) {
   };
 }
 
+function shouldEnableInfiniteLoop(projectNavigationEl, projectCount) {
+  if (projectCount < 2) return false;
+  return projectNavigationEl.scrollWidth > projectNavigationEl.clientWidth + 1;
+}
+
+function appendProjectItems(projectNavigationEl, projects, options, passCount) {
+  for (let pass = 0; pass < passCount; pass += 1) {
+    projects.forEach((project, index) => {
+      const item = document.createElement('div');
+      item.className = 'project-item';
+      item.dataset.projectId = project.id;
+      item.dataset.projectIndex = index;
+
+      const thumbnail = createThumbnail(project, index, options);
+      item.appendChild(thumbnail);
+      projectNavigationEl.appendChild(item);
+    });
+  }
+}
+
 function setupProjectItemListeners(projectNavigationEl, projects, handlers) {
   const {
     onMouseEnter,
@@ -129,27 +149,16 @@ export function renderProjectNavigation(projectNavigationEl, projects, options) 
   teardownInfiniteScroll(projectNavigationEl);
   projectNavigationEl.innerHTML = '';
   projectNavigationEl.classList.remove('is-infinite-loop');
+  projectNavigationEl.scrollLeft = 0;
 
-  const shouldEnableInfiniteLoop = projects.length >= 2;
-  const renderPassCount = shouldEnableInfiniteLoop ? LOOP_SEGMENT_COUNT : 1;
+  appendProjectItems(projectNavigationEl, projects, options, 1);
 
-  for (let pass = 0; pass < renderPassCount; pass += 1) {
-    projects.forEach((project, index) => {
-      const item = document.createElement('div');
-      item.className = 'project-item';
-      item.dataset.projectId = project.id;
-      item.dataset.projectIndex = index;
-
-      const thumbnail = createThumbnail(project, index, options);
-      item.appendChild(thumbnail);
-      projectNavigationEl.appendChild(item);
-    });
-  }
-
-  setupProjectItemListeners(projectNavigationEl, projects, handlers);
-
-  if (shouldEnableInfiniteLoop) {
+  if (shouldEnableInfiniteLoop(projectNavigationEl, projects.length)) {
+    projectNavigationEl.innerHTML = '';
+    appendProjectItems(projectNavigationEl, projects, options, LOOP_SEGMENT_COUNT);
     projectNavigationEl.classList.add('is-infinite-loop');
     bindInfiniteHorizontalScroll(projectNavigationEl, projects.length);
   }
+
+  setupProjectItemListeners(projectNavigationEl, projects, handlers);
 }

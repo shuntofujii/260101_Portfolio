@@ -71,4 +71,29 @@ describe('renderProjectNavigation', () => {
     nav.dispatchEvent(new Event('scroll'));
     expect(nav.scrollLeft).toBe(190);
   });
+
+  it('画面内に収まる場合は無限スクロールを有効化しない', () => {
+    const nav = document.createElement('nav');
+    const projects = createProjects();
+    Object.defineProperty(nav, 'scrollWidth', {
+      configurable: true,
+      get: () => nav.childElementCount * 100
+    });
+    Object.defineProperty(nav, 'clientWidth', {
+      configurable: true,
+      get: () => 400
+    });
+
+    renderProjectNavigation(nav, projects, {
+      baseAssetsUrl: '',
+      projectThumbnailSizePx: 90,
+      thumbnailFetchPriorityCount: 2,
+      handlers: createHandlers()
+    });
+
+    const items = nav.querySelectorAll('.project-item');
+    expect(items.length).toBe(projects.length);
+    expect(nav.classList.contains('is-infinite-loop')).toBe(false);
+    expect(nav.scrollLeft).toBe(0);
+  });
 });
