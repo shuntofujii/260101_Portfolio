@@ -41,5 +41,12 @@ describe('updateHeroMedia', () => {
     expect(ensureVideoPlayUrl).toHaveBeenCalledWith('/next.webm');
     expect(video.dataset.canonicalVideoSrc).toBe('/next.webm');
     expect(video.src).toContain('/next.webm');
+    expect(video.style.position).toBe('fixed');
+    expect(video.style.inset).toBe('0px');
+    expect(video.style.width).toBe('100vw');
+    expect(video.style.height).toBe('100svh');
+    expect(video.style.objectFit).toBe('cover');
+    expect(video.style.objectPosition).toBe('center center');
+    expect(video.style.transform).toBe('none');
   });
 });

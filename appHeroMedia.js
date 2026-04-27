@@ -96,7 +96,19 @@ function applyHeroVideoBaseLayout(video) {
   video.classList.remove('hero-video-custom-size');
   video.style.removeProperty('--hero-video-width');
   video.style.removeProperty('--hero-video-height');
+  video.style.position = 'fixed';
+  video.style.inset = '0';
+  video.style.top = '0';
+  video.style.left = '0';
+  video.style.right = '0';
+  video.style.bottom = '0';
+  video.style.width = '100vw';
+  video.style.height = '100svh';
+  video.style.maxWidth = 'none';
+  video.style.maxHeight = 'none';
+  video.style.transform = 'none';
   video.style.objectFit = 'cover';
+  video.style.objectPosition = 'center center';
 }
 
 function setupHeroVideoLoopHandler(video) {

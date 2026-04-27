@@ -21,6 +21,18 @@ export function resetHeroVideoBase(heroVideoBase) {
   heroVideoBase.style.display = 'none';
   heroVideoBase.style.opacity = '0';
   heroVideoBase.style.objectFit = '';
+  heroVideoBase.style.objectPosition = '';
+  heroVideoBase.style.position = '';
+  heroVideoBase.style.inset = '';
+  heroVideoBase.style.top = '';
+  heroVideoBase.style.left = '';
+  heroVideoBase.style.right = '';
+  heroVideoBase.style.bottom = '';
+  heroVideoBase.style.width = '';
+  heroVideoBase.style.height = '';
+  heroVideoBase.style.maxWidth = '';
+  heroVideoBase.style.maxHeight = '';
+  heroVideoBase.style.transform = '';
   heroVideoBase.classList.remove('hero-video-custom-size');
   heroVideoBase.style.removeProperty('--hero-video-width');
   heroVideoBase.style.removeProperty('--hero-video-height');
