@@ -1,3 +1,5 @@
+import { THUMBNAIL_PREVIEW_ACTIVE_CLASS } from './constants.js';
+
 export function clearHoverLeaveTimer(state) {
   if (!state.hoverLeaveTimer) return;
   clearTimeout(state.hoverLeaveTimer);
@@ -7,6 +9,7 @@ export function clearHoverLeaveTimer(state) {
 export function clearProjectSelections() {
   document.querySelectorAll('.project-item').forEach((item) => {
     item.classList.remove('selected');
+    item.classList.remove(THUMBNAIL_PREVIEW_ACTIVE_CLASS);
   });
 }
 

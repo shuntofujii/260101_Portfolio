@@ -47,6 +47,6 @@ describe('updateHeroMedia', () => {
     expect(video.style.height).toBe('100svh');
     expect(video.style.objectFit).toBe('cover');
     expect(video.style.objectPosition).toBe('center center');
-    expect(video.style.transform).toBe('none');
+    expect(video.style.getPropertyValue('transform')).toBe('');
   });
 });

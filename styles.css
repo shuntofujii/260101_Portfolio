@@ -73,7 +73,7 @@
     box-shadow var(--transition-theme-color);
 }
 
-/* サムネイルhover時の囲い・リングは、カーソル軌跡と同じタイミングで色が変化するように transition を短く */
+/* サムネイルプレビュー時の囲い・リングは、カーソル軌跡と同じタイミングで色が変化するように transition を短く */
 .project-item::before,
 .project-item::after {
   transition: border-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
@@ -428,7 +428,8 @@ body.modal-open .context-panel {
   height: 100svh !important;
   max-width: none !important;
   max-height: none !important;
-  transform: none !important;
+  /* none だと iOS の動画レイヤー合成が遅れることがあるため、同一見た目の translate3d でレイヤー化 */
+  transform: translate3d(0, 0, 0) !important;
   object-fit: cover !important;
   object-position: center center !important;
   filter: brightness(0.9) saturate(1.05);
@@ -626,9 +627,24 @@ body.modal-open .context-panel {
 
 .project-navigation.is-infinite-loop {
   overscroll-behavior-x: contain;
-  /* 横スクロール終端での縦バウンド連鎖を抑え、微妙な上下の揺れを抑える */
+  /* 横スクロールの端で縦方向のバウンドやページ連鎖が起きにくくする */
   overscroll-behavior-y: none;
-  touch-action: pan-x pinch-zoom;
+  touch-action: pan-x;
+}
+
+/* 無限ループ時、プレビュー強調で item の margin が増えると scrollWidth が変わり、
+   segment 幅の計算がずれて端で再センタリングが連発する（微動・ガタつき） */
+.project-navigation.is-infinite-loop .project-item.thumbnail-preview-active:not(.selected) {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.project-navigation.is-infinite-loop .project-item.thumbnail-preview-active:not(.selected) + .project-item:not(.selected) {
+  margin-left: 0;
+}
+
+.project-navigation.is-infinite-loop .project-item:not(.selected):has(+ .project-item.thumbnail-preview-active:not(.selected)) {
+  margin-right: 0;
 }
 
 body.modal-open .project-navigation {
@@ -696,8 +712,8 @@ body.modal-open .project-navigation {
     0 0 15px var(--accent-color);
 }
 
-/* hover時の枠線アニメーション */
-.project-item:hover:not(.selected)::before {
+/* プレビュー強調時の枠線アニメーション（:hover ではなく JS クラス — SP で動画と同期） */
+.project-item.thumbnail-preview-active:not(.selected)::before {
   opacity: 1;
   animation: frameShrink 0.3s ease-in-out forwards;
 }
@@ -737,38 +753,34 @@ body.modal-open .project-navigation {
 }
 
 /* Normal状態（デフォルト） */
-.project-item:not(:hover):not(.selected) {
+.project-item:not(.thumbnail-preview-active):not(.selected) {
   opacity: 0.4;
 }
 
-.project-item:not(:hover):not(.selected) .project-thumbnail {
+.project-item:not(.thumbnail-preview-active):not(.selected) .project-thumbnail {
   transform: scale(1);
   filter: brightness(1);
 }
 
 /* 非選択時：発光を完全に非表示（サムネイルのみ表示） */
-.project-item:not(:hover):not(.selected)::after {
+.project-item:not(.thumbnail-preview-active):not(.selected)::after {
   opacity: 0;
   display: none;
 }
 
-/* Hover状態（一時的フォーカス） */
-.project-item:hover:not(.selected) {
+/* プレビュー状態（一時的フォーカス・動画再生と同一トリガー） */
+.project-item.thumbnail-preview-active:not(.selected) {
   opacity: 1;
   margin: 0 4px;
 }
 
-.project-item:hover:not(.selected) .project-thumbnail {
+.project-item.thumbnail-preview-active:not(.selected) .project-thumbnail {
   transform: scale(1.3);
   filter: brightness(1.3);
 }
 
-.project-item:hover:not(.selected)::before {
-  opacity: 1;
-}
-
 /* ホバー時：ネオンリングが外側に広がるアニメーションをループ */
-.project-item:hover:not(.selected)::after {
+.project-item.thumbnail-preview-active:not(.selected)::after {
   opacity: 1;
   display: block;
   animation: ringExpand 1.4s ease-out infinite;
@@ -785,12 +797,12 @@ body.modal-open .project-navigation {
   }
 }
 
-/* hoverされたアイテムの前後のアイテムを左右に広げる */
-.project-item:hover:not(.selected) + .project-item:not(.selected) {
+/* プレビュー中のアイテムの前後を左右に広げる（無限ループ時は上で margin を打ち消し） */
+.project-item.thumbnail-preview-active:not(.selected) + .project-item:not(.selected) {
   margin-left: 8px;
 }
 
-.project-item:not(.selected):has(+ .project-item:hover:not(.selected)) {
+.project-item:not(.selected):has(+ .project-item.thumbnail-preview-active:not(.selected)) {
   margin-right: 8px;
 }
 
@@ -821,8 +833,8 @@ body.modal-open .project-navigation {
   }
 }
 
-/* hover時、非hover項目を減衰 */
-.project-navigation:hover .project-item:not(:hover):not(.selected) {
+/* プレビュー中は他サムネを減衰（:hover と動画トリガーを揃えるため :has で判定） */
+.project-navigation:has(.thumbnail-preview-active) .project-item:not(.thumbnail-preview-active):not(.selected) {
   opacity: 0.25;
 }
 
@@ -1786,34 +1798,23 @@ body.modal-open .modal-overlay {
     max-width: calc(100vw - var(--safe-left) - var(--safe-right));
   }
 
-  /*
-    SP は「タッチ後に残る疑似 hover」でも margin が効き、スクロール幅・無限ループ境界で位置がずれるため、
-    ホバー時も横マージンを増やさない（拡大・ネオン演出はそのまま）。
-   */
-  .project-item:hover:not(.selected) {
-    margin-left: 0;
-    margin-right: 0;
-  }
-
-  .project-item:hover:not(.selected) + .project-item:not(.selected) {
-    margin-left: 0;
-  }
-
-  .project-item:not(.selected):has(+ .project-item:hover:not(.selected)) {
-    margin-right: 0;
-  }
-
-  /* iOS で背景動画の合成レイヤーを安定させる（full-bleed のチラつき軽減） */
-  #bgVideo:not(.hero-video-custom-size) {
-    transform: translateZ(0) !important;
-    backface-visibility: hidden;
-  }
-
   .project-item {
     width: 75px;
     height: 75px;
     min-width: 75px;
     min-height: 75px;
+  }
+
+  /*
+   * 無限スクロールでは margin を 0 にしており、PC のプレビュー時の「左右が少し広がる」感が SP で弱い。
+   * transform はレイアウト幅（scrollWidth）に影響しないので、プレビュー左右のサムネだけわずかに外へ寄せる。
+   */
+  .project-navigation.is-infinite-loop .project-item:not(.thumbnail-preview-active):not(.selected):has(+ .project-item.thumbnail-preview-active:not(.selected)) {
+    transform: translateX(-4px);
+  }
+
+  .project-navigation.is-infinite-loop .project-item.thumbnail-preview-active:not(.selected) + .project-item:not(.selected) {
+    transform: translateX(4px);
   }
 
   .modal-container {

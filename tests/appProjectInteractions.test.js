@@ -19,7 +19,12 @@ describe('appProjectInteractions', () => {
       selectedProject: null,
       bgLayerFadeCompleteHandler: null
     };
-    const refs = createRefs();
+    const nav = document.createElement('nav');
+    const item = document.createElement('div');
+    item.className = 'project-item';
+    nav.appendChild(item);
+
+    const refs = { ...createRefs(), projectNavigation: nav };
     const updateHeroMedia = vi.fn();
     const preloadProjectVideos = vi.fn();
     const clearHoverLeaveTimer = vi.fn();
@@ -47,9 +52,10 @@ describe('appProjectInteractions', () => {
       heroMedia: { type: 'video', src: '/x.webm' }
     };
 
-    controller.handleProjectItemMouseEnter(project, null);
+    controller.handleProjectItemMouseEnter(project, item);
 
     expect(clearHoverLeaveTimer).toHaveBeenCalled();
+    expect(item.classList.contains('thumbnail-preview-active')).toBe(true);
     expect(state.currentState).toBe('hover');
     expect(state.hoveredProject).toBe(project);
     expect(updateHeroMedia).toHaveBeenCalledWith(project.heroMedia);
@@ -84,14 +90,8 @@ describe('appProjectInteractions', () => {
     });
 
     const project = { id: 'project-01', heroMedia: {} };
-    const pointerLikeTouch = {
-      pointerType: 'touch',
-      pointerId: 1,
-      clientX: 10,
-      clientY: 20
-    };
     controller.handleProjectItemMouseEnter(project, null);
-    controller.handleProjectItemPointerDown(project, null, pointerLikeTouch);
+    controller.handleProjectItemTouchStart(project, null);
 
     expect(updateHeroMedia).not.toHaveBeenCalled();
     expect(preloadProjectVideos).not.toHaveBeenCalled();
@@ -115,8 +115,7 @@ describe('appProjectInteractions', () => {
     });
 
     const project = { id: 'project-03' };
-    const itemEl = document.createElement('div');
-    controller.handleProjectItemClick(project, itemEl, new MouseEvent('click'));
+    controller.handleProjectClick(project);
 
     expect(clearHoverLeaveTimer).toHaveBeenCalled();
     expect(openProjectModalFromRoute).toHaveBeenCalledWith(project);

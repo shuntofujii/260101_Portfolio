@@ -1,53 +1,12 @@
 import { ensureVideoPlayUrl } from './videoCache.js';
-import { BREAKPOINT_MOBILE_PX } from './constants.js';
-
-function teardownHeroVideoViewportSync(video) {
-  if (video?._vvCleanup) {
-    video._vvCleanup();
-    video._vvCleanup = null;
-  }
-}
-
-function attachHeroVideoViewportSync(video) {
-  teardownHeroVideoViewportSync(video);
-  const vv = window.visualViewport;
-  if (!vv) return;
-
-  let debounceId = null;
-  const sync = () => {
-    applyHeroVideoBaseLayout(video);
-  };
-  const schedule = () => {
-    if (debounceId !== null) clearTimeout(debounceId);
-    debounceId = window.setTimeout(() => {
-      debounceId = null;
-      sync();
-    }, 48);
-  };
-
-  vv.addEventListener('resize', schedule);
-  vv.addEventListener('scroll', schedule);
-  video._vvCleanup = () => {
-    vv.removeEventListener('resize', schedule);
-    vv.removeEventListener('scroll', schedule);
-    if (debounceId !== null) {
-      clearTimeout(debounceId);
-      debounceId = null;
-    }
-  };
-}
 
 function cleanupHeroVideoRuntimeHandlers(video) {
   if (!video) return;
-  teardownHeroVideoViewportSync(video);
-  if (video._layoutMetaHandler) {
-    video.removeEventListener('loadedmetadata', video._layoutMetaHandler);
-    video._layoutMetaHandler = null;
-  }
   if (video._showFallbackId) {
     clearTimeout(video._showFallbackId);
     video._showFallbackId = null;
   }
+  video._heroRevealScheduled = false;
   const existingListeners = ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough', 'playing', 'error'];
   existingListeners.forEach((eventType) => {
     video.removeEventListener(eventType, video._playHandler);
@@ -75,31 +34,47 @@ function ensureHeroVideoPlayWithGestureFallback(video) {
   });
 }
 
-function revealHeroVideoFrame(video) {
-  applyHeroVideoBaseLayout(video);
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      video.style.visibility = 'visible';
-      video.style.opacity = '1';
-      video.classList.remove('fade-in');
-    });
-  });
-}
-
 function setupHeroVideoVisibilityHandlers(video, videoShowFallbackMs) {
-  const showVideo = () => {
+  const reveal = () => {
     if (video.style.opacity === '1') return;
     if (video._showFallbackId) {
       clearTimeout(video._showFallbackId);
       video._showFallbackId = null;
     }
-    revealHeroVideoFrame(video);
-    video.removeEventListener('playing', showVideo);
+    video.style.visibility = 'visible';
+    video.style.opacity = '1';
+    video.classList.remove('fade-in');
   };
-  video._showHandler = showVideo;
-  video.addEventListener('loadeddata', showVideo, { once: true });
-  video.addEventListener('playing', showVideo, { once: true });
-  video._showFallbackId = setTimeout(showVideo, videoShowFallbackMs);
+
+  const scheduleRevealFromEvent = () => {
+    if (video.style.opacity === '1') return;
+    if (video._heroRevealScheduled) return;
+    video._heroRevealScheduled = true;
+    if (video._showFallbackId) {
+      clearTimeout(video._showFallbackId);
+      video._showFallbackId = null;
+    }
+    // SP Safari は display:block 直後〜最初のデコードまで object-fit の合成がずれることがあるため、
+    // レイアウト確定後のフレームまで待つ（double rAF）。
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        video._heroRevealScheduled = false;
+        reveal();
+      });
+    });
+  };
+
+  video._showHandler = scheduleRevealFromEvent;
+  // メタデータで寸法が確定してから表示トリガー（loadeddata より早く安定しやすい）
+  video.addEventListener('loadedmetadata', scheduleRevealFromEvent, { once: true });
+  video.addEventListener('loadeddata', scheduleRevealFromEvent, { once: true });
+  video.addEventListener('playing', scheduleRevealFromEvent, { once: true });
+  video._showFallbackId = setTimeout(() => {
+    video._heroRevealScheduled = false;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(reveal);
+    });
+  }, videoShowFallbackMs);
 }
 
 function setupHeroVideoPlayLifecycleHandlers(video) {
@@ -113,7 +88,8 @@ function setupHeroVideoPlayLifecycleHandlers(video) {
 
   const errorHandler = () => {
     video.removeEventListener('error', errorHandler);
-    revealHeroVideoFrame(video);
+    video.style.visibility = 'visible';
+    video.style.opacity = '1';
     if (video._showFallbackId) {
       clearTimeout(video._showFallbackId);
       video._showFallbackId = null;
@@ -138,8 +114,8 @@ function applyHeroVideoSource(video, canonical, playUrl) {
   video.setAttribute('muted', 'true');
   video.setAttribute('playsinline', 'true');
   video.style.display = 'block';
-  video.style.opacity = '0';
   video.style.visibility = 'hidden';
+  video.style.opacity = '0';
   video.dataset.canonicalVideoSrc = canonical;
 }
 
@@ -156,19 +132,13 @@ function applyHeroVideoBaseLayout(video) {
   video.style.right = '0';
   video.style.bottom = '0';
   video.style.width = '100vw';
-  // dvh: 動的ツールバー変化への追従（未対応ブラウザは svh のみ）
-  if (typeof CSS !== 'undefined' && CSS.supports?.('height', '100dvh')) {
-    video.style.height = '100dvh';
-    video.style.minHeight = '100svh';
-  } else {
-    video.style.height = '100svh';
-    video.style.minHeight = '';
-  }
+  video.style.height = '100svh';
   video.style.maxWidth = 'none';
   video.style.maxHeight = 'none';
-  video.style.transform = 'none';
+  video.style.removeProperty('transform');
   video.style.objectFit = 'cover';
   video.style.objectPosition = 'center center';
+  video.style.visibility = 'hidden';
 }
 
 function setupHeroVideoLoopHandler(video) {
@@ -180,27 +150,12 @@ function setupHeroVideoLoopHandler(video) {
   video.addEventListener('ended', loopHandler);
 }
 
-function setupHeroVideoMetadataLayout(video) {
-  const onMeta = () => {
-    applyHeroVideoBaseLayout(video);
-  };
-  video._layoutMetaHandler = onMeta;
-  video.addEventListener('loadedmetadata', onMeta);
-}
-
 function updateHeroVideoElement(video, heroMedia, config) {
   const { videoUpdateFadeDelayMs, videoShowFallbackMs } = config;
   if (!video || !heroMedia?.src) return;
   applyHeroVideoBaseLayout(video);
 
   video.style.opacity = '0';
-  video.style.visibility = 'hidden';
-
-  const fadeDelay =
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia(`(max-width: ${BREAKPOINT_MOBILE_PX}px)`).matches
-      ? 0
-      : videoUpdateFadeDelayMs;
 
   setTimeout(() => {
     cleanupHeroVideoRuntimeHandlers(video);
@@ -213,15 +168,13 @@ function updateHeroVideoElement(video, heroMedia, config) {
 
       applyHeroVideoSource(video, canonical, playUrl);
       setupHeroVideoLoopHandler(video);
-      setupHeroVideoMetadataLayout(video);
       setupHeroVideoVisibilityHandlers(video, videoShowFallbackMs);
       setupHeroVideoPlayLifecycleHandlers(video);
-      attachHeroVideoViewportSync(video);
 
       video.load();
       ensureHeroVideoPlayWithGestureFallback(video);
     });
-  }, fadeDelay);
+  }, videoUpdateFadeDelayMs);
 }
 
 export function updateHeroMedia(heroMedia, heroVideoBase, config) {

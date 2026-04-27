@@ -2,12 +2,6 @@
 /** CSS のレスポンシブブレークポイント（スマホ判定）と揃える */
 export const BREAKPOINT_MOBILE_PX = 768;
 
-/** サムネイルを「タップ」とみなす指の移動上限（px・pointerup 時に評価） */
-export const THUMB_TAP_MOVE_MAX_PX = 12;
-
-/** 「タップ」とみなす押下〜離上までの最大時間（ms）。これより長いとモーダルは開かず離脱のみ */
-export const THUMB_TAP_MAX_DURATION_MS = 450;
-
 export const LIGHTBOX_CLOSE_DURATION_MS = 400;
 export const LIGHTBOX_VIDEO_PLAY_DELAY_MS = 500;
 export const VIDEO_UPDATE_FADE_DELAY_MS = 100;
@@ -64,6 +58,9 @@ export const HERO_VIDEO_PREFETCH_COUNT_DESKTOP = 8;
 
 /** `.project-item` / `.project-thumbnail` の表示サイズ（CLS 用 width/height と一致） */
 export const PROJECT_THUMBNAIL_SIZE_PX = 90;
+
+/** ヒーロー動画プレビューと同一トリガー（mouseenter / touchstart）で付与し、SP の :hover ずれを防ぐ */
+export const THUMBNAIL_PREVIEW_ACTIVE_CLASS = 'thumbnail-preview-active';
 
 /** 優先読み込みするサムネイル数（残りは lazy） */
 export const THUMBNAIL_FETCH_PRIORITY_COUNT = 2;

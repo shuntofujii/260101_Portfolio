@@ -30,8 +30,6 @@ const LOOP_SEGMENT_COUNT = 3;
 const LOOP_RECENTER_LOW_BOUND = 0.5;
 const LOOP_RECENTER_HIGH_BOUND = 1.5;
 
-import { clearProjectTouchPreviewTracking } from './appProjectInteractions.js';
-
 function teardownInfiniteScroll(projectNavigationEl) {
   const cleanup = projectNavigationEl.__projectNavigationCleanup;
   if (typeof cleanup === 'function') {
@@ -54,8 +52,6 @@ function bindInfiniteHorizontalScroll(projectNavigationEl, projectCount) {
 
   let isRecentering = false;
   let recenterRafId = null;
-  /** モバイルのアドレスバー等で高さだけ変わる resize では再センタしない（横の微動・縦ジッタを防ぐ） */
-  let lastResizeClientWidth = projectNavigationEl.clientWidth;
   const getSingleSegmentWidth = () => projectNavigationEl.scrollWidth / LOOP_SEGMENT_COUNT;
 
   const applyRecentering = () => {
@@ -89,9 +85,6 @@ function bindInfiniteHorizontalScroll(projectNavigationEl, projectCount) {
     }
     recenterRafId = requestAnimationFrame(() => {
       recenterRafId = null;
-      const cw = projectNavigationEl.clientWidth;
-      if (cw === lastResizeClientWidth) return;
-      lastResizeClientWidth = cw;
       recenterLoopPosition(projectNavigationEl, getSingleSegmentWidth());
     });
   };
@@ -99,7 +92,6 @@ function bindInfiniteHorizontalScroll(projectNavigationEl, projectCount) {
   projectNavigationEl.addEventListener('scroll', handleScroll, { passive: true });
   window.addEventListener('resize', handleResize);
   recenterLoopPosition(projectNavigationEl, getSingleSegmentWidth());
-  lastResizeClientWidth = projectNavigationEl.clientWidth;
 
   projectNavigationEl.__projectNavigationCleanup = () => {
     projectNavigationEl.removeEventListener('scroll', handleScroll);
@@ -135,7 +127,7 @@ function setupProjectItemListeners(projectNavigationEl, projects, handlers) {
   const {
     onMouseEnter,
     onMouseLeave,
-    onPointerDown,
+    onTouchStart,
     onClick
   } = handlers;
   const projectItems = projectNavigationEl.querySelectorAll('.project-item');
@@ -147,16 +139,13 @@ function setupProjectItemListeners(projectNavigationEl, projects, handlers) {
 
     item.addEventListener('mouseenter', () => onMouseEnter(project, item));
     item.addEventListener('mouseleave', () => onMouseLeave());
-    if (typeof onPointerDown === 'function') {
-      item.addEventListener('pointerdown', (e) => onPointerDown(project, item, e));
-    }
-    item.addEventListener('click', (e) => onClick(project, item, e));
+    item.addEventListener('touchstart', () => onTouchStart(project, item), { passive: true });
+    item.addEventListener('click', () => onClick(project, item));
   });
 }
 
 export function renderProjectNavigation(projectNavigationEl, projects, options) {
   const { handlers } = options;
-  clearProjectTouchPreviewTracking();
   teardownInfiniteScroll(projectNavigationEl);
   projectNavigationEl.innerHTML = '';
   projectNavigationEl.classList.remove('is-infinite-loop');

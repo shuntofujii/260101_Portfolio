@@ -13,7 +13,7 @@ function createHandlers() {
   return {
     onMouseEnter: vi.fn(),
     onMouseLeave: vi.fn(),
-    onPointerDown: vi.fn(),
+    onTouchStart: vi.fn(),
     onClick: vi.fn()
   };
 }

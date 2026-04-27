@@ -270,8 +270,8 @@ function renderProjectNavigation() {
     handlers: {
       onMouseEnter: projectInteractionController.handleProjectItemMouseEnter,
       onMouseLeave: projectInteractionController.handleProjectItemMouseLeave,
-      onPointerDown: projectInteractionController.handleProjectItemPointerDown,
-      onClick: projectInteractionController.handleProjectItemClick
+      onTouchStart: projectInteractionController.handleProjectItemTouchStart,
+      onClick: projectInteractionController.handleProjectClick
     }
   });
 }
