@@ -84,8 +84,14 @@ describe('appProjectInteractions', () => {
     });
 
     const project = { id: 'project-01', heroMedia: {} };
+    const pointerLikeTouch = {
+      pointerType: 'touch',
+      pointerId: 1,
+      clientX: 10,
+      clientY: 20
+    };
     controller.handleProjectItemMouseEnter(project, null);
-    controller.handleProjectItemTouchStart(project, null);
+    controller.handleProjectItemPointerDown(project, null, pointerLikeTouch);
 
     expect(updateHeroMedia).not.toHaveBeenCalled();
     expect(preloadProjectVideos).not.toHaveBeenCalled();

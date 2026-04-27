@@ -1,7 +1,49 @@
 import { ensureVideoPlayUrl } from './videoCache.js';
+import { BREAKPOINT_MOBILE_PX } from './constants.js';
+
+function teardownHeroVideoViewportSync(video) {
+  if (video?._vvCleanup) {
+    video._vvCleanup();
+    video._vvCleanup = null;
+  }
+}
+
+function attachHeroVideoViewportSync(video) {
+  teardownHeroVideoViewportSync(video);
+  const vv = window.visualViewport;
+  if (!vv) return;
+
+  let debounceId = null;
+  const sync = () => {
+    applyHeroVideoBaseLayout(video);
+  };
+  const schedule = () => {
+    if (debounceId !== null) clearTimeout(debounceId);
+    debounceId = window.setTimeout(() => {
+      debounceId = null;
+      sync();
+    }, 48);
+  };
+
+  vv.addEventListener('resize', schedule);
+  vv.addEventListener('scroll', schedule);
+  video._vvCleanup = () => {
+    vv.removeEventListener('resize', schedule);
+    vv.removeEventListener('scroll', schedule);
+    if (debounceId !== null) {
+      clearTimeout(debounceId);
+      debounceId = null;
+    }
+  };
+}
 
 function cleanupHeroVideoRuntimeHandlers(video) {
   if (!video) return;
+  teardownHeroVideoViewportSync(video);
+  if (video._layoutMetaHandler) {
+    video.removeEventListener('loadedmetadata', video._layoutMetaHandler);
+    video._layoutMetaHandler = null;
+  }
   if (video._showFallbackId) {
     clearTimeout(video._showFallbackId);
     video._showFallbackId = null;
@@ -33,6 +75,17 @@ function ensureHeroVideoPlayWithGestureFallback(video) {
   });
 }
 
+function revealHeroVideoFrame(video) {
+  applyHeroVideoBaseLayout(video);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      video.style.visibility = 'visible';
+      video.style.opacity = '1';
+      video.classList.remove('fade-in');
+    });
+  });
+}
+
 function setupHeroVideoVisibilityHandlers(video, videoShowFallbackMs) {
   const showVideo = () => {
     if (video.style.opacity === '1') return;
@@ -40,8 +93,7 @@ function setupHeroVideoVisibilityHandlers(video, videoShowFallbackMs) {
       clearTimeout(video._showFallbackId);
       video._showFallbackId = null;
     }
-    video.style.opacity = '1';
-    video.classList.remove('fade-in');
+    revealHeroVideoFrame(video);
     video.removeEventListener('playing', showVideo);
   };
   video._showHandler = showVideo;
@@ -61,7 +113,7 @@ function setupHeroVideoPlayLifecycleHandlers(video) {
 
   const errorHandler = () => {
     video.removeEventListener('error', errorHandler);
-    video.style.opacity = '1';
+    revealHeroVideoFrame(video);
     if (video._showFallbackId) {
       clearTimeout(video._showFallbackId);
       video._showFallbackId = null;
@@ -87,6 +139,7 @@ function applyHeroVideoSource(video, canonical, playUrl) {
   video.setAttribute('playsinline', 'true');
   video.style.display = 'block';
   video.style.opacity = '0';
+  video.style.visibility = 'hidden';
   video.dataset.canonicalVideoSrc = canonical;
 }
 
@@ -103,7 +156,14 @@ function applyHeroVideoBaseLayout(video) {
   video.style.right = '0';
   video.style.bottom = '0';
   video.style.width = '100vw';
-  video.style.height = '100svh';
+  // dvh: 動的ツールバー変化への追従（未対応ブラウザは svh のみ）
+  if (typeof CSS !== 'undefined' && CSS.supports?.('height', '100dvh')) {
+    video.style.height = '100dvh';
+    video.style.minHeight = '100svh';
+  } else {
+    video.style.height = '100svh';
+    video.style.minHeight = '';
+  }
   video.style.maxWidth = 'none';
   video.style.maxHeight = 'none';
   video.style.transform = 'none';
@@ -120,12 +180,27 @@ function setupHeroVideoLoopHandler(video) {
   video.addEventListener('ended', loopHandler);
 }
 
+function setupHeroVideoMetadataLayout(video) {
+  const onMeta = () => {
+    applyHeroVideoBaseLayout(video);
+  };
+  video._layoutMetaHandler = onMeta;
+  video.addEventListener('loadedmetadata', onMeta);
+}
+
 function updateHeroVideoElement(video, heroMedia, config) {
   const { videoUpdateFadeDelayMs, videoShowFallbackMs } = config;
   if (!video || !heroMedia?.src) return;
   applyHeroVideoBaseLayout(video);
 
   video.style.opacity = '0';
+  video.style.visibility = 'hidden';
+
+  const fadeDelay =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia(`(max-width: ${BREAKPOINT_MOBILE_PX}px)`).matches
+      ? 0
+      : videoUpdateFadeDelayMs;
 
   setTimeout(() => {
     cleanupHeroVideoRuntimeHandlers(video);
@@ -138,13 +213,15 @@ function updateHeroVideoElement(video, heroMedia, config) {
 
       applyHeroVideoSource(video, canonical, playUrl);
       setupHeroVideoLoopHandler(video);
+      setupHeroVideoMetadataLayout(video);
       setupHeroVideoVisibilityHandlers(video, videoShowFallbackMs);
       setupHeroVideoPlayLifecycleHandlers(video);
+      attachHeroVideoViewportSync(video);
 
       video.load();
       ensureHeroVideoPlayWithGestureFallback(video);
     });
-  }, videoUpdateFadeDelayMs);
+  }, fadeDelay);
 }
 
 export function updateHeroMedia(heroMedia, heroVideoBase, config) {

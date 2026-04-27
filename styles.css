@@ -626,6 +626,9 @@ body.modal-open .context-panel {
 
 .project-navigation.is-infinite-loop {
   overscroll-behavior-x: contain;
+  /* 横スクロール終端での縦バウンド連鎖を抑え、微妙な上下の揺れを抑える */
+  overscroll-behavior-y: none;
+  touch-action: pan-x pinch-zoom;
 }
 
 body.modal-open .project-navigation {
@@ -1781,6 +1784,29 @@ body.modal-open .modal-overlay {
     padding-right: calc(2rem + var(--safe-right));
     gap: 1rem;
     max-width: calc(100vw - var(--safe-left) - var(--safe-right));
+  }
+
+  /*
+    SP は「タッチ後に残る疑似 hover」でも margin が効き、スクロール幅・無限ループ境界で位置がずれるため、
+    ホバー時も横マージンを増やさない（拡大・ネオン演出はそのまま）。
+   */
+  .project-item:hover:not(.selected) {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .project-item:hover:not(.selected) + .project-item:not(.selected) {
+    margin-left: 0;
+  }
+
+  .project-item:not(.selected):has(+ .project-item:hover:not(.selected)) {
+    margin-right: 0;
+  }
+
+  /* iOS で背景動画の合成レイヤーを安定させる（full-bleed のチラつき軽減） */
+  #bgVideo:not(.hero-video-custom-size) {
+    transform: translateZ(0) !important;
+    backface-visibility: hidden;
   }
 
   .project-item {

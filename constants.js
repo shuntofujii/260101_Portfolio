@@ -2,6 +2,9 @@
 /** CSS のレスポンシブブレークポイント（スマホ判定）と揃える */
 export const BREAKPOINT_MOBILE_PX = 768;
 
+/** サムネイルを触って横スクロールしたとみなす移動量（px・指／ペン） */
+export const TOUCH_THUMB_SCROLL_THRESHOLD_PX = 14;
+
 export const LIGHTBOX_CLOSE_DURATION_MS = 400;
 export const LIGHTBOX_VIDEO_PLAY_DELAY_MS = 500;
 export const VIDEO_UPDATE_FADE_DELAY_MS = 100;

@@ -33,6 +33,7 @@ export function resetHeroVideoBase(heroVideoBase) {
   heroVideoBase.style.maxWidth = '';
   heroVideoBase.style.maxHeight = '';
   heroVideoBase.style.transform = '';
+  heroVideoBase.style.visibility = '';
   heroVideoBase.classList.remove('hero-video-custom-size');
   heroVideoBase.style.removeProperty('--hero-video-width');
   heroVideoBase.style.removeProperty('--hero-video-height');

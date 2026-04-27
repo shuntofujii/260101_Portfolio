@@ -1,3 +1,16 @@
+import { TOUCH_THUMB_SCROLL_THRESHOLD_PX } from './constants.js';
+
+let touchPreviewSession = null;
+
+/** ナビ再描画などでポインター追跡だけ残さないために外部からも呼ぶ */
+export function clearProjectTouchPreviewTracking() {
+  if (!touchPreviewSession) return;
+  window.removeEventListener('pointermove', touchPreviewSession.move);
+  window.removeEventListener('pointerup', touchPreviewSession.up);
+  window.removeEventListener('pointercancel', touchPreviewSession.up);
+  touchPreviewSession = null;
+}
+
 export function createProjectInteractionController(deps) {
   const {
     state,
@@ -12,6 +25,8 @@ export function createProjectInteractionController(deps) {
     preloadProjectVideos,
     openProjectModalFromRoute
   } = deps;
+
+  const scrollThresholdSq = TOUCH_THUMB_SCROLL_THRESHOLD_PX * TOUCH_THUMB_SCROLL_THRESHOLD_PX;
 
   function shouldProcessProjectPointerInteraction() {
     return state.currentState !== 'modal';
@@ -101,10 +116,43 @@ export function createProjectInteractionController(deps) {
     }
   }
 
-  function handleProjectItemTouchStart(project, item) {
-    if (shouldProcessProjectPointerInteraction()) {
-      handleProjectHover(project, item);
-    }
+  /**
+   * 指・スタイラス（pointerType が touch / pen）のときの pointerdown。
+   * PC のマウス／トラックパッドは mouseenter のみでプレビューする。
+   * ・押した直後にそのプロジェクトのヒーロー動画・概要を表示
+   * ・一定距離以上ドラッグしたら横スクロールとみなし、プレビューを解除（一覧を動かしただけの誤爆を防ぐ）
+   */
+  function handleProjectItemPointerDown(project, item, event) {
+    if (!shouldProcessProjectPointerInteraction()) return;
+    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+
+    clearProjectTouchPreviewTracking();
+
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const pointerId = event.pointerId;
+    let scrollCancelled = false;
+
+    const move = (ev) => {
+      if (ev.pointerId !== pointerId) return;
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      if (dx * dx + dy * dy <= scrollThresholdSq || scrollCancelled) return;
+      scrollCancelled = true;
+      handleProjectLeave();
+    };
+
+    const up = (ev) => {
+      if (ev.pointerId !== pointerId) return;
+      clearProjectTouchPreviewTracking();
+    };
+
+    touchPreviewSession = { pointerId, move, up };
+    window.addEventListener('pointermove', move, { passive: true });
+    window.addEventListener('pointerup', up, { passive: true });
+    window.addEventListener('pointercancel', up, { passive: true });
+
+    handleProjectHover(project, item);
   }
 
   function handleProjectClick(project) {
@@ -115,7 +163,7 @@ export function createProjectInteractionController(deps) {
   return {
     handleProjectItemMouseEnter,
     handleProjectItemMouseLeave,
-    handleProjectItemTouchStart,
+    handleProjectItemPointerDown,
     handleProjectClick
   };
 }
