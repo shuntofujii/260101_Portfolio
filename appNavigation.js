@@ -150,7 +150,7 @@ function setupProjectItemListeners(projectNavigationEl, projects, handlers) {
     if (typeof onPointerDown === 'function') {
       item.addEventListener('pointerdown', (e) => onPointerDown(project, item, e));
     }
-    item.addEventListener('click', () => onClick(project, item));
+    item.addEventListener('click', (e) => onClick(project, item, e));
   });
 }
 

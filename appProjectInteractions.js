@@ -1,11 +1,16 @@
-import { TOUCH_THUMB_SCROLL_THRESHOLD_PX } from './constants.js';
+import { THUMB_TAP_MOVE_MAX_PX, THUMB_TAP_MAX_DURATION_MS } from './constants.js';
 
 let touchPreviewSession = null;
+
+/** 指・ペンのジェスチャ終了後にブラウザが送る合成 click を無視する（1 回分） */
+const suppressNextThumbClick = new WeakMap();
 
 /** ナビ再描画などでポインター追跡だけ残さないために外部からも呼ぶ */
 export function clearProjectTouchPreviewTracking() {
   if (!touchPreviewSession) return;
-  window.removeEventListener('pointermove', touchPreviewSession.move);
+  if (touchPreviewSession.move) {
+    window.removeEventListener('pointermove', touchPreviewSession.move);
+  }
   window.removeEventListener('pointerup', touchPreviewSession.up);
   window.removeEventListener('pointercancel', touchPreviewSession.up);
   touchPreviewSession = null;
@@ -26,7 +31,7 @@ export function createProjectInteractionController(deps) {
     openProjectModalFromRoute
   } = deps;
 
-  const scrollThresholdSq = TOUCH_THUMB_SCROLL_THRESHOLD_PX * TOUCH_THUMB_SCROLL_THRESHOLD_PX;
+  const tapMoveSq = THUMB_TAP_MOVE_MAX_PX * THUMB_TAP_MOVE_MAX_PX;
 
   function shouldProcessProjectPointerInteraction() {
     return state.currentState !== 'modal';
@@ -117,10 +122,8 @@ export function createProjectInteractionController(deps) {
   }
 
   /**
-   * 指・スタイラス（pointerType が touch / pen）のときの pointerdown。
-   * PC のマウス／トラックパッドは mouseenter のみでプレビューする。
-   * ・押した直後にそのプロジェクトのヒーロー動画・概要を表示
-   * ・一定距離以上ドラッグしたら横スクロールとみなし、プレビューを解除（一覧を動かしただけの誤爆を防ぐ）
+   * 指・ペン: 押している間ヒーローを再生し、離すときに「タップ」ならモーダルのみ開く。
+   * PC のマウスは mouseenter / click のみ。
    */
   function handleProjectItemPointerDown(project, item, event) {
     if (!shouldProcessProjectPointerInteraction()) return;
@@ -131,31 +134,46 @@ export function createProjectInteractionController(deps) {
     const startX = event.clientX;
     const startY = event.clientY;
     const pointerId = event.pointerId;
-    let scrollCancelled = false;
+    const t0 = performance.now();
 
-    const move = (ev) => {
-      if (ev.pointerId !== pointerId) return;
-      const dx = ev.clientX - startX;
-      const dy = ev.clientY - startY;
-      if (dx * dx + dy * dy <= scrollThresholdSq || scrollCancelled) return;
-      scrollCancelled = true;
-      handleProjectLeave();
-    };
-
-    const up = (ev) => {
+    const finish = (ev) => {
       if (ev.pointerId !== pointerId) return;
       clearProjectTouchPreviewTracking();
+
+      suppressNextThumbClick.set(item, true);
+
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      const elapsed = performance.now() - t0;
+      const cancelled = ev.type === 'pointercancel';
+      const distSq = dx * dx + dy * dy;
+      const isTap =
+        !cancelled &&
+        distSq <= tapMoveSq &&
+        elapsed <= THUMB_TAP_MAX_DURATION_MS;
+
+      if (isTap) {
+        clearHoverLeaveTimer();
+        openProjectModalFromRoute(project);
+      } else {
+        handleProjectLeave();
+      }
     };
 
-    touchPreviewSession = { pointerId, move, up };
-    window.addEventListener('pointermove', move, { passive: true });
-    window.addEventListener('pointerup', up, { passive: true });
-    window.addEventListener('pointercancel', up, { passive: true });
+    touchPreviewSession = { move: null, up: finish };
+    window.addEventListener('pointerup', finish, { passive: true });
+    window.addEventListener('pointercancel', finish, { passive: true });
 
     handleProjectHover(project, item);
   }
 
-  function handleProjectClick(project) {
+  function handleProjectItemClick(project, item, event) {
+    if (suppressNextThumbClick.has(item)) {
+      suppressNextThumbClick.delete(item);
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      return;
+    }
     clearHoverLeaveTimer();
     openProjectModalFromRoute(project);
   }
@@ -164,6 +182,6 @@ export function createProjectInteractionController(deps) {
     handleProjectItemMouseEnter,
     handleProjectItemMouseLeave,
     handleProjectItemPointerDown,
-    handleProjectClick
+    handleProjectItemClick
   };
 }

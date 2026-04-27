@@ -271,7 +271,7 @@ function renderProjectNavigation() {
       onMouseEnter: projectInteractionController.handleProjectItemMouseEnter,
       onMouseLeave: projectInteractionController.handleProjectItemMouseLeave,
       onPointerDown: projectInteractionController.handleProjectItemPointerDown,
-      onClick: projectInteractionController.handleProjectClick
+      onClick: projectInteractionController.handleProjectItemClick
     }
   });
 }

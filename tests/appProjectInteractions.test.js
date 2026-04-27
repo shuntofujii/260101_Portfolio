@@ -115,7 +115,8 @@ describe('appProjectInteractions', () => {
     });
 
     const project = { id: 'project-03' };
-    controller.handleProjectClick(project);
+    const itemEl = document.createElement('div');
+    controller.handleProjectItemClick(project, itemEl, new MouseEvent('click'));
 
     expect(clearHoverLeaveTimer).toHaveBeenCalled();
     expect(openProjectModalFromRoute).toHaveBeenCalledWith(project);
