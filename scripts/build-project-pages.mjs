@@ -60,7 +60,7 @@ function pageHtml(project) {
   const title = `${project.title} | SHUNTO FUJII`;
   const desc = clipMeta(project.description || project.tagline || '');
   const thumb =
-    project.thumbnail || 'https://assets.shuntofujii.com/top/ogp.webp';
+    project.thumbnail || 'https://assets.shuntofujii.com/top/ogp.webp?v=20260427';
   const ogTitle = escapeHtml(title);
   const ogDesc = escapeHtml(desc);
   const jsonLd = buildJsonLd(project, canonical, thumb);
@@ -101,8 +101,8 @@ function pageHtml(project) {
     <meta name="twitter:image" content="${escapeHtml(thumb)}" />
     <meta name="twitter:image:alt" content="${escapeHtml(project.title)}" />
 
-    <link rel="icon" href="https://assets.shuntofujii.com/top/favicon.ico" />
-    <link rel="apple-touch-icon" href="https://assets.shuntofujii.com/top/favicon.ico" />
+    <link rel="icon" href="https://assets.shuntofujii.com/top/favicon.ico?v=20260427" />
+    <link rel="apple-touch-icon" href="https://assets.shuntofujii.com/top/favicon.ico?v=20260427" />
 
     <link rel="manifest" href="/site.webmanifest" />
 

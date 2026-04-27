@@ -15,11 +15,11 @@
     "description": "デートプラン投稿・評価サイト「DATEs」をリリースしました。\nサービス設計〜UI/UXデザイン〜フロントコーディング、SNS運用、また自治体との連携など、代表として必死に手を動かしました。",
     "projectSlug": "dates",
     "modalMetaItems": [
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
-      { "label": "Team", "value": "Marketing：小泉 昂也 / Development：橋口 健志、山下 郁矢 / Omine：久次米 啓佑", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
+      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" },
+      { "label": "Team", "value": "Marketing：小泉 昂也 / Development：橋口 健志、山下 郁矢 / Omine：久次米 啓佑", "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260427" }
     ],
     "explicitModal": {
       "segments": [
@@ -64,18 +64,18 @@
     },
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-01.webm"
+      "src": "https://assets.shuntofujii.com/top/video-01.webm?v=20260427"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-01.webp",
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-01.webp?v=20260427",
     "gallery": [
       {
         "type": "image",
-        "src": "https://assets.shuntofujii.com/dates/placeholder-image.jpg",
+        "src": "https://assets.shuntofujii.com/dates/placeholder-image.jpg?v=20260427",
         "caption": "メインビジュアル"
       },
       {
         "type": "video",
-        "src": "https://assets.shuntofujii.com/dates/placeholder-video.webm",
+        "src": "https://assets.shuntofujii.com/dates/placeholder-video.webm?v=20260427",
         "caption": "モーションデザイン"
       }
     ],
@@ -103,11 +103,11 @@
     "description": "マイクロソフト社主催の新規事業ピッチイベント「Empower Japan Intrapreneur Community」のクリエイティブディレクションを行いました。\nイベントのロゴ、発表者登壇時の事業紹介動画、Teams背景など、幅広く制作させていただきました。",
     "projectSlug": "ejic",
     "modalMetaItems": [
-      { "label": "Client", "value": "日本マイクロソフト株式会社", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+      { "label": "Client", "value": "日本マイクロソフト株式会社", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260427" },
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
+      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
     ],
     "explicitModal": {
       "segments": [
@@ -138,18 +138,18 @@
     },
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-02.webm"
+      "src": "https://assets.shuntofujii.com/top/video-02.webm?v=20260427"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-02.webp",
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-02.webp?v=20260427",
     "gallery": [
       {
         "type": "video",
-        "src": "https://assets.shuntofujii.com/ejic/fix_m_1.webm",
+        "src": "https://assets.shuntofujii.com/ejic/fix_m_1.webm?v=20260427",
         "caption": "Intro Video"
       },
       {
         "type": "image",
-        "src": "https://assets.shuntofujii.com/ejic/fix_p_1.webp",
+        "src": "https://assets.shuntofujii.com/ejic/fix_p_1.webp?v=20260427",
         "caption": "プロセス"
       }
     ],
@@ -177,31 +177,31 @@
     "tagline": "ARの普及を見越したSNS",
     "description": "香港に拠点を置くAR×Web3の会社IZUMOxr.Ltdにて、Marketing Managerを務めました。\n2022年6月の事業立ち上げから、2023年12月までの1年半で、コミュニティ立ち上げ(Discord登録者約1万人)やSNS立ち上げ(𝕏フォロワー約2万人)、それらに関わるキャンペーン実施やクリエイティブ制作など幅広くプロジェクトに携わりました。",
     "modalMetaItems": [
-      { "label": "Client", "value": "IZUMOxr Ltd.", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+      { "label": "Client", "value": "IZUMOxr Ltd.", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260427" },
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
+      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
     ],
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-04.webm"
+      "src": "https://assets.shuntofujii.com/top/video-04.webm?v=20260427"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-04.webp",
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-04.webp?v=20260427",
     "gallery": [
       {
         "type": "image",
-        "src": "https://assets.shuntofujii.com/izumo/placeholder-image.jpg",
+        "src": "https://assets.shuntofujii.com/izumo/placeholder-image.jpg?v=20260427",
         "caption": "ロゴデザイン"
       },
       {
         "type": "image",
-        "src": "https://assets.shuntofujii.com/izumo/placeholder-image.jpg",
+        "src": "https://assets.shuntofujii.com/izumo/placeholder-image.jpg?v=20260427",
         "caption": "パッケージデザイン"
       },
       {
         "type": "video",
-        "src": "https://assets.shuntofujii.com/izumo/placeholder-video.webm",
+        "src": "https://assets.shuntofujii.com/izumo/placeholder-video.webm?v=20260427",
         "caption": "ブランドムービー"
       }
     ],
@@ -321,17 +321,17 @@
     "tagline": "AR × 人から生まれる新体験",
     "description": "国内有数のMR開発会社MuuMu社のサービス「デテクル」のマーケティング戦略策定及び、その実行を担当しております。\n戦略策定のためのリサーチ、実行に伴う制作〜商談まで全てのプロセスを担っております。",
     "modalMetaItems": [
-      { "label": "Client", "value": "株式会社MuuMu", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+      { "label": "Client", "value": "株式会社MuuMu", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260427" },
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
+      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
     ],
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-05.webm"
+      "src": "https://assets.shuntofujii.com/top/video-05.webm?v=20260427"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-05.webp",
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-05.webp?v=20260427",
     "projectSlug": "deteqle",
     "cases": [
       {
@@ -390,7 +390,7 @@
     "gallery": [
       {
         "type": "video",
-        "src": "https://assets.shuntofujii.com/deteqle/placeholder-video.webm",
+        "src": "https://assets.shuntofujii.com/deteqle/placeholder-video.webm?v=20260427",
         "caption": "メインアニメーション"
       }
     ],
@@ -496,26 +496,26 @@
       ]
     },
     "modalMetaItems": [
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
-      { "label": "Team", "value": "Director & Producer：浅尾 尭洋 / Line Producer：渡邉 康裕", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
+      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" },
+      { "label": "Team", "value": "Director & Producer：浅尾 尭洋 / Line Producer：渡邉 康裕", "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260427" }
     ],
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-06.webm"
+      "src": "https://assets.shuntofujii.com/top/video-06.webm?v=20260427"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-06.webp",
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-06.webp?v=20260427",
     "gallery": [
       {
         "type": "image",
-        "src": "https://assets.shuntofujii.com/rockpaperdead/rockpaperdead_p_1.webp",
+        "src": "https://assets.shuntofujii.com/rockpaperdead/rockpaperdead_p_1.webp?v=20260427",
         "caption": "メインビジュアル"
       },
       {
         "type": "image",
-        "src": "https://assets.shuntofujii.com/rockpaperdead/placeholder-image.jpg",
+        "src": "https://assets.shuntofujii.com/rockpaperdead/placeholder-image.jpg?v=20260427",
         "caption": "アプリケーション"
       }
     ],
@@ -537,16 +537,16 @@
     "tagline": "完全個室セルフマシンピラティス",
     "description": "セルフでピラティスを行うためのレッスン動画のディレクションを担っております。\n撮影〜画面UI制作〜編集の全工程を行っております。",
     "modalMetaItems": [
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
+      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
     ],
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-07.webm"
+      "src": "https://assets.shuntofujii.com/top/video-07.webm?v=20260427"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-07.webp",
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-07.webp?v=20260427",
     "projectSlug": "sepila",
     "cases": [
       {
@@ -585,12 +585,12 @@
     "gallery": [
       {
         "type": "video",
-        "src": "https://assets.shuntofujii.com/sepila/placeholder-video.webm",
+        "src": "https://assets.shuntofujii.com/sepila/placeholder-video.webm?v=20260427",
         "caption": "ブランドムービー"
       },
       {
         "type": "image",
-        "src": "https://assets.shuntofujii.com/sepila/placeholder-image.jpg",
+        "src": "https://assets.shuntofujii.com/sepila/placeholder-image.jpg?v=20260427",
         "caption": "ロゴデザイン"
       }
     ],
@@ -611,16 +611,16 @@
     "tagline": "人間監査法人パイオニア",
     "description": "珈琲好きの友人と事業の立ち上げを行っております。",
     "modalMetaItems": [
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
+      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
+      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
+      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
     ],
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-08.webm"
+      "src": "https://assets.shuntofujii.com/top/video-08.webm?v=20260427"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-08.webp",
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-08.webp?v=20260427",
     "projectSlug": "kujico",
     "cases": [
       {
@@ -638,7 +638,7 @@
     "gallery": [
       {
         "type": "image",
-        "src": "https://assets.shuntofujii.com/kujico/trailer_p_1.webp",
+        "src": "https://assets.shuntofujii.com/kujico/trailer_p_1.webp?v=20260427",
         "caption": "メインビジュアル"
       }
     ],
@@ -662,11 +662,11 @@
         {
           "type": "sectionMeta",
           "items": [
-            { "label": "Client", "value": "StudioZ株式会社", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
-            { "label": "Domain", "value": "Mobile App", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-            { "label": "Year", "value": "2025", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-            { "label": "Disciplines", "value": "Product Video", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-            { "label": "Toolkits", "value": "After Effects / Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+            { "label": "Client", "value": "StudioZ株式会社", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260427" },
+            { "label": "Domain", "value": "Mobile App", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
+            { "label": "Year", "value": "2025", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
+            { "label": "Disciplines", "value": "Product Video", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
+            { "label": "Toolkits", "value": "After Effects / Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
           ]
         },
         { "type": "sectionTitle", "text": "YOKOLAB" },
@@ -674,11 +674,11 @@
         {
           "type": "sectionMeta",
           "items": [
-            { "label": "Client", "value": "横瀬町", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
-            { "label": "Domain", "value": "Event", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-            { "label": "Year", "value": "2024", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-            { "label": "Disciplines", "value": "Highlight Video", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-            { "label": "Toolkits", "value": "Camera & Gear / After Effects", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+            { "label": "Client", "value": "横瀬町", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260427" },
+            { "label": "Domain", "value": "Event", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
+            { "label": "Year", "value": "2024", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
+            { "label": "Disciplines", "value": "Highlight Video", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
+            { "label": "Toolkits", "value": "Camera & Gear / After Effects", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
           ]
         },
         { "type": "sectionTitle", "text": "OMOROID" },
@@ -687,11 +687,11 @@
         {
           "type": "sectionMeta",
           "items": [
-            { "label": "Client", "value": "株式会社NTTドコモ", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
-            { "label": "Domain", "value": "Web Media", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-            { "label": "Year", "value": "2023-2025", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-            { "label": "Disciplines", "value": "Creative Direction / Editorial Direction / Project Management", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-            { "label": "Toolkits", "value": "Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+            { "label": "Client", "value": "株式会社NTTドコモ", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260427" },
+            { "label": "Domain", "value": "Web Media", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
+            { "label": "Year", "value": "2023-2025", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
+            { "label": "Disciplines", "value": "Creative Direction / Editorial Direction / Project Management", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
+            { "label": "Toolkits", "value": "Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
           ]
         },
         { "type": "sectionTitle", "text": "ZABTON" },
@@ -700,12 +700,12 @@
         {
           "type": "sectionMeta",
           "items": [
-            { "label": "Domain", "value": "Mobile App", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-            { "label": "Prize", "value": "Tokyo Web3 Hackathon 2nd Prize", "icon": "https://assets.shuntofujii.com/icons/prize.svg" },
-            { "label": "Year", "value": "2022", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-            { "label": "Disciplines", "value": "UIUX Design / Product Video", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-            { "label": "Toolkits", "value": "Camera & Gear / XD / After Effects / DaVinci Resolve", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
-            { "label": "Team", "value": "Concept：Harry So / Development：Luka Fujiwara", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
+            { "label": "Domain", "value": "Mobile App", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
+            { "label": "Prize", "value": "Tokyo Web3 Hackathon 2nd Prize", "icon": "https://assets.shuntofujii.com/icons/prize.svg?v=20260427" },
+            { "label": "Year", "value": "2022", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
+            { "label": "Disciplines", "value": "UIUX Design / Product Video", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
+            { "label": "Toolkits", "value": "Camera & Gear / XD / After Effects / DaVinci Resolve", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" },
+            { "label": "Team", "value": "Concept：Harry So / Development：Luka Fujiwara", "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260427" }
           ]
         },
         { "type": "sectionTitle", "text": "FLAMMA" },
@@ -714,11 +714,11 @@
         {
           "type": "sectionMeta",
           "items": [
-            { "label": "Domain", "value": "Film Production", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-            { "label": "Year", "value": "2021", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-            { "label": "Disciplines", "value": "Art Direction / Music / Actor", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-            { "label": "Toolkits", "value": "Photoshop / After Effects / Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
-            { "label": "Team", "value": "Director & Producer：浅尾 尭洋 / Director of Photography：中川 裕基", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
+            { "label": "Domain", "value": "Film Production", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
+            { "label": "Year", "value": "2021", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
+            { "label": "Disciplines", "value": "Art Direction / Music / Actor", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
+            { "label": "Toolkits", "value": "Photoshop / After Effects / Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" },
+            { "label": "Team", "value": "Director & Producer：浅尾 尭洋 / Director of Photography：中川 裕基", "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260427" }
           ]
         },
         { "type": "sectionTitle", "text": "IVS" },
@@ -746,29 +746,29 @@
         {
           "type": "sectionMeta",
           "items": [
-            { "label": "Client", "value": "IVS株式会社", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
-            { "label": "Domain", "value": "Startup Conference", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-            { "label": "Year", "value": "2021-2023", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-            { "label": "Disciplines", "value": "Graphic Design / Crew", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-            { "label": "Toolkits", "value": "Photoshop / Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" }
+            { "label": "Client", "value": "IVS株式会社", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260427" },
+            { "label": "Domain", "value": "Startup Conference", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
+            { "label": "Year", "value": "2021-2023", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
+            { "label": "Disciplines", "value": "Graphic Design / Crew", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
+            { "label": "Toolkits", "value": "Photoshop / Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
           ]
         }
       ]
     },
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-09.webm"
+      "src": "https://assets.shuntofujii.com/top/video-09.webm?v=20260427"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-09.webp",
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-09.webp?v=20260427",
     "gallery": [
       {
         "type": "video",
-        "src": "https://assets.shuntofujii.com/others/placeholder-video.webm",
+        "src": "https://assets.shuntofujii.com/others/placeholder-video.webm?v=20260427",
         "caption": "メインモーション"
       },
       {
         "type": "image",
-        "src": "https://assets.shuntofujii.com/others/placeholder-image.jpg",
+        "src": "https://assets.shuntofujii.com/others/placeholder-image.jpg?v=20260427",
         "caption": "コンセプト"
       }
     ],

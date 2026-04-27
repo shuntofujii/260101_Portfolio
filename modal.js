@@ -6,10 +6,10 @@ import { appendExplicitModal, createCaseSection, createInitiativeCard } from './
 import { closeLightbox } from './lightbox.js';
 
 const DEFAULT_MODAL_META_ITEMS = [
-  { label: 'Domain', value: '$domain', icon: 'https://assets.shuntofujii.com/icons/domain.svg' },
-  { label: 'Year', value: '$year', icon: 'https://assets.shuntofujii.com/icons/year.svg' },
-  { label: 'Disciplines', value: '$disciplines', icon: 'https://assets.shuntofujii.com/icons/focus.svg' },
-  { label: 'Toolkits', value: '$toolkits', icon: 'https://assets.shuntofujii.com/icons/toolkits.svg' }
+  { label: 'Domain', value: '$domain', icon: 'https://assets.shuntofujii.com/icons/domain.svg?v=20260427' },
+  { label: 'Year', value: '$year', icon: 'https://assets.shuntofujii.com/icons/year.svg?v=20260427' },
+  { label: 'Disciplines', value: '$disciplines', icon: 'https://assets.shuntofujii.com/icons/focus.svg?v=20260427' },
+  { label: 'Toolkits', value: '$toolkits', icon: 'https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427' }
 ];
 
 function buildModalMetaItems(project) {
