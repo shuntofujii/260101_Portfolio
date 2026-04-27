@@ -4,7 +4,7 @@
 // エントリポイント（main）
 // ============================================
 import { state } from './state.js';
-import { setRefs, getRefs } from './domRefs.js';
+import { initializeAppRefs } from './appDomSetup.js';
 import {
   VIDEO_UPDATE_FADE_DELAY_MS,
   VIDEO_SHOW_FALLBACK_MS,
@@ -58,48 +58,7 @@ const PROJECT_SWIPE_MAX_Y = 72;
 const PROJECT_SWIPE_LOCK_Y = 14;
 const PROJECT_SWIPE_COMMIT_MS = 260;
 
-// DOM参照を取得し、refs に登録（他モジュールから getRefs() で参照）
-const portfolioTitle = document.getElementById('portfolioTitle');
-const contextPanel = document.getElementById('contextPanel');
-const focusVisual = document.getElementById('focusVisual');
-const heroVideoBase = document.getElementById('bgVideo');
-const bgLayer = document.getElementById('bgLayer');
-const titleBackground = document.getElementById('titleBackground');
-const titleText = document.getElementById('titleText');
-const guidanceText = document.getElementById('guidanceText');
-const projectNavigation = document.getElementById('projectNavigation');
-const modalOverlay = document.getElementById('modalOverlay');
-const modalContainer = document.querySelector('.modal-container');
-const modalClose = document.getElementById('modalClose');
-const modalContent = document.getElementById('modalContent');
-const lightboxOverlay = document.getElementById('lightboxOverlay');
-const lightboxImage = document.getElementById('lightboxImage');
-const lightboxVideo = document.getElementById('lightboxVideo');
-const lightboxClose = document.getElementById('lightboxClose');
-
-setRefs({
-  portfolioTitle,
-  contextPanel,
-  focusVisual,
-  heroVideoBase,
-  bgLayer,
-  titleBackground,
-  titleText,
-  guidanceText,
-  projectNavigation,
-  modalOverlay,
-  modalContainer,
-  modalClose,
-  modalContent,
-  lightboxOverlay,
-  lightboxImage,
-  lightboxVideo,
-  lightboxClose,
-  openLightbox,
-  openLightboxVideo
-});
-
-const refs = getRefs();
+const refs = initializeAppRefs({ openLightbox, openLightboxVideo });
 
 const modalRoutingController = createModalRoutingController({
   state,

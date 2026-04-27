@@ -1,59 +1,13 @@
 // メディア（画像・動画グリッド、施策カード、動画プレイヤー）
 import { state } from './state.js';
 import { getRefs } from './domRefs.js';
-import { baseAssetsUrl, BREAKPOINT_MOBILE_PX } from './constants.js';
+import { BREAKPOINT_MOBILE_PX } from './constants.js';
 import { attachVideoElement } from './videoCache.js';
+import { buildImageUrl, buildVideoUrl, getImageGridLayout, getLayoutSpan } from './mediaLayout.js';
+export { buildVideoUrl } from './mediaLayout.js';
 
 function isMobileViewport() {
   return window.matchMedia(`(max-width: ${BREAKPOINT_MOBILE_PX}px)`).matches;
-}
-
-// 統一命名規則: {prefix}_{mediaType}_{number}.{ext}
-function buildAssetPrefix(initiativeName, caseName = null) {
-  return caseName ? `${initiativeName}_${caseName}` : initiativeName;
-}
-
-function buildImageUrl(projectSlug, initiativeName, caseName = null, number = 1) {
-  const prefix = buildAssetPrefix(initiativeName, caseName);
-  return `${baseAssetsUrl}/${projectSlug}/${prefix}_p_${number}.webp`;
-}
-
-export function buildVideoUrl(projectSlug, initiativeName, caseName = null, number = 1) {
-  const prefix = buildAssetPrefix(initiativeName, caseName);
-  return `${baseAssetsUrl}/${projectSlug}/${prefix}_m_${number}.webm`;
-}
-
-function getImageGridLayout(count, isMobile = null) {
-  if (isMobile === null) isMobile = isMobileViewport();
-  if (isMobile) {
-    switch (count) {
-      case 2: return { columns: 2, spans: [] };
-      case 3: return { columns: 2, spans: [{ index: 2, span: 2 }] };
-      case 4: return { columns: 2, spans: [] };
-      case 5: return { columns: 2, spans: [{ index: 4, span: 2 }] };
-      default: return { columns: 1, spans: [] };
-    }
-  } else {
-    switch (count) {
-      case 2: return { columns: 2, spans: [] };
-      case 3: return { columns: 3, spans: [] };
-      case 4: return { columns: 2, spans: [] };
-      case 5:
-        return {
-          columns: 6,
-          spans: [
-            { index: 0, span: 2 }, { index: 1, span: 2 }, { index: 2, span: 2 },
-            { index: 3, span: 3 }, { index: 4, span: 3 }
-          ]
-        };
-      default: return { columns: 1, spans: [] };
-    }
-  }
-}
-
-function getLayoutSpan(layout, index) {
-  if (!layout || !Array.isArray(layout.spans)) return null;
-  return layout.spans.find((s) => s.index === index) || null;
 }
 
 function equalizeMediaGridRowHeights(grid) {

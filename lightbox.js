@@ -4,6 +4,12 @@ import { getRefs } from './domRefs.js';
 import { createFocusTrap } from './utils.js';
 import { LIGHTBOX_CLOSE_DURATION_MS, LIGHTBOX_VIDEO_PLAY_DELAY_MS } from './constants.js';
 import { ensureVideoPlayUrl } from './videoCache.js';
+import {
+  clearElementInlineBoxStyles,
+  setOriginRectFromElement,
+  getLightboxSequenceElements,
+  currentLightboxMediaElement
+} from './lightboxShared.js';
 
 const LIGHTBOX_SWIPE_MIN_X = 48;
 const LIGHTBOX_SWIPE_MAX_Y = 64;
@@ -25,50 +31,6 @@ let lightboxSwipePreviewEl = null;
 let lightboxSwipePreviewDirection = 0;
 let lightboxSwipePreviewTargetEl = null;
 let lightboxClickNavigateQueued = false;
-
-function clearElementInlineBoxStyles(el) {
-  if (!el) return;
-  el.style.position = '';
-  el.style.left = '';
-  el.style.top = '';
-  el.style.width = '';
-  el.style.height = '';
-  el.style.transform = '';
-  el.style.transformOrigin = '';
-  el.style.transition = '';
-  el.style.objectFit = '';
-}
-
-function setOriginRectFromElement(originElement) {
-  if (!originElement) {
-    state.lightboxOriginRect = null;
-    return;
-  }
-  const rect = originElement.getBoundingClientRect();
-  state.lightboxOriginRect = {
-    x: rect.left + rect.width / 2,
-    y: rect.top + rect.height / 2,
-    width: rect.width,
-    height: rect.height
-  };
-}
-
-function getLightboxSequenceElements() {
-  const refs = getRefs();
-  if (!refs.modalContent) return [];
-  return Array.from(refs.modalContent.querySelectorAll('.mediaItem, .video-shell'));
-}
-
-function currentLightboxMediaElement() {
-  const refs = getRefs();
-  if (state.lightboxType === 'video' && refs.lightboxVideo && refs.lightboxVideo.style.display !== 'none') {
-    return refs.lightboxVideo;
-  }
-  if (refs.lightboxImage && refs.lightboxImage.style.display !== 'none') {
-    return refs.lightboxImage;
-  }
-  return null;
-}
 
 function clearLightboxSwipePreview() {
   if (lightboxSwipePreviewEl) {
