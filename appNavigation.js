@@ -8,7 +8,7 @@ function createThumbnail(project, index, options) {
   const thumbnail = document.createElement('img');
   thumbnail.className = 'project-thumbnail';
   thumbnail.src = project.thumbnail || `${baseAssetsUrl}/top/placeholder-image.jpg`;
-  thumbnail.alt = project.title;
+  thumbnail.alt = '';
   thumbnail.width = projectThumbnailSizePx;
   thumbnail.height = projectThumbnailSizePx;
   thumbnail.decoding = 'async';
@@ -38,11 +38,19 @@ function teardownInfiniteScroll(projectNavigationEl) {
   projectNavigationEl.__projectNavigationCleanup = null;
 }
 
+function teardownNavDelegation(projectNavigationEl) {
+  const fn = projectNavigationEl.__navDelegationCleanup;
+  if (typeof fn === 'function') {
+    fn();
+  }
+  projectNavigationEl.__navDelegationCleanup = null;
+}
+
 function recenterLoopPosition(projectNavigationEl, singleSegmentWidth) {
   if (!singleSegmentWidth) return;
   const viewportWidth = projectNavigationEl.clientWidth || 0;
-  const centerAlignedOffset = (singleSegmentWidth - viewportWidth) / 2;
-  projectNavigationEl.scrollLeft = singleSegmentWidth + Math.max(0, centerAlignedOffset);
+  const centerAlignedOffset = Math.max(0, (singleSegmentWidth - viewportWidth) / 2);
+  projectNavigationEl.scrollLeft = Math.round(singleSegmentWidth + centerAlignedOffset);
 }
 
 function bindInfiniteHorizontalScroll(projectNavigationEl, projectCount) {
@@ -62,14 +70,14 @@ function bindInfiniteHorizontalScroll(projectNavigationEl, projectCount) {
 
     if (currentScrollLeft < lowerBound) {
       isRecentering = true;
-      projectNavigationEl.scrollLeft = currentScrollLeft + singleSegmentWidth;
+      projectNavigationEl.scrollLeft = Math.round(currentScrollLeft + singleSegmentWidth);
       isRecentering = false;
       return;
     }
 
     if (currentScrollLeft > upperBound) {
       isRecentering = true;
-      projectNavigationEl.scrollLeft = currentScrollLeft - singleSegmentWidth;
+      projectNavigationEl.scrollLeft = Math.round(currentScrollLeft - singleSegmentWidth);
       isRecentering = false;
     }
   };
@@ -111,10 +119,12 @@ function shouldEnableInfiniteLoop(projectNavigationEl, projectCount) {
 function appendProjectItems(projectNavigationEl, projects, options, passCount) {
   for (let pass = 0; pass < passCount; pass += 1) {
     projects.forEach((project, index) => {
-      const item = document.createElement('div');
+      const item = document.createElement('button');
+      item.type = 'button';
       item.className = 'project-item';
       item.dataset.projectId = project.id;
-      item.dataset.projectIndex = index;
+      item.dataset.projectIndex = String(index);
+      item.setAttribute('aria-label', `${project.title} の詳細を開く`);
 
       const thumbnail = createThumbnail(project, index, options);
       item.appendChild(thumbnail);
@@ -130,22 +140,51 @@ function setupProjectItemListeners(projectNavigationEl, projects, handlers) {
     onTouchStart,
     onClick
   } = handlers;
-  const projectItems = projectNavigationEl.querySelectorAll('.project-item');
 
-  projectItems.forEach((item) => {
+  teardownNavDelegation(projectNavigationEl);
+
+  const onNavClickCapture = (e) => {
+    const item = e.target.closest('.project-item');
+    if (!item || !projectNavigationEl.contains(item)) return;
+    const projectIndex = parseInt(item.dataset.projectIndex, 10);
+    if (Number.isNaN(projectIndex)) return;
+    const project = projects[projectIndex];
+    if (!project) return;
+    e.stopPropagation();
+    onClick(project, item);
+  };
+
+  const onNavTouchStartCapture = (e) => {
+    const item = e.target.closest('.project-item');
+    if (!item || !projectNavigationEl.contains(item)) return;
+    const projectIndex = parseInt(item.dataset.projectIndex, 10);
+    if (Number.isNaN(projectIndex)) return;
+    const project = projects[projectIndex];
+    if (!project) return;
+    onTouchStart(project, item);
+  };
+
+  projectNavigationEl.addEventListener('click', onNavClickCapture, true);
+  projectNavigationEl.addEventListener('touchstart', onNavTouchStartCapture, { capture: true, passive: true });
+
+  projectNavigationEl.__navDelegationCleanup = () => {
+    projectNavigationEl.removeEventListener('click', onNavClickCapture, true);
+    projectNavigationEl.removeEventListener('touchstart', onNavTouchStartCapture, true);
+  };
+
+  projectNavigationEl.querySelectorAll('.project-item').forEach((item) => {
     const projectIndex = parseInt(item.dataset.projectIndex, 10);
     const project = projects[projectIndex];
     if (!project) return;
 
     item.addEventListener('mouseenter', () => onMouseEnter(project, item));
     item.addEventListener('mouseleave', () => onMouseLeave());
-    item.addEventListener('touchstart', () => onTouchStart(project, item), { passive: true });
-    item.addEventListener('click', () => onClick(project, item));
   });
 }
 
 export function renderProjectNavigation(projectNavigationEl, projects, options) {
   const { handlers } = options;
+  teardownNavDelegation(projectNavigationEl);
   teardownInfiniteScroll(projectNavigationEl);
   projectNavigationEl.innerHTML = '';
   projectNavigationEl.classList.remove('is-infinite-loop');

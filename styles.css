@@ -57,6 +57,8 @@
   --z-panels: 140;
   --z-title-bg: 200;
   --z-portfolio-title: 250;
+  /* 装飾レイヤーより上で確実にクリックを拾う（カーソルcanvas・ノイズ・パネルより上） */
+  --z-project-navigation: 380;
   --z-modal-overlay: 1000;
   --z-modal-close: 1001;
   --z-lightbox-overlay: 2000;
@@ -206,6 +208,11 @@ body {
 
 .context-panel.visible {
   opacity: 1;
+  /* パネル全体を auto にすると固定配置の透明領域がサムネイル列までクリックを奪うことがある */
+  pointer-events: none;
+}
+
+.context-panel.visible .context-content {
   pointer-events: auto;
 }
 
@@ -356,6 +363,7 @@ body.modal-open .context-panel {
   overflow: hidden;
   transition: opacity var(--transition-video);
   contain: layout paint;
+  pointer-events: none;
 }
 
 .focus-visual.modal-background {
@@ -591,7 +599,7 @@ body.modal-open .context-panel {
   bottom: calc(8px + var(--safe-bottom));
   left: 50%;
   transform: translateX(-50%);
-  z-index: var(--z-panels);
+  z-index: var(--z-project-navigation);
   display: flex;
   gap: 1.5rem;
   /* 広がるネオンリングが切れないよう上下左右に余裕を持たせる + Safe Area */
@@ -608,6 +616,8 @@ body.modal-open .context-panel {
   -ms-overflow-style: none;
   transition: opacity var(--transition-medium), transform var(--transition-medium);
   -webkit-overflow-scrolling: touch;
+  /* 親へのスクロール連鎖を抑え、端での縦バウンス・ページ混入を防ぐ */
+  overscroll-behavior: contain;
 }
 
 .project-navigation.modal-background {
@@ -625,11 +635,16 @@ body.modal-open .context-panel {
   transition-delay: 0ms;
 }
 
-.project-navigation.is-infinite-loop {
-  overscroll-behavior-x: contain;
-  /* 横スクロールの端で縦方向のバウンドやページ連鎖が起きにくくする */
-  overscroll-behavior-y: none;
-  touch-action: pan-x;
+/* touch-action は当たり判定要素ごとに効く。.project-item が manipulation のままだと
+   横ドラッグでも縦パンが成立し端でガタつくため、無限ループ時は SP のみ横パンに固定 */
+@media (max-width: 768px) {
+  .project-navigation.is-infinite-loop {
+    touch-action: pan-x;
+  }
+
+  .project-navigation.is-infinite-loop .project-item {
+    touch-action: pan-x;
+  }
 }
 
 /* 無限ループ時、プレビュー強調で item の margin が増えると scrollWidth が変わり、
@@ -657,7 +672,10 @@ body.modal-open .project-navigation {
   display: none;
 }
 
+/* button.project-item — クリック／タップをブラウザ標準で通す（横スクロール内の div より確実） */
 .project-item {
+  appearance: none;
+  -webkit-appearance: none;
   position: relative;
   width: 90px;
   height: 90px;
@@ -669,6 +687,10 @@ body.modal-open .project-navigation {
   border: none;
   box-sizing: border-box;
   margin: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -1803,18 +1825,6 @@ body.modal-open .modal-overlay {
     height: 75px;
     min-width: 75px;
     min-height: 75px;
-  }
-
-  /*
-   * 無限スクロールでは margin を 0 にしており、PC のプレビュー時の「左右が少し広がる」感が SP で弱い。
-   * transform はレイアウト幅（scrollWidth）に影響しないので、プレビュー左右のサムネだけわずかに外へ寄せる。
-   */
-  .project-navigation.is-infinite-loop .project-item:not(.thumbnail-preview-active):not(.selected):has(+ .project-item.thumbnail-preview-active:not(.selected)) {
-    transform: translateX(-4px);
-  }
-
-  .project-navigation.is-infinite-loop .project-item.thumbnail-preview-active:not(.selected) + .project-item:not(.selected) {
-    transform: translateX(4px);
   }
 
   .modal-container {

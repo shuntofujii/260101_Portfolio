@@ -30,7 +30,9 @@ export function createModalRoutingController(deps) {
 
   function findProjectItemElement(projectId) {
     if (!projectId) return null;
-    return document.querySelector(`[data-project-id="${projectId}"]`);
+    const id = String(projectId);
+    const safe = typeof CSS !== 'undefined' && typeof CSS.escape === 'function' ? CSS.escape(id) : id.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    return document.querySelector(`[data-project-id="${safe}"]`);
   }
 
   function applyModalProjectSideEffects(project) {
@@ -58,9 +60,14 @@ export function createModalRoutingController(deps) {
     applyModalProjectSideEffects(project);
   }
 
-  function openProjectModalFromRoute(project) {
+  function openProjectModalFromRoute(project, triggerItemEl = null) {
     if (!project) return;
-    const item = findProjectItemElement(project.id);
+    const item =
+      triggerItemEl &&
+      triggerItemEl.isConnected &&
+      triggerItemEl.dataset?.projectId === project.id
+        ? triggerItemEl
+        : findProjectItemElement(project.id);
     if (!item) return;
     state.currentState = 'modal';
     state.selectedProject = project;

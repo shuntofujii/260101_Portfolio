@@ -121,9 +121,9 @@ export function createProjectInteractionController(deps) {
     }
   }
 
-  function handleProjectClick(project) {
+  function handleProjectClick(project, triggerItemEl) {
     clearHoverLeaveTimer();
-    openProjectModalFromRoute(project);
+    openProjectModalFromRoute(project, triggerItemEl ?? null);
   }
 
   return {

@@ -57,9 +57,11 @@ export function bindGlobalEventListeners(refs, handlers) {
 
   addListener(refs.portfolioTitle, 'click', onPortfolioTitleClick);
 
-  if (refs.focusVisual) {
-    addListener(refs.focusVisual, 'touchstart', onFocusVisualTouchStart, { passive: true });
-  }
+  /*
+   * #focusVisual は pointer-events: none のため、ここでは document で拾う。
+   * shouldResetFromFocusVisualTouch が .project-item を除外する。
+   */
+  addListener(document, 'touchstart', onFocusVisualTouchStart, { passive: true });
 
   return () => {
     while (removeListeners.length > 0) {

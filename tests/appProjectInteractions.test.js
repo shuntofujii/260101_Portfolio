@@ -118,6 +118,6 @@ describe('appProjectInteractions', () => {
     controller.handleProjectClick(project);
 
     expect(clearHoverLeaveTimer).toHaveBeenCalled();
-    expect(openProjectModalFromRoute).toHaveBeenCalledWith(project);
+    expect(openProjectModalFromRoute).toHaveBeenCalledWith(project, null);
   });
 });

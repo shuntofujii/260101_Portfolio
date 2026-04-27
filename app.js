@@ -88,8 +88,8 @@ function applyInitialRoute() {
   modalRoutingController.applyInitialRoute();
 }
 
-function openProjectModalFromRoute(project) {
-  modalRoutingController.openProjectModalFromRoute(project);
+function openProjectModalFromRoute(project, triggerItemEl) {
+  modalRoutingController.openProjectModalFromRoute(project, triggerItemEl);
 }
 
 function updateModalProjectInPlace(project, options = {}) {
