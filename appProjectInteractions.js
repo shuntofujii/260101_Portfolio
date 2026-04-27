@@ -1,20 +1,18 @@
 import { THUMB_TAP_MOVE_MAX_PX, THUMB_TAP_MAX_DURATION_MS } from './constants.js';
 
-let touchPreviewSession = null;
+let thumbTouchTracking = null;
 
-/** 指・ペンのジェスチャ終了後にブラウザが送る合成 click を無視する（1 回分） */
-const suppressNextThumbClick = new WeakMap();
-
-/** ナビ再描画などでポインター追跡だけ残さないために外部からも呼ぶ */
+/** ナビ再描画時など、window に付けたリスナだけ外す */
 export function clearProjectTouchPreviewTracking() {
-  if (!touchPreviewSession) return;
-  if (touchPreviewSession.move) {
-    window.removeEventListener('pointermove', touchPreviewSession.move);
-  }
-  window.removeEventListener('pointerup', touchPreviewSession.up);
-  window.removeEventListener('pointercancel', touchPreviewSession.up);
-  touchPreviewSession = null;
+  if (!thumbTouchTracking) return;
+  window.removeEventListener('pointermove', thumbTouchTracking.move);
+  window.removeEventListener('pointerup', thumbTouchTracking.up);
+  window.removeEventListener('pointercancel', thumbTouchTracking.up);
+  thumbTouchTracking = null;
 }
+
+/** タッチ終了後の合成 click を 1 回だけ無視する（対象サムネ要素） */
+const suppressSyntheticClickForThumb = new WeakMap();
 
 export function createProjectInteractionController(deps) {
   const {
@@ -35,6 +33,13 @@ export function createProjectInteractionController(deps) {
 
   function shouldProcessProjectPointerInteraction() {
     return state.currentState !== 'modal';
+  }
+
+  function projectFromNavItemEl(itemEl) {
+    const idx = parseInt(itemEl.dataset.projectIndex, 10);
+    const list = state.projects;
+    if (!Array.isArray(list) || Number.isNaN(idx) || idx < 0 || idx >= list.length) return null;
+    return list[idx];
   }
 
   function updateContextPanel(project) {
@@ -122,8 +127,11 @@ export function createProjectInteractionController(deps) {
   }
 
   /**
-   * 指・ペン: 押している間ヒーローを再生し、離すときに「タップ」ならモーダルのみ開く。
-   * PC のマウスは mouseenter / click のみ。
+   * タッチ／ペンのみ。
+   * MECE:
+   * - いずれのサムネ上にも指がない → 動画なし（leave）
+   * - サムネ上にあり、かつ「モーダル用タップ」ではない間 → そのサムネの動画（hover）
+   * - 「タップ」（短時間・小移動）→ モーダル（pointerdown 開始サムネの案件）。動画との排他はタップ判定で分ける。
    */
   function handleProjectItemPointerDown(project, item, event) {
     if (!shouldProcessProjectPointerInteraction()) return;
@@ -131,36 +139,55 @@ export function createProjectInteractionController(deps) {
 
     clearProjectTouchPreviewTracking();
 
+    const nav = refs.projectNavigation;
+    const pointerId = event.pointerId;
     const startX = event.clientX;
     const startY = event.clientY;
-    const pointerId = event.pointerId;
     const t0 = performance.now();
+    /** モーダル判定は「どのサムネで押し始めたか」のみを使う */
+    const modalProject = project;
+    const modalSuppressEl = item;
+
+    const syncHoverUnderFinger = (ev) => {
+      if (ev.pointerId !== pointerId) return;
+      if (!nav) return;
+      const hit = document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.('.project-item');
+      if (!hit || !nav.contains(hit)) {
+        handleProjectLeave();
+        return;
+      }
+      const p = projectFromNavItemEl(hit);
+      if (!p) return;
+      if (state.hoveredProject?.id === p.id) return;
+      handleProjectHover(p, hit);
+    };
 
     const finish = (ev) => {
       if (ev.pointerId !== pointerId) return;
       clearProjectTouchPreviewTracking();
 
-      suppressNextThumbClick.set(item, true);
+      suppressSyntheticClickForThumb.set(modalSuppressEl, true);
 
       const dx = ev.clientX - startX;
       const dy = ev.clientY - startY;
       const elapsed = performance.now() - t0;
       const cancelled = ev.type === 'pointercancel';
       const distSq = dx * dx + dy * dy;
-      const isTap =
+      const opensModal =
         !cancelled &&
         distSq <= tapMoveSq &&
         elapsed <= THUMB_TAP_MAX_DURATION_MS;
 
-      if (isTap) {
+      if (opensModal) {
         clearHoverLeaveTimer();
-        openProjectModalFromRoute(project);
+        openProjectModalFromRoute(modalProject);
       } else {
         handleProjectLeave();
       }
     };
 
-    touchPreviewSession = { move: null, up: finish };
+    thumbTouchTracking = { move: syncHoverUnderFinger, up: finish };
+    window.addEventListener('pointermove', syncHoverUnderFinger, { passive: true });
     window.addEventListener('pointerup', finish, { passive: true });
     window.addEventListener('pointercancel', finish, { passive: true });
 
@@ -168,10 +195,10 @@ export function createProjectInteractionController(deps) {
   }
 
   function handleProjectItemClick(project, item, event) {
-    if (suppressNextThumbClick.has(item)) {
-      suppressNextThumbClick.delete(item);
-      if (event && typeof event.preventDefault === 'function') event.preventDefault();
-      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+    if (suppressSyntheticClickForThumb.has(item)) {
+      suppressSyntheticClickForThumb.delete(item);
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
       return;
     }
     clearHoverLeaveTimer();
