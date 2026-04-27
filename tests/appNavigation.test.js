@@ -1,0 +1,74 @@
+import { describe, expect, it, vi } from 'vitest';
+import { renderProjectNavigation } from '../appNavigation.js';
+
+function createProjects() {
+  return [
+    { id: 'p1', title: 'Project 1', thumbnail: '/p1.jpg' },
+    { id: 'p2', title: 'Project 2', thumbnail: '/p2.jpg' },
+    { id: 'p3', title: 'Project 3', thumbnail: '/p3.jpg' }
+  ];
+}
+
+function createHandlers() {
+  return {
+    onMouseEnter: vi.fn(),
+    onMouseLeave: vi.fn(),
+    onTouchStart: vi.fn(),
+    onClick: vi.fn()
+  };
+}
+
+describe('renderProjectNavigation', () => {
+  it('複数案件時は3セグメント描画で無限スクロールを初期化する', () => {
+    const nav = document.createElement('nav');
+    const projects = createProjects();
+    Object.defineProperty(nav, 'scrollWidth', {
+      configurable: true,
+      get: () => 900
+    });
+    Object.defineProperty(nav, 'clientWidth', {
+      configurable: true,
+      get: () => 150
+    });
+
+    renderProjectNavigation(nav, projects, {
+      baseAssetsUrl: '',
+      projectThumbnailSizePx: 90,
+      thumbnailFetchPriorityCount: 2,
+      handlers: createHandlers()
+    });
+
+    const items = nav.querySelectorAll('.project-item');
+    expect(items.length).toBe(projects.length * 3);
+    expect(nav.classList.contains('is-infinite-loop')).toBe(true);
+    expect(nav.scrollLeft).toBe(375);
+  });
+
+  it('端へ寄ったスクロール時に中央セグメントへ戻す', () => {
+    const nav = document.createElement('nav');
+    const projects = createProjects();
+    Object.defineProperty(nav, 'scrollWidth', {
+      configurable: true,
+      get: () => 900
+    });
+    Object.defineProperty(nav, 'clientWidth', {
+      configurable: true,
+      get: () => 150
+    });
+
+    renderProjectNavigation(nav, projects, {
+      baseAssetsUrl: '',
+      projectThumbnailSizePx: 90,
+      thumbnailFetchPriorityCount: 2,
+      handlers: createHandlers()
+    });
+
+    nav.scrollLeft = 10;
+    nav.dispatchEvent(new Event('scroll'));
+    expect(nav.scrollLeft).toBe(310);
+
+    nav.scrollLeft = 490;
+    nav.dispatchEvent(new Event('scroll'));
+    expect(nav.scrollLeft).toBe(190);
+  });
+});

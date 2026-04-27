@@ -26,6 +26,83 @@ function createThumbnail(project, index, options) {
   return thumbnail;
 }
 
+const LOOP_SEGMENT_COUNT = 3;
+const LOOP_RECENTER_LOW_BOUND = 0.5;
+const LOOP_RECENTER_HIGH_BOUND = 1.5;
+
+function teardownInfiniteScroll(projectNavigationEl) {
+  const cleanup = projectNavigationEl.__projectNavigationCleanup;
+  if (typeof cleanup === 'function') {
+    cleanup();
+  }
+  projectNavigationEl.__projectNavigationCleanup = null;
+}
+
+function recenterLoopPosition(projectNavigationEl, singleSegmentWidth) {
+  if (!singleSegmentWidth) return;
+  const viewportWidth = projectNavigationEl.clientWidth || 0;
+  const centerAlignedOffset = (singleSegmentWidth - viewportWidth) / 2;
+  projectNavigationEl.scrollLeft = singleSegmentWidth + Math.max(0, centerAlignedOffset);
+}
+
+function bindInfiniteHorizontalScroll(projectNavigationEl, projectCount) {
+  teardownInfiniteScroll(projectNavigationEl);
+
+  if (projectCount < 2) return;
+
+  let isRecentering = false;
+  let recenterRafId = null;
+  const getSingleSegmentWidth = () => projectNavigationEl.scrollWidth / LOOP_SEGMENT_COUNT;
+
+  const applyRecentering = () => {
+    const singleSegmentWidth = getSingleSegmentWidth();
+    const lowerBound = singleSegmentWidth * LOOP_RECENTER_LOW_BOUND;
+    const upperBound = singleSegmentWidth * LOOP_RECENTER_HIGH_BOUND;
+    const currentScrollLeft = projectNavigationEl.scrollLeft;
+
+    if (currentScrollLeft < lowerBound) {
+      isRecentering = true;
+      projectNavigationEl.scrollLeft = currentScrollLeft + singleSegmentWidth;
+      isRecentering = false;
+      return;
+    }
+
+    if (currentScrollLeft > upperBound) {
+      isRecentering = true;
+      projectNavigationEl.scrollLeft = currentScrollLeft - singleSegmentWidth;
+      isRecentering = false;
+    }
+  };
+
+  const handleScroll = () => {
+    if (isRecentering) return;
+    applyRecentering();
+  };
+
+  const handleResize = () => {
+    if (recenterRafId !== null) {
+      cancelAnimationFrame(recenterRafId);
+    }
+    recenterRafId = requestAnimationFrame(() => {
+      recenterRafId = null;
+      recenterLoopPosition(projectNavigationEl, getSingleSegmentWidth());
+    });
+  };
+
+  projectNavigationEl.addEventListener('scroll', handleScroll, { passive: true });
+  window.addEventListener('resize', handleResize);
+  recenterLoopPosition(projectNavigationEl, getSingleSegmentWidth());
+
+  projectNavigationEl.__projectNavigationCleanup = () => {
+    projectNavigationEl.removeEventListener('scroll', handleScroll);
+    window.removeEventListener('resize', handleResize);
+    if (recenterRafId !== null) {
+      cancelAnimationFrame(recenterRafId);
+      recenterRafId = null;
+    }
+  };
+}
+
 function setupProjectItemListeners(projectNavigationEl, projects, handlers) {
   const {
     onMouseEnter,
@@ -49,18 +126,30 @@ function setupProjectItemListeners(projectNavigationEl, projects, handlers) {
 
 export function renderProjectNavigation(projectNavigationEl, projects, options) {
   const { handlers } = options;
+  teardownInfiniteScroll(projectNavigationEl);
   projectNavigationEl.innerHTML = '';
+  projectNavigationEl.classList.remove('is-infinite-loop');
 
-  projects.forEach((project, index) => {
-    const item = document.createElement('div');
-    item.className = 'project-item';
-    item.dataset.projectId = project.id;
-    item.dataset.projectIndex = index;
+  const shouldEnableInfiniteLoop = projects.length >= 2;
+  const renderPassCount = shouldEnableInfiniteLoop ? LOOP_SEGMENT_COUNT : 1;
 
-    const thumbnail = createThumbnail(project, index, options);
-    item.appendChild(thumbnail);
-    projectNavigationEl.appendChild(item);
-  });
+  for (let pass = 0; pass < renderPassCount; pass += 1) {
+    projects.forEach((project, index) => {
+      const item = document.createElement('div');
+      item.className = 'project-item';
+      item.dataset.projectId = project.id;
+      item.dataset.projectIndex = index;
+
+      const thumbnail = createThumbnail(project, index, options);
+      item.appendChild(thumbnail);
+      projectNavigationEl.appendChild(item);
+    });
+  }
 
   setupProjectItemListeners(projectNavigationEl, projects, handlers);
+
+  if (shouldEnableInfiniteLoop) {
+    projectNavigationEl.classList.add('is-infinite-loop');
+    bindInfiniteHorizontalScroll(projectNavigationEl, projects.length);
+  }
 }

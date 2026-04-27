@@ -28,6 +28,7 @@
   --modal-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --modal-dur: 420ms;
   --push-dur: 360ms;
+  --transition-theme-color: 1s ease-in-out;
 
   /* 画像グリッド */
   --img-gap-pc: 12px;
@@ -64,9 +65,12 @@
 
 /* テーマカラーの移り変わりを滑らかに（アクセントカラーを使用する要素に適用） */
 .modal-tagline,
-.modal-close:hover,
 .lightbox-close:hover {
-  transition: color 1s ease-in-out, background-color 1s ease-in-out, border-color 1s ease-in-out, box-shadow 1s ease-in-out;
+  transition:
+    color var(--transition-theme-color),
+    background-color var(--transition-theme-color),
+    border-color var(--transition-theme-color),
+    box-shadow var(--transition-theme-color);
 }
 
 /* サムネイルhover時の囲い・リングは、カーソル軌跡と同じタイミングで色が変化するように transition を短く */
@@ -121,6 +125,21 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* サイト全体: 選択線・文字選択・タップハイライトを無効化 */
+*,
+*::before,
+*::after {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+*:focus,
+*:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 body {
@@ -601,6 +620,10 @@ body.modal-open .context-panel {
   transition-delay: 0ms;
 }
 
+.project-navigation.is-infinite-loop {
+  overscroll-behavior-x: contain;
+}
+
 body.modal-open .project-navigation {
   transform: translateX(-50%) translateY(60px) !important;
   opacity: 0 !important;
@@ -947,14 +970,21 @@ body.modal-open .modal-overlay {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
   touch-action: manipulation;
 }
 
 .modal-close:hover {
   background: var(--accent-color);
   color: var(--bg-gradient-start);
-  transform: rotate(90deg);
+  border-color: color-mix(in srgb, var(--accent-color) 60%, white 40%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 6px 18px rgba(0, 0, 0, 0.32);
+  transform: scale(1.04);
 }
 
 .modal-content {
