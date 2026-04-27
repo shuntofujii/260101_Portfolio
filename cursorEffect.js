@@ -342,7 +342,6 @@ function createCustomCursorEffect(THREE, initialColor) {
     const curveLerpNow = pointerOverThumb ? config.curveLerpOnThumbnail : config.curveLerp;
 
     if (isMouseActive) {
-      sleepModeStartTime = null;
       if (pointerOverThumb) {
         // サムネ上: 追従しない（mouse / curvePoints は更新しない）
       } else if (wasPointerOverThumb) {

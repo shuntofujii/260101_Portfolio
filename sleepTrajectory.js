@@ -2,7 +2,8 @@
  * スリープ時の背景軌跡
  * 位置: x = R(tR) cos(θ), y = R(tR) sin(θ)
  * - θ は一定角速度で単調に増加
- * - tR は 0 → Rmax → 0 → … を、上昇と同じレートで下降して繰り返す
+ * - tR は 0 → Rmax → 0 → … を繰り返す
+ * - 上昇/下降の速度にランダム倍率を掛ける（平均倍率は 1.0）
  */
 
 /**
@@ -29,7 +30,10 @@ export function trajectoryR(t) {
  *   trajectoryQuietHoldSec: number,
  *   trajectoryNoiseQuietRate: number,
  *   trajectoryAngularRate: number,
- *   trajectoryChaosRate: number
+ *   trajectoryChaosRate: number,
+ *   trajectorySpeedRandomMin: number,
+ *   trajectorySpeedRandomMax: number,
+ *   trajectorySpeedRandomHz: number
  * }} config
  * @returns {{ theta: number, tForR: number }}
  */
@@ -41,15 +45,21 @@ export function sleepTrajectoryParams(elapsedSec, config) {
     trajectoryQuietHoldSec,
     trajectoryNoiseQuietRate,
     trajectoryAngularRate,
-    trajectoryChaosRate
+    trajectoryChaosRate,
+    trajectorySpeedRandomMin,
+    trajectorySpeedRandomMax,
+    trajectorySpeedRandomHz
   } = config;
 
   const e = Math.max(0, elapsedSec);
   const theta = trajectoryThetaMin + e * trajectoryAngularRate;
+  const randomHz = Math.max(0.001, trajectorySpeedRandomHz);
+  const noise = smoothValueNoise(e * randomHz, 7.123);
+  const randomRateScale = lerp(trajectorySpeedRandomMin, trajectorySpeedRandomMax, noise);
 
   const hold = trajectoryQuietHoldSec;
-  const q = trajectoryNoiseQuietRate;
-  const c = trajectoryChaosRate;
+  const q = trajectoryNoiseQuietRate * randomRateScale;
+  const c = trajectoryChaosRate * randomRateScale;
   const rMin = trajectoryRMin;
   const rMax = trajectoryRMax;
 
@@ -82,4 +92,27 @@ export function sleepTrajectoryParams(elapsedSec, config) {
   }
 
   return { theta, tForR };
+}
+
+function hash01(n) {
+  const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function smoothStep01(t) {
+  const clamped = Math.min(1, Math.max(0, t));
+  return clamped * clamped * (3 - 2 * clamped);
+}
+
+function smoothValueNoise(x, seed) {
+  const i0 = Math.floor(x);
+  const i1 = i0 + 1;
+  const frac = x - i0;
+  const v0 = hash01(i0 + seed);
+  const v1 = hash01(i1 + seed);
+  return lerp(v0, v1, smoothStep01(frac));
 }
