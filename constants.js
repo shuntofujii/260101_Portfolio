@@ -21,9 +21,9 @@ export const CURSOR_CONFIG = {
   radius2: 5,
   /** 角 θ の初期位相（x = R cos θ の θ 開始値） */
   trajectoryThetaMin: 1,
-  /** R(t) に渡す t：0 ↔ 300 を同じレートで往復 */
+  /** R(t) に渡す t：0 ↔ 50 を同じレートで往復 */
   trajectoryRMin: 0,
-  trajectoryRMax: 300,
+  trajectoryRMax: 50,
   /** この秒数までは R 用 t のみ極めて緩やか（見た目は長く真円に近い） */
   trajectoryQuietHoldSec: 9,
   /** ホールド中の R 用 t の増加速度（秒あたり・小さいほど真円が長持ち） */
@@ -33,8 +33,8 @@ export const CURSOR_CONFIG = {
   /** ホールド後の R 用 t の増加速度（ノイズが大きくなる） */
   trajectoryChaosRate: 1.15,
   /** 上昇・下降速度のランダム倍率レンジ（平均は 1.0） */
-  trajectorySpeedRandomMin: 1,
-  trajectorySpeedRandomMax: 1.5,
+  trajectorySpeedRandomMin: 0.75,
+  trajectorySpeedRandomMax: 1.25,
   /** ランダム速度ノイズの更新頻度（Hz）。小さいほどなだらか */
   trajectorySpeedRandomHz: 0.18,
   /** .project-item の矩形に足す余白（0 なら拡大前レイアウト枠ぴったり） */
