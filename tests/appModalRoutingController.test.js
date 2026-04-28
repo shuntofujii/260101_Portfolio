@@ -103,6 +103,20 @@ describe('appModalRoutingController', () => {
     expect(deps.applyModalDocumentMeta).toHaveBeenCalled();
   });
 
+  it('openProjectModalFromRoute: 対象要素が見つからなくてもモーダルを開く', () => {
+    const { controller, deps, state } = createSetup();
+
+    controller.openProjectModalFromRoute({ id: 'p1', pageSlug: 'ejic' });
+
+    expect(state.currentState).toBe('modal');
+    expect(state.selectedProject?.id).toBe('p1');
+    expect(deps.openModal).toHaveBeenCalledTimes(1);
+    expect(deps.openModal).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'p1' }),
+      null
+    );
+  });
+
   it('bindRouteEventListeners: popstate で閉じる分岐が動く', () => {
     const { controller, deps, state } = createSetup();
     state.currentState = 'modal';

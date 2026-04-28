@@ -213,7 +213,8 @@ body {
 }
 
 .context-panel.visible .context-content {
-  pointer-events: auto;
+  /* 情報表示専用のため常にクリックを透過し、サムネイルのタップ阻害を防ぐ */
+  pointer-events: none;
 }
 
 .context-panel.modal-background {

@@ -1,7 +1,7 @@
 // メディア（画像・動画グリッド、施策カード、動画プレイヤー）
 import { state } from './state.js';
 import { getRefs } from './domRefs.js';
-import { BREAKPOINT_MOBILE_PX } from './constants.js';
+import { BREAKPOINT_MOBILE_PX, baseAssetsUrl } from './constants.js';
 import { attachVideoElement } from './videoCache.js';
 import { buildImageUrl, buildVideoUrl, getImageGridLayout, getLayoutSpan } from './mediaLayout.js';
 export { buildVideoUrl } from './mediaLayout.js';

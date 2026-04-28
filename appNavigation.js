@@ -29,6 +29,8 @@ function createThumbnail(project, index, options) {
 const LOOP_SEGMENT_COUNT = 3;
 const LOOP_RECENTER_LOW_BOUND = 0.5;
 const LOOP_RECENTER_HIGH_BOUND = 1.5;
+const TOUCH_TAP_MAX_MOVE_PX = 10;
+const TOUCH_SYNTHETIC_CLICK_GUARD_MS = 650;
 
 function teardownInfiniteScroll(projectNavigationEl) {
   const cleanup = projectNavigationEl.__projectNavigationCleanup;
@@ -142,34 +144,83 @@ function setupProjectItemListeners(projectNavigationEl, projects, handlers) {
   } = handlers;
 
   teardownNavDelegation(projectNavigationEl);
+  let touchCandidateItem = null;
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let suppressClickUntil = 0;
+
+  const resolveProjectByItem = (item) => {
+    if (!item || !projectNavigationEl.contains(item)) return null;
+    const projectIndex = parseInt(item.dataset.projectIndex, 10);
+    if (Number.isNaN(projectIndex)) return null;
+    const project = projects[projectIndex];
+    if (!project) return null;
+    return { project, item };
+  };
 
   const onNavClickCapture = (e) => {
-    const item = e.target.closest('.project-item');
-    if (!item || !projectNavigationEl.contains(item)) return;
-    const projectIndex = parseInt(item.dataset.projectIndex, 10);
-    if (Number.isNaN(projectIndex)) return;
-    const project = projects[projectIndex];
-    if (!project) return;
+    if (Date.now() < suppressClickUntil) {
+      e.stopPropagation();
+      return;
+    }
+    const resolved = resolveProjectByItem(e.target.closest('.project-item'));
+    if (!resolved) return;
     e.stopPropagation();
-    onClick(project, item);
+    onClick(resolved.project, resolved.item);
   };
 
   const onNavTouchStartCapture = (e) => {
-    const item = e.target.closest('.project-item');
-    if (!item || !projectNavigationEl.contains(item)) return;
-    const projectIndex = parseInt(item.dataset.projectIndex, 10);
-    if (Number.isNaN(projectIndex)) return;
-    const project = projects[projectIndex];
-    if (!project) return;
-    onTouchStart(project, item);
+    const touch = e.touches?.[0];
+    const resolved = resolveProjectByItem(e.target.closest('.project-item'));
+    if (!touch || !resolved) {
+      touchCandidateItem = null;
+      return;
+    }
+    touchCandidateItem = resolved.item;
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    onTouchStart(resolved.project, resolved.item);
+  };
+
+  const onNavTouchMoveCapture = (e) => {
+    if (!touchCandidateItem) return;
+    const touch = e.touches?.[0];
+    if (!touch) {
+      touchCandidateItem = null;
+      return;
+    }
+    const movedX = Math.abs(touch.clientX - touchStartX);
+    const movedY = Math.abs(touch.clientY - touchStartY);
+    if (movedX > TOUCH_TAP_MAX_MOVE_PX || movedY > TOUCH_TAP_MAX_MOVE_PX) {
+      touchCandidateItem = null;
+    }
+  };
+
+  const onNavTouchEndCapture = () => {
+    if (!touchCandidateItem) return;
+    const resolved = resolveProjectByItem(touchCandidateItem);
+    touchCandidateItem = null;
+    if (!resolved) return;
+    suppressClickUntil = Date.now() + TOUCH_SYNTHETIC_CLICK_GUARD_MS;
+    onClick(resolved.project, resolved.item);
+  };
+
+  const onNavTouchCancelCapture = () => {
+    touchCandidateItem = null;
   };
 
   projectNavigationEl.addEventListener('click', onNavClickCapture, true);
   projectNavigationEl.addEventListener('touchstart', onNavTouchStartCapture, { capture: true, passive: true });
+  projectNavigationEl.addEventListener('touchmove', onNavTouchMoveCapture, { capture: true, passive: true });
+  projectNavigationEl.addEventListener('touchend', onNavTouchEndCapture, { capture: true, passive: true });
+  projectNavigationEl.addEventListener('touchcancel', onNavTouchCancelCapture, { capture: true, passive: true });
 
   projectNavigationEl.__navDelegationCleanup = () => {
     projectNavigationEl.removeEventListener('click', onNavClickCapture, true);
     projectNavigationEl.removeEventListener('touchstart', onNavTouchStartCapture, true);
+    projectNavigationEl.removeEventListener('touchmove', onNavTouchMoveCapture, true);
+    projectNavigationEl.removeEventListener('touchend', onNavTouchEndCapture, true);
+    projectNavigationEl.removeEventListener('touchcancel', onNavTouchCancelCapture, true);
   };
 
   projectNavigationEl.querySelectorAll('.project-item').forEach((item) => {

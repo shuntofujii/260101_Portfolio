@@ -68,12 +68,13 @@ export function createModalRoutingController(deps) {
       triggerItemEl.dataset?.projectId === project.id
         ? triggerItemEl
         : findProjectItemElement(project.id);
-    if (!item) return;
     state.currentState = 'modal';
     state.selectedProject = project;
     clearProjectSelections();
-    item.classList.add('selected');
-    openModal(project, item);
+    if (item) {
+      item.classList.add('selected');
+    }
+    openModal(project, item ?? null);
   }
 
   function onPortfolioModalOpen(e) {
