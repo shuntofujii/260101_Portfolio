@@ -67,10 +67,24 @@ function shakeOffsetYPx(seed, tSec, jitter01) {
   return y;
 }
 
+/**
+ * Canvas に描いて toDataURL するには理想的には CORS + crossOrigin が必要だが、
+ * localhost 等では CDN が ACAO を返さず Image の読み込み自体が落ちる。
+ * ローカルでは crossOrigin を付けず読み込み成功させる（canvas は汚染され、アニメは toDataURL で静的アイコンにフォールバック）。
+ */
+function shouldSetCrossOriginForFaviconImages() {
+  if (typeof location === 'undefined') return true;
+  const h = location.hostname;
+  if (h === 'localhost' || h === '127.0.0.1') return false;
+  return true;
+}
+
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const im = new Image();
-    im.crossOrigin = 'anonymous';
+    if (shouldSetCrossOriginForFaviconImages()) {
+      im.crossOrigin = 'anonymous';
+    }
     im.onload = () => resolve(im);
     im.onerror = () => reject(new Error(`favicon image: ${src}`));
     im.src = src;

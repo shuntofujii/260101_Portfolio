@@ -41,6 +41,7 @@ describe('modal', () => {
     state.hoveredProject = { id: 'p1' };
     state.modalFocusTrapHandler = null;
     state.modalTriggerElement = null;
+    state.profileModalOpen = false;
   });
 
   it('openModal はモーダルを表示し本文を描画する', () => {
@@ -49,6 +50,17 @@ describe('modal', () => {
     expect(modalOverlay.hidden).toBe(false);
     expect(modalContainer.hidden).toBe(false);
     expect(modalContent.textContent).toContain('T');
+  });
+
+  it('openModal はスクロール位置を先頭に戻す', () => {
+    const { modalContainer, modalContent } = setupModalRefs();
+    modalContainer.scrollTop = 180;
+    modalContent.scrollTop = 120;
+
+    openModal({ title: 'T', description: 'D', projectSlug: 'slug' }, null);
+
+    expect(modalContainer.scrollTop).toBe(0);
+    expect(modalContent.scrollTop).toBe(0);
   });
 
   it('closeModal は状態を初期化し modalclose を発火する', () => {

@@ -16,7 +16,11 @@ export function createProjectInteractionController(deps) {
   } = deps;
 
   function shouldProcessProjectPointerInteraction() {
-    return state.currentState !== 'modal';
+    return (
+      state.currentState !== 'modal' &&
+      !state.profileModalOpen &&
+      !state.profileIntroActive
+    );
   }
 
   function updateContextPanel(project) {
@@ -130,6 +134,7 @@ export function createProjectInteractionController(deps) {
   }
 
   function handleProjectClick(project, triggerItemEl) {
+    if (state.profileModalOpen || state.profileIntroActive) return;
     clearHoverLeaveTimer();
     openProjectModalFromRoute(project, triggerItemEl ?? null);
   }

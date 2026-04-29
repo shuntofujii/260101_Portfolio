@@ -4,6 +4,8 @@ import { getRefs } from './domRefs.js';
 import { escapeHtml, createFocusTrap } from './utils.js';
 import { appendExplicitModal, createCaseSection, createInitiativeCard } from './media.js';
 import { closeLightbox } from './lightbox.js';
+import { setBackgroundModalState } from './modalChrome.js';
+import { closeProfileModalIfOpen } from './profileModal.js';
 
 const DEFAULT_MODAL_META_ITEMS = [
   { label: 'Domain', value: '$domain', icon: 'https://assets.shuntofujii.com/icons/domain.svg?v=20260429' },
@@ -92,15 +94,6 @@ function appendProjectContentSections(project, modalContent) {
   }
 }
 
-function setBackgroundModalState(isModalOpen) {
-  const refs = getRefs();
-  const method = isModalOpen ? 'add' : 'remove';
-  if (refs.focusVisual) refs.focusVisual.classList[method]('modal-background');
-  if (refs.titleBackground) refs.titleBackground.classList[method]('modal-background');
-  if (refs.contextPanel) refs.contextPanel.classList[method]('modal-background');
-  if (refs.projectNavigation) refs.projectNavigation.classList[method]('modal-background');
-}
-
 export function renderModalContent(project, modalContentEl) {
   const safeTitle = escapeHtml(project.title);
   const safeTagline = project.tagline ? escapeHtml(project.tagline) : '';
@@ -131,10 +124,13 @@ export function renderModalContent(project, modalContentEl) {
 }
 
 export function openModal(project, triggerElement) {
+  closeProfileModalIfOpen();
   const refs = getRefs();
   state.modalTriggerElement = triggerElement || null;
 
   renderModalContent(project, refs.modalContent);
+  if (refs.modalContent) refs.modalContent.scrollTop = 0;
+  if (refs.modalContainer) refs.modalContainer.scrollTop = 0;
 
   if (refs.modalOverlay && refs.modalContainer) {
     // クローズ時に上書きした短縮トランジションを毎回リセット

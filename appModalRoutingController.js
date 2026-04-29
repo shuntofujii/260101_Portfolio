@@ -28,11 +28,11 @@ export function createModalRoutingController(deps) {
     return projects.find((p) => p.pageSlug === slug) || null;
   }
 
-  function findProjectItemElement(projectId) {
-    if (!projectId) return null;
+  function findProjectItemElements(projectId) {
+    if (!projectId) return [];
     const id = String(projectId);
     const safe = typeof CSS !== 'undefined' && typeof CSS.escape === 'function' ? CSS.escape(id) : id.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-    return document.querySelector(`[data-project-id="${safe}"]`);
+    return Array.from(document.querySelectorAll(`[data-project-id="${safe}"]`));
   }
 
   function applyModalProjectSideEffects(project) {
@@ -45,35 +45,36 @@ export function createModalRoutingController(deps) {
   function updateModalProjectInPlace(project, options = {}) {
     const { fromSwipe = false } = options;
     if (!project || !refs.modalContent) return;
-    const item = findProjectItemElement(project.id);
+    const items = findProjectItemElements(project.id);
+    const item = items[0] || null;
     state.currentState = 'modal';
     state.selectedProject = project;
     clearProjectSelections();
-    if (item) {
-      item.classList.add('selected');
-      state.modalTriggerElement = item;
-    }
+    items.forEach((el) => el.classList.add('selected'));
+    if (item) state.modalTriggerElement = item;
     if (refs.modalContainer) {
       refs.modalContainer.dataset.swipeSettled = fromSwipe ? '1' : '';
     }
     renderModalContent(project, refs.modalContent);
+    refs.modalContent.scrollTop = 0;
+    if (refs.modalContainer) refs.modalContainer.scrollTop = 0;
     applyModalProjectSideEffects(project);
   }
 
   function openProjectModalFromRoute(project, triggerItemEl = null) {
     if (!project) return;
+    const matchingItems = findProjectItemElements(project.id);
     const item =
       triggerItemEl &&
       triggerItemEl.isConnected &&
-      triggerItemEl.dataset?.projectId === project.id
+      String(triggerItemEl.dataset?.projectId) === String(project.id)
         ? triggerItemEl
-        : findProjectItemElement(project.id);
+        : (matchingItems[0] || null);
     state.currentState = 'modal';
     state.selectedProject = project;
     clearProjectSelections();
-    if (item) {
-      item.classList.add('selected');
-    }
+    matchingItems.forEach((el) => el.classList.add('selected'));
+    if (item) item.classList.add('selected');
     openModal(project, item ?? null);
   }
 

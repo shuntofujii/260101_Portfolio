@@ -22,6 +22,7 @@ import { escapeHtml } from './utils.js';
 import { initCursorEffect } from './cursorEffect.js';
 import { initGuidanceTypewriter } from './guidanceTypewriter.js';
 import { openModal, closeModal, renderModalContent } from './modal.js';
+import { openProfileModal, closeProfileModal } from './profileModal.js';
 import { openLightbox, openLightboxVideo, closeLightbox } from './lightbox.js';
 import { stopAllInlineVideos } from './media.js';
 import { injectVideoLinkPreloads, scheduleIdleVideoPreload, ensureVideoPlayUrl } from './videoCache.js';
@@ -47,7 +48,10 @@ import {
   getPathnameProjectSlug,
   findLegacyProjectFromHash,
   applyModalHistoryForProject,
+  applyHistoryForProfileModal,
+  isProfileModalPath,
   restoreBaseHistoryOnModalClose,
+  restoreBaseHistoryOnProfileModalClose,
   applyModalDocumentMeta,
   restoreBaseDocumentMeta
 } from './appRouting.js';
@@ -58,8 +62,28 @@ const BASE_META_DESCRIPTION = metaDescriptionEl?.getAttribute('content') ?? '';
 const PROJECT_SWIPE_MAX_Y = 72;
 const PROJECT_SWIPE_LOCK_Y = 14;
 const PROJECT_SWIPE_COMMIT_MS = 260;
+let profileIntroPhysicsModulePromise = null;
 
 const refs = initializeAppRefs({ openLightbox, openLightboxVideo });
+
+function loadProfileIntroPhysics() {
+  if (!profileIntroPhysicsModulePromise) {
+    profileIntroPhysicsModulePromise = import('./profileIntroPhysics.js');
+  }
+  return profileIntroPhysicsModulePromise;
+}
+
+function abortProfileIntroAndOpenModalLazy(openProfileModalFn) {
+  void loadProfileIntroPhysics()
+    .then((mod) => mod.abortProfileIntroAndOpenModal(openProfileModalFn))
+    .catch(() => {
+      openProfileModalFn(refs.profileOpenBtn || null);
+    });
+}
+
+function abortProfileIntroOnlyLazy() {
+  void loadProfileIntroPhysics().then((mod) => mod.abortProfileIntroOnly()).catch(() => {});
+}
 
 const modalRoutingController = createModalRoutingController({
   state,
@@ -85,7 +109,54 @@ const modalRoutingController = createModalRoutingController({
 });
 modalRoutingController.bindRouteEventListeners();
 
+function openProfileModalFromRoute() {
+  if (state.profileModalOpen) return;
+  if (state.profileIntroActive) {
+    abortProfileIntroAndOpenModalLazy(openProfileModal);
+    return;
+  }
+  openProfileModal(refs.profileOpenBtn || null);
+}
+
+function syncProfileModalWithRoute() {
+  const wantsProfileModal = isProfileModalPath(window.location.pathname);
+  if (wantsProfileModal) {
+    if (state.profileModalOpen) return;
+    if (state.currentState === 'modal') {
+      const onProjectModalClosed = () => {
+        document.removeEventListener('portfolio:modalclose', onProjectModalClosed);
+        if (isProfileModalPath(window.location.pathname)) {
+          openProfileModalFromRoute();
+        }
+      };
+      document.addEventListener('portfolio:modalclose', onProjectModalClosed);
+      closeModalAndStopVideos();
+      return;
+    }
+    openProfileModalFromRoute();
+    return;
+  }
+  if (state.profileModalOpen) {
+    closeProfileModal();
+  }
+}
+
+function bindProfileRouteEventListeners() {
+  document.addEventListener('portfolio:profilemodalopen', () => {
+    applyHistoryForProfileModal();
+  });
+  document.addEventListener('portfolio:profilemodalclose', () => {
+    restoreBaseHistoryOnProfileModalClose(BASE_PAGE_TITLE);
+  });
+  window.addEventListener('popstate', syncProfileModalWithRoute);
+}
+bindProfileRouteEventListeners();
+
 function applyInitialRoute() {
+  if (isProfileModalPath(window.location.pathname)) {
+    openProfileModalFromRoute();
+    return;
+  }
   modalRoutingController.applyInitialRoute();
 }
 
@@ -147,6 +218,14 @@ function handleEscapeKey() {
     closeLightbox();
     return;
   }
+  if (state.profileIntroActive) {
+    abortProfileIntroAndOpenModalLazy(openProfileModal);
+    return;
+  }
+  if (state.profileModalOpen) {
+    closeProfileModal();
+    return;
+  }
   if (state.currentState === 'modal') {
     closeModalAndStopVideos();
   }
@@ -159,6 +238,7 @@ function openHomeFromStaticProjectPage() {
 function shouldResetFromFocusVisualTouch(target) {
   if (target?.closest('.project-item')) return false;
   if (state.currentState === 'modal') return false;
+  if (state.profileModalOpen || state.profileIntroActive) return false;
   return state.currentState === 'hover' && refs.heroVideoBase && !refs.heroVideoBase.paused;
 }
 
@@ -167,11 +247,57 @@ function handlePortfolioTitleClick() {
     openHomeFromStaticProjectPage();
     return;
   }
+  if (state.profileIntroActive) {
+    abortProfileIntroOnlyLazy();
+    resetToInitialState();
+    return;
+  }
+  if (state.profileModalOpen) {
+    closeProfileModal();
+    return;
+  }
   if (state.currentState === 'modal') {
     closeModalAndStopVideos();
     return;
   }
   resetToInitialState();
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function openProfileAfterProjectModalIfNeeded() {
+  if (prefersReducedMotion()) {
+    openProfileModal(refs.profileOpenBtn);
+    return;
+  }
+  void loadProfileIntroPhysics()
+    .then((mod) => mod.runProfileIntroAnimation({ openProfileModal }))
+    .catch(() => {
+      openProfileModal(refs.profileOpenBtn || null);
+    });
+}
+
+function handleProfileOpenClick() {
+  if (state.profileIntroActive) return;
+  if (refs.lightboxOverlay && !refs.lightboxOverlay.hidden) {
+    closeLightbox();
+  }
+  if (refs.modalOverlay && !refs.modalOverlay.hidden) {
+    const onProjectModalClosed = () => {
+      document.removeEventListener('portfolio:modalclose', onProjectModalClosed);
+      openProfileAfterProjectModalIfNeeded();
+    };
+    document.addEventListener('portfolio:modalclose', onProjectModalClosed);
+    closeModalAndStopVideos();
+    return;
+  }
+  openProfileAfterProjectModalIfNeeded();
+}
+
+function closeProfileModalAndFocus() {
+  closeProfileModal();
 }
 
 function handleFocusVisualTouchStart(e) {
@@ -196,15 +322,6 @@ function isMobileProjectPageSwipeEnabled() {
 function getCurrentSelectedProjectIndex() {
   if (!state.projects?.length || !state.selectedProject?.id) return -1;
   return state.projects.findIndex((p) => p.id === state.selectedProject.id);
-}
-
-function navigateProjectByDelta(delta) {
-  if (!delta || !state.projects?.length) return;
-  const curIndex = getCurrentSelectedProjectIndex();
-  if (curIndex < 0) return;
-  const nextIndex = curIndex + delta;
-  if (nextIndex < 0 || nextIndex >= state.projects.length) return;
-  openProjectModalFromRoute(state.projects[nextIndex]);
 }
 
 function beginBackgroundFadeOutToInitialState() {
@@ -305,7 +422,9 @@ function setupEventListeners() {
     onFocusVisualTouchStart: handleFocusVisualTouchStart,
     onModalTouchStart: modalSwipeController.onTouchStart,
     onModalTouchMove: modalSwipeController.onTouchMove,
-    onModalTouchEnd: modalSwipeController.onTouchEnd
+    onModalTouchEnd: modalSwipeController.onTouchEnd,
+    onCloseProfileModal: closeProfileModalAndFocus,
+    onProfileOpenClick: handleProfileOpenClick
   });
 
   document.addEventListener('portfolio:modalclose', modalSwipeController.onModalClosed);

@@ -60,6 +60,8 @@
   /* 装飾レイヤーより上で確実にクリックを拾う（カーソルcanvas・ノイズ・パネルより上） */
   --z-project-navigation: 380;
   --z-modal-overlay: 1000;
+  /* WebGL カーソルより前面に落下画像（ライトボックスより下げる） */
+  --z-profile-intro: 1600;
   --z-modal-close: 1001;
   --z-lightbox-overlay: 2000;
   --z-lightbox-close: 2001;
@@ -146,7 +148,7 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+  background: #000;
   color: var(--text-primary);
   overflow-x: hidden;
   min-height: 100vh;
@@ -162,16 +164,19 @@ body {
    ============================================ */
 .portfolio-title {
   position: fixed;
-  top: calc(1.5rem + var(--safe-top));
-  left: calc(2rem + var(--safe-left));
+  top: calc(0.75rem + var(--safe-top));
+  left: calc(1.75rem + var(--safe-left));
+  right: calc(1.25rem + var(--safe-right));
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
   z-index: var(--z-portfolio-title);
-  cursor: pointer;
+  pointer-events: none;
   transition: opacity var(--transition-fast);
 }
 
-.portfolio-title:hover {
-  opacity: 0.7;
-}
+/* ヘッダー全体ホバーで opacity を下げない（プロフィールボタンと文字の連動を防ぐ） */
 
 .portfolio-title-text {
   font-size: 1.1rem;
@@ -181,6 +186,202 @@ body {
   margin: 0;
   user-select: none;
   opacity: 0.9;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.profile-open-btn {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  line-height: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.profile-open-btn:hover {
+  opacity: 1;
+}
+
+.profile-open-btn:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+
+/* 放出後・ヘッダー右上は顔なしの空スロット（レイアウト幅だけ確保） */
+.profile-open-btn.profile-open-btn--vacant {
+  opacity: 0;
+  pointer-events: none;
+  cursor: default;
+}
+
+.profile-open-btn.profile-open-btn--vacant:hover {
+  opacity: 0;
+}
+
+.profile-open-btn.profile-open-btn--vacant:focus-visible {
+  outline: none;
+}
+
+.profile-open-btn.profile-open-btn--vacant .profile-open-stack {
+  display: block;
+  width: calc(var(--profile-open-h) * 609 / 720);
+  height: var(--profile-open-h);
+}
+
+.profile-open-stack {
+  position: relative;
+  display: block;
+  --profile-open-h: 46px;
+  width: calc(var(--profile-open-h) * 609 / 720);
+  height: var(--profile-open-h);
+}
+
+.profile-open-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 0;
+}
+
+.profile-open-img--back {
+  z-index: 0;
+  opacity: 0.92;
+}
+
+.profile-open-img--front {
+  z-index: 1;
+}
+
+.profile-modal-hero {
+  margin: 0.75rem 0 2rem;
+}
+
+.profile-modal-name {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.profile-modal-photo {
+  width: 100%;
+  max-width: min(280px, 100%);
+  height: auto;
+  border-radius: 14px;
+  display: block;
+}
+
+.profile-modal-bio .profile-modal-paragraph {
+  margin: 0 0 1rem;
+}
+
+.profile-modal-bio .profile-modal-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.profile-modal-meta {
+  gap: 0.75rem 1.25rem;
+}
+
+.profile-modal-meta-item {
+  width: 100%;
+}
+
+.profile-modal-meta-item--half {
+  width: calc(50% - 0.625rem);
+}
+
+@media (max-width: 768px) {
+  .profile-modal-meta-item--half {
+    width: 100%;
+  }
+}
+
+/* プロフィール入場（Matter.js）オーバーレイ */
+.profile-intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-profile-intro);
+  /* 残留してもUIをブロックしないよう、通常時はイベントを透過 */
+  pointer-events: none;
+  touch-action: none;
+  isolation: isolate;
+}
+
+.profile-intro-hero-wrap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.profile-intro-hero-img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  opacity: 1;
+  object-fit: contain;
+  border-radius: 0;
+  will-change: transform, width, height;
+  pointer-events: none;
+  z-index: 3;
+  mix-blend-mode: normal;
+}
+
+.profile-intro-stack {
+  position: absolute;
+  pointer-events: none;
+}
+
+.profile-intro-stack-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 0;
+}
+
+.profile-intro-stack-img--back {
+  opacity: 0.92;
+  z-index: 0;
+}
+
+.profile-intro-stack-img--front {
+  z-index: 1;
+}
+
+body.profile-intro-running {
+  overflow: hidden;
+}
+
+/* プロフィールクリック後の重なり順 */
+body.profile-intro-running .profile-intro-overlay {
+  z-index: 99;
+  pointer-events: auto;
+}
+
+body.profile-intro-running .project-navigation.profile-intro-contacted {
+  z-index: 95;
+}
+
+/* 初回衝突後はサムネイルの減光を無効化 */
+.project-navigation.profile-intro-contacted .project-item {
+  opacity: 1 !important;
 }
 
 /* ============================================
@@ -200,7 +401,7 @@ body {
 /* レスポンシブ対応（hover-cardクラスが付与されている場合） */
 .context-panel.hover-card {
   /* タイトルの下に配置（タイトル高さ + 余白を考慮）+ Safe Area */
-  top: calc(clamp(calc(1.5rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem)) + var(--safe-top));
+  top: calc(clamp(calc(1.5rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem)) + var(--safe-top) + 6px);
   left: calc(clamp(2rem, 2vmin, 2rem) + var(--safe-left));
   width: clamp(260px, 34vmin, 520px);
   max-width: calc(100vw - (clamp(2rem, 2vmin, 2rem) * 2) - var(--safe-left) - var(--safe-right));
@@ -551,6 +752,17 @@ body.modal-open .context-panel {
   opacity: 1;
 }
 
+/* プロフィール導線中は中央ガイダンスを非表示 */
+body.profile-intro-running .guidance-text {
+  opacity: 0 !important;
+}
+
+/* プロフィール導線中はホバー背景動画も非表示（ガイダンスと同じ挙動） */
+body.profile-intro-running #bgLayer,
+body.profile-intro-running #bgVideo {
+  opacity: 0 !important;
+}
+
 .guidance-main {
   display: inline-block;
   color: inherit;
@@ -867,7 +1079,11 @@ body.modal-open .project-navigation {
   transition: opacity var(--modal-dur) var(--modal-ease);
 }
 
-body.modal-open .modal-overlay {
+.modal-overlay[hidden] {
+  display: none !important;
+}
+
+body.modal-open .modal-overlay:not([hidden]) {
   opacity: 1;
   pointer-events: auto;
 }
@@ -1763,12 +1979,17 @@ body.modal-open .modal-overlay {
    ============================================ */
 @media (max-width: 768px) {
   .portfolio-title {
-    top: calc(1rem + var(--safe-top));
+    top: calc(0.75rem + var(--safe-top));
     left: calc(1rem + var(--safe-left));
+    right: calc(1rem + var(--safe-right));
   }
 
   .portfolio-title-text {
     font-size: 0.95rem;
+  }
+
+  .profile-open-stack {
+    --profile-open-h: 42px;
   }
 
   .context-panel {
@@ -1778,7 +1999,7 @@ body.modal-open .modal-overlay {
   }
 
   .context-panel.hover-card {
-    top: calc(clamp(calc(1rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem)) + var(--safe-top));
+    top: calc(clamp(calc(1rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem)) + var(--safe-top) + 9px);
     left: calc(1rem + var(--safe-left));
     max-width: calc(100vw - 2rem - var(--safe-left) - var(--safe-right));
   }
@@ -1861,7 +2082,7 @@ body.modal-open .modal-overlay {
 
 @media (max-width: 520px) {
   .context-panel.hover-card {
-    top: calc(clamp(calc(1rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem)) + var(--safe-top));
+    top: calc(clamp(calc(1rem + 1.5rem + 1rem), calc(2vmin + 1.5rem + 1rem), calc(22px + 1.5rem + 1rem)) + var(--safe-top) + 9px);
     left: calc(8px + var(--safe-left));
     width: calc(100vw - 16px - var(--safe-left) - var(--safe-right));
     max-width: calc(100vw - 16px - var(--safe-left) - var(--safe-right));

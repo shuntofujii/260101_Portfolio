@@ -2,19 +2,13 @@ import { ensureVideoPlayUrl } from './videoCache.js';
 
 function cleanupHeroVideoRuntimeHandlers(video) {
   if (!video) return;
-  if (video._showFallbackId) {
-    clearTimeout(video._showFallbackId);
-    video._showFallbackId = null;
-  }
-  video._heroRevealScheduled = false;
-  const existingListeners = ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough', 'playing', 'error'];
+  video._heroReadyHandled = false;
+  const existingListeners = ['loadeddata', 'canplay', 'canplaythrough', 'error'];
   existingListeners.forEach((eventType) => {
-    video.removeEventListener(eventType, video._playHandler);
-    video.removeEventListener(eventType, video._showHandler);
+    video.removeEventListener(eventType, video._readyHandler);
     video.removeEventListener(eventType, video._errorHandler);
   });
-  video._playHandler = null;
-  video._showHandler = null;
+  video._readyHandler = null;
   video._errorHandler = null;
 }
 
@@ -34,73 +28,42 @@ function ensureHeroVideoPlayWithGestureFallback(video) {
   });
 }
 
-function setupHeroVideoVisibilityHandlers(video, videoShowFallbackMs) {
-  const reveal = () => {
-    if (video.style.opacity === '1') return;
-    if (video._showFallbackId) {
-      clearTimeout(video._showFallbackId);
-      video._showFallbackId = null;
-    }
-    video.style.visibility = 'visible';
-    video.style.opacity = '1';
-    video.classList.remove('fade-in');
-  };
-
-  const scheduleRevealFromEvent = () => {
-    if (video.style.opacity === '1') return;
-    if (video._heroRevealScheduled) return;
-    video._heroRevealScheduled = true;
-    if (video._showFallbackId) {
-      clearTimeout(video._showFallbackId);
-      video._showFallbackId = null;
-    }
-    // SP Safari は display:block 直後〜最初のデコードまで object-fit の合成がずれることがあるため、
-    // レイアウト確定後のフレームまで待つ（double rAF）。
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        video._heroRevealScheduled = false;
-        reveal();
-      });
-    });
-  };
-
-  video._showHandler = scheduleRevealFromEvent;
-  // メタデータで寸法が確定してから表示トリガー（loadeddata より早く安定しやすい）
-  video.addEventListener('loadedmetadata', scheduleRevealFromEvent, { once: true });
-  video.addEventListener('loadeddata', scheduleRevealFromEvent, { once: true });
-  video.addEventListener('playing', scheduleRevealFromEvent, { once: true });
-  video._showFallbackId = setTimeout(() => {
-    video._heroRevealScheduled = false;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(reveal);
-    });
-  }, videoShowFallbackMs);
+function revealHeroVideo(video) {
+  if (!video || video.style.opacity === '1') return;
+  video.style.visibility = 'visible';
+  video.style.opacity = '1';
+  video.classList.remove('fade-in');
 }
 
-function setupHeroVideoPlayLifecycleHandlers(video) {
-  const playHandler = () => {
+function setupHeroVideoReadyLifecycleHandlers(video) {
+  const onReady = () => {
+    if (video._heroReadyHandled) return;
+    video._heroReadyHandled = true;
     ensureHeroVideoPlayWithGestureFallback(video);
-    video.removeEventListener('loadeddata', playHandler);
-    video.removeEventListener('canplay', playHandler);
-    video.removeEventListener('canplaythrough', playHandler);
+    // SP Safari は表示直後の合成が不安定なため、レイアウト確定後に表示する。
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => revealHeroVideo(video));
+    });
+    video.removeEventListener('loadeddata', onReady);
+    video.removeEventListener('canplay', onReady);
+    video.removeEventListener('canplaythrough', onReady);
   };
-  video._playHandler = playHandler;
+  video._readyHandler = onReady;
 
   const errorHandler = () => {
     video.removeEventListener('error', errorHandler);
-    video.style.visibility = 'visible';
-    video.style.opacity = '1';
-    if (video._showFallbackId) {
-      clearTimeout(video._showFallbackId);
-      video._showFallbackId = null;
-    }
+    revealHeroVideo(video);
   };
   video._errorHandler = errorHandler;
   video.addEventListener('error', errorHandler);
 
-  video.addEventListener('loadeddata', playHandler, { once: true });
-  video.addEventListener('canplay', playHandler, { once: true });
-  video.addEventListener('canplaythrough', playHandler, { once: true });
+  video.addEventListener('loadeddata', onReady, { once: true });
+  video.addEventListener('canplay', onReady, { once: true });
+  video.addEventListener('canplaythrough', onReady, { once: true });
+
+  if (video.readyState >= 2) {
+    onReady();
+  }
 }
 
 function applyHeroVideoSource(video, canonical, playUrl) {
@@ -151,7 +114,7 @@ function setupHeroVideoLoopHandler(video) {
 }
 
 function updateHeroVideoElement(video, heroMedia, config) {
-  const { videoUpdateFadeDelayMs, videoShowFallbackMs } = config;
+  const { videoUpdateFadeDelayMs } = config;
   if (!video || !heroMedia?.src) return;
   applyHeroVideoBaseLayout(video);
 
@@ -168,11 +131,9 @@ function updateHeroVideoElement(video, heroMedia, config) {
 
       applyHeroVideoSource(video, canonical, playUrl);
       setupHeroVideoLoopHandler(video);
-      setupHeroVideoVisibilityHandlers(video, videoShowFallbackMs);
-      setupHeroVideoPlayLifecycleHandlers(video);
+      setupHeroVideoReadyLifecycleHandlers(video);
 
       video.load();
-      ensureHeroVideoPlayWithGestureFallback(video);
     });
   }, videoUpdateFadeDelayMs);
 }

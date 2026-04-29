@@ -11,8 +11,8 @@
  * - 廃止ラベル（Direction 等）が残っていないこと
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 function readProjectsJson() {
   const p = path.join(process.cwd(), 'projects.json');

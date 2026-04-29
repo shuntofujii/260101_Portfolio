@@ -1,4 +1,9 @@
-import { pathForProjectSlug, parseProjectSlugFromPath } from './routing.js';
+import {
+  pathForProfileModal,
+  pathForProjectSlug,
+  parseProfileModalFromPath,
+  parseProjectSlugFromPath
+} from './routing.js';
 
 export function normalizePathname(pathname) {
   if (!pathname || pathname === '/') return pathname;
@@ -37,8 +42,31 @@ export function applyModalHistoryForProject(project) {
   }
 }
 
+export function isProfileModalPath(pathname = window.location.pathname) {
+  return parseProfileModalFromPath(normalizePathname(pathname));
+}
+
+export function applyHistoryForProfileModal() {
+  const targetPath = pathForProfileModal();
+  const currentPath = normalizePathname(window.location.pathname);
+  const expectedPath = normalizePathname(targetPath);
+  if (currentPath !== expectedPath) {
+    history.pushState({ profileModal: true }, '', targetPath);
+  }
+}
+
 export function restoreBaseHistoryOnModalClose(basePageTitle) {
   if (parseProjectSlugFromPath(normalizePathname(window.location.pathname))) {
+    history.replaceState(null, basePageTitle, '/');
+    return;
+  }
+  if (location.hash) {
+    history.replaceState(null, basePageTitle, `${location.pathname}${location.search}`);
+  }
+}
+
+export function restoreBaseHistoryOnProfileModalClose(basePageTitle) {
+  if (isProfileModalPath()) {
     history.replaceState(null, basePageTitle, '/');
     return;
   }

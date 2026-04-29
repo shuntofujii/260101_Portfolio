@@ -3,7 +3,7 @@
  */
 
 /** 静的ファイル等と誤認しないよう、ルート1セグメント目を案件として扱わないもの */
-const RESERVED_ROOT_SEGMENTS = new Set(['projects']);
+const RESERVED_ROOT_SEGMENTS = new Set(['projects', 'profile']);
 
 /** ルート直下の実ファイルと衝突するパス（拡張子付きリクエスト） */
 const STATIC_FILE_SEGMENT_RE = /\.(css|js|json|html?|ico|xml|webmanifest|map|txt|md|woff2?)$/i;
@@ -27,4 +27,16 @@ export function parseProjectSlugFromPath(pathname) {
 /** プロジェクトページのパス（末尾スラッシュ付き・サイトルート基準） */
 export function pathForProjectSlug(slug) {
   return `/${encodeURIComponent(slug)}/`;
+}
+
+/** プロフィールモーダルのパス（末尾スラッシュ付き・サイトルート基準） */
+export function pathForProfileModal() {
+  return '/profile/';
+}
+
+/** パスがプロフィールモーダルURL（/profile/）かどうか */
+export function parseProfileModalFromPath(pathname) {
+  if (!pathname) return false;
+  const p = pathname.replace(/\/+$/, '') || '/';
+  return p === '/profile';
 }

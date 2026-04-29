@@ -103,6 +103,8 @@ function createCustomCursorEffect(THREE, initialColor) {
   renderer.domElement.style.width = '100%';
   renderer.domElement.style.height = '100%';
   renderer.domElement.style.pointerEvents = 'none';
+  // 「比較(明)」合成（対応ブラウザでは背景との明部優先で合成）
+  renderer.domElement.style.mixBlendMode = 'lighten';
   renderer.domElement.style.zIndex = String(CURSOR_Z_INDEX);
   el.appendChild(renderer.domElement);
 
@@ -226,12 +228,19 @@ function createCustomCursorEffect(THREE, initialColor) {
 
   /** サムネイルと軌跡が重なるとき 0 に近づける（シェーダ uOpacity） */
   let trailOverlapOpacity = 1;
+  // フェーズ演出用: 軌跡が追従する/しない、暗くする/消すを外部から制御
+  let isCursorFollowEnabled = true;
+  let externalOpacityMultiplier = 1;
+  // { active, startTimeSec, moveDurationSec, waitDurationSec, fadeDurationSec, fromX, fromY, toX, toY, jitterX, jitterY, jitterStepX, jitterStepY, jitterRadiusX, jitterRadiusY, wobbleAmp, wobbleHz, wobbleSeed, resolve }
+  let trailScript = null;
+  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
   /** 直前フレームでポインタがサムネ上だったか（退出時に履歴をリセットする） */
   let wasPointerOverThumb = false;
 
   const detectTouchDevice = () => { isTouchDevice = true; };
 
   const handleMouseMove = (e) => {
+    if (!isCursorFollowEnabled) return;
     if (isTouchDevice) return;
     const rect = renderer.domElement.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
@@ -246,6 +255,7 @@ function createCustomCursorEffect(THREE, initialColor) {
   };
 
   const handleTouchStart = (e) => {
+    if (!isCursorFollowEnabled) return;
     detectTouchDevice();
     if (e.touches.length > 0) {
       const touch = e.touches[0];
@@ -258,6 +268,7 @@ function createCustomCursorEffect(THREE, initialColor) {
   };
 
   const handleTouchMove = (e) => {
+    if (!isCursorFollowEnabled) return;
     if (e.touches.length > 0) {
       const touch = e.touches[0];
       const rect = renderer.domElement.getBoundingClientRect();
@@ -339,9 +350,77 @@ function createCustomCursorEffect(THREE, initialColor) {
         }
       }
     }
-    const curveLerpNow = pointerOverThumb ? config.curveLerpOnThumbnail : config.curveLerp;
+    let curveLerpNow = pointerOverThumb ? config.curveLerpOnThumbnail : config.curveLerp;
 
-    if (isMouseActive) {
+    if (trailScript?.active) {
+      // 外部スクリプト（プロフィール演出など）: カーソル追従を止めて目標へイーズアウト
+      curveLerpNow = config.curveLerp;
+      const elapsedSec = time - trailScript.startTimeSec;
+      const moveDurationSec = Math.max(0.001, trailScript.moveDurationSec);
+      const waitDurationSec = Math.max(0, trailScript.waitDurationSec || 0);
+      const fadeDurationSec = Math.max(0.001, trailScript.fadeDurationSec);
+
+      // 目標点の周囲でランダムに揺れ続ける（元目標の半径10px以内）
+      trailScript.jitterX += (Math.random() * 2 - 1) * trailScript.jitterStepX;
+      trailScript.jitterY += (Math.random() * 2 - 1) * trailScript.jitterStepY;
+      const jx = trailScript.jitterX / Math.max(trailScript.jitterRadiusX, 1e-6);
+      const jy = trailScript.jitterY / Math.max(trailScript.jitterRadiusY, 1e-6);
+      const jr = Math.hypot(jx, jy);
+      if (jr > 1) {
+        trailScript.jitterX /= jr;
+        trailScript.jitterY /= jr;
+      }
+      const toXJittered = trailScript.toX + trailScript.jitterX;
+      const toYJittered = trailScript.toY + trailScript.jitterY;
+
+      let headX = toXJittered;
+      let headY = toYJittered;
+      if (elapsedSec < moveDurationSec) {
+        const tMove = Math.max(0, Math.min(1, elapsedSec / moveDurationSec));
+        const eased = easeOutCubic(tMove);
+        const baseX = trailScript.fromX + (toXJittered - trailScript.fromX) * eased;
+        const baseY = trailScript.fromY + (toYJittered - trailScript.fromY) * eased;
+
+        // 目標へ直進せず、終盤で収束する「よろよろ」横揺れを与える
+        const dirX = toXJittered - trailScript.fromX;
+        const dirY = toYJittered - trailScript.fromY;
+        const dirLen = Math.hypot(dirX, dirY) || 1;
+        const nx = -dirY / dirLen;
+        const ny = dirX / dirLen;
+        const wobbleEnvelope = Math.pow(1 - tMove, 1.2);
+        const wobblePhase = trailScript.wobbleSeed + tMove * trailScript.wobbleHz * Math.PI * 2;
+        const wobblePrimary = Math.sin(wobblePhase);
+        const wobbleSecondary = 0.45 * Math.sin(wobblePhase * 2.15 + 1.1);
+        const wobble = (wobblePrimary + wobbleSecondary) * trailScript.wobbleAmp * wobbleEnvelope;
+
+        headX = baseX + nx * wobble;
+        headY = baseY + ny * wobble;
+        externalOpacityMultiplier = 1;
+      } else if (elapsedSec < moveDurationSec + waitDurationSec) {
+        // 到着後の待機（明るさ維持）
+        externalOpacityMultiplier = 1;
+      } else {
+        const fadeT = Math.max(
+          0,
+          Math.min(1, (elapsedSec - moveDurationSec - waitDurationSec) / fadeDurationSec)
+        );
+        // 到着後はゆっくり暗くする
+        externalOpacityMultiplier = Math.max(0, 1 - easeOutCubic(fadeT));
+      }
+
+      for (let i = config.curvePoints - 1; i > 0; i--) {
+        curvePoints[i].lerp(curvePoints[i - 1], curveLerpNow);
+      }
+      curvePoints[0].set(headX, headY);
+
+      if (elapsedSec >= moveDurationSec + waitDurationSec + fadeDurationSec) {
+        externalOpacityMultiplier = 0;
+        const resolve = trailScript.resolve;
+        trailScript.active = false;
+        trailScript.resolve = null;
+        if (typeof resolve === 'function') resolve();
+      }
+    } else if (isMouseActive) {
       if (pointerOverThumb) {
         // サムネ上: 追従しない（mouse / curvePoints は更新しない）
       } else if (wasPointerOverThumb) {
@@ -416,11 +495,14 @@ function createCustomCursorEffect(THREE, initialColor) {
     }
 
     const targetOpacity = pointerOverThumb ? 0 : 1;
-    if (wasPointerOverThumb && !pointerOverThumb) trailOverlapOpacity = 1;
+    if (!trailScript?.active && wasPointerOverThumb && !pointerOverThumb) trailOverlapOpacity = 1;
     const lerpK = config.thumbnailOpacityLerp;
-    trailOverlapOpacity += (targetOpacity - trailOverlapOpacity) * lerpK;
-    if (Math.abs(trailOverlapOpacity - targetOpacity) < 0.002) trailOverlapOpacity = targetOpacity;
-    material.uniforms.uOpacity.value = trailOverlapOpacity;
+    if (!trailScript?.active) {
+      trailOverlapOpacity += (targetOpacity - trailOverlapOpacity) * lerpK;
+      if (Math.abs(trailOverlapOpacity - targetOpacity) < 0.002) trailOverlapOpacity = targetOpacity;
+    }
+    const finalOpacity = (trailScript?.active ? 1 : trailOverlapOpacity) * externalOpacityMultiplier;
+    material.uniforms.uOpacity.value = finalOpacity;
 
     wasPointerOverThumb = pointerOverThumb;
 
@@ -463,6 +545,72 @@ function createCustomCursorEffect(THREE, initialColor) {
         const colorVec = new THREE.Vector3(rgb.r / 255, rgb.g / 255, rgb.b / 255);
         material.uniforms.uColor.value = colorVec;
       }
+    },
+    /** カーソル追従の on/off（プロフィール演出中などに利用） */
+    setCursorFollow: (enabled) => {
+      isCursorFollowEnabled = Boolean(enabled);
+      if (!isCursorFollowEnabled) {
+        isMouseActive = false;
+      }
+    },
+    /** 外部から軌跡の明るさ（暗くする/消す）を上書きする係数 */
+    setCursorTrailOpacityMultiplier: (v) => {
+      externalOpacityMultiplier = Math.max(0, Math.min(1, Number(v)));
+    },
+    /**
+     * 背景軌跡を指定座標へイーズアウト移動→暗くして消す
+     * @returns {Promise<void>}
+     */
+    animateTrailToScreenPointAndFadeToZero: (xPx, yPx, options = {}) => {
+      const moveDurationMs = options.moveDurationMs ?? 420;
+      const waitDurationMs = options.waitDurationMs ?? 0;
+      const fadeDurationMs = options.fadeDurationMs ?? 650;
+
+      const rect = renderer.domElement.getBoundingClientRect();
+      const xNorm = ((xPx - rect.left) / rect.width) * 2 - 1;
+      const yNorm = -((yPx - rect.top) / rect.height) * 2 + 1;
+      const jitterRadiusPx = 10;
+      const jitterRadiusX = (jitterRadiusPx * 2) / rect.width;
+      const jitterRadiusY = (jitterRadiusPx * 2) / rect.height;
+
+      // 現在の先端を開始点として保存
+      const fromX = curvePoints[0].x;
+      const fromY = curvePoints[0].y;
+      const dx = xNorm - fromX;
+      const dy = yNorm - fromY;
+      const dist = Math.hypot(dx, dy);
+      const wobbleAmp = Math.min(0.1, Math.max(0.01, dist * 0.16));
+      const wobbleHz = 2.8 + Math.random() * 1.7;
+      const wobbleSeed = Math.random() * Math.PI * 2;
+
+      return new Promise((resolve) => {
+        // 既存のスクリプトが走っていたら置き換える
+        trailScript = {
+          active: true,
+          startTimeSec: clock.getElapsedTime(),
+          moveDurationSec: Math.max(0.001, moveDurationMs / 1000),
+          waitDurationSec: Math.max(0, waitDurationMs / 1000),
+          fadeDurationSec: Math.max(0.001, fadeDurationMs / 1000),
+          fromX,
+          fromY,
+          toX: xNorm,
+          toY: yNorm,
+          jitterX: 0,
+          jitterY: 0,
+          jitterStepX: jitterRadiusX * 0.03,
+          jitterStepY: jitterRadiusY * 0.03,
+          jitterRadiusX,
+          jitterRadiusY,
+          wobbleAmp,
+          wobbleHz,
+          wobbleSeed,
+          resolve
+        };
+
+        externalOpacityMultiplier = 1;
+        isCursorFollowEnabled = false;
+        isMouseActive = false;
+      });
     }
   };
 }

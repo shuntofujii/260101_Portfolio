@@ -87,16 +87,24 @@ describe('appModalRoutingController', () => {
 
   it('updateModalProjectInPlace: 選択状態と副作用を更新する', () => {
     const { controller, deps, state, refs } = createSetup();
-    const item = document.createElement('div');
-    item.dataset.projectId = 'p2';
-    document.body.appendChild(item);
+    const itemA = document.createElement('div');
+    itemA.dataset.projectId = 'p2';
+    const itemB = document.createElement('div');
+    itemB.dataset.projectId = 'p2';
+    document.body.appendChild(itemA);
+    document.body.appendChild(itemB);
 
+    refs.modalContainer.scrollTop = 220;
+    refs.modalContent.scrollTop = 140;
     controller.updateModalProjectInPlace({ id: 'p2', pageSlug: 'sepila' }, { fromSwipe: true });
 
     expect(state.currentState).toBe('modal');
     expect(state.selectedProject?.id).toBe('p2');
-    expect(item.classList.contains('selected')).toBe(true);
+    expect(itemA.classList.contains('selected')).toBe(true);
+    expect(itemB.classList.contains('selected')).toBe(true);
     expect(refs.modalContainer.dataset.swipeSettled).toBe('1');
+    expect(refs.modalContainer.scrollTop).toBe(0);
+    expect(refs.modalContent.scrollTop).toBe(0);
     expect(deps.renderModalContent).toHaveBeenCalled();
     expect(deps.preloadProjectVideos).toHaveBeenCalled();
     expect(deps.applyModalHistoryForProject).toHaveBeenCalled();
@@ -115,6 +123,21 @@ describe('appModalRoutingController', () => {
       expect.objectContaining({ id: 'p1' }),
       null
     );
+  });
+
+  it('openProjectModalFromRoute: 同一 projectId の複数サムネイルを一律 selected にする', () => {
+    const { controller } = createSetup();
+    const itemA = document.createElement('button');
+    itemA.dataset.projectId = 'p1';
+    const itemB = document.createElement('button');
+    itemB.dataset.projectId = 'p1';
+    document.body.appendChild(itemA);
+    document.body.appendChild(itemB);
+
+    controller.openProjectModalFromRoute({ id: 'p1', pageSlug: 'ejic' }, itemB);
+
+    expect(itemA.classList.contains('selected')).toBe(true);
+    expect(itemB.classList.contains('selected')).toBe(true);
   });
 
   it('bindRouteEventListeners: popstate で閉じる分岐が動く', () => {

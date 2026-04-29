@@ -2,6 +2,13 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
+    <script type="importmap">
+      {
+        "imports": {
+          "matter-js": "/vendor/matter.js"
+        }
+      }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
@@ -39,7 +46,7 @@
 
     <link rel="manifest" href="/site.webmanifest" />
 
-    <link rel="preload" href="/projects.json" as="fetch" />
+    <link rel="preload" href="/projects.json" as="fetch" crossorigin="anonymous" />
 
     <link rel="dns-prefetch" href="https://assets.shuntofujii.com" />
     <link rel="preconnect" href="https://assets.shuntofujii.com" crossorigin />
@@ -104,6 +111,31 @@
     <a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
     <header class="portfolio-title" id="portfolioTitle">
       <h1 class="portfolio-title-text">SHUNTO FUJII</h1>
+      <button
+        type="button"
+        class="profile-open-btn"
+        id="profileOpenBtn"
+        aria-label="プロフィールを開く"
+      >
+        <span class="profile-open-stack" aria-hidden="true">
+          <img
+            class="profile-open-img profile-open-img--back"
+            src="https://assets.shuntofujii.com/top/shuntofujii_1.webp?v=20260429"
+            alt=""
+            width="609"
+            height="720"
+            decoding="async"
+          />
+          <img
+            class="profile-open-img profile-open-img--front"
+            src="https://assets.shuntofujii.com/top/shuntofujii_2.webp?v=20260429"
+            alt=""
+            width="609"
+            height="720"
+            decoding="async"
+          />
+        </span>
+      </button>
     </header>
 
     <main id="main-content">
@@ -188,6 +220,23 @@
       </div>
     </div>
 
+    <div class="modal-overlay profile-modal-overlay" id="profileModalOverlay" hidden aria-hidden="true">
+      <div
+        class="modal-container profile-modal-container"
+        id="profileModalContainer"
+        data-state="closed"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="profileModalTitleHeading"
+      >
+        <button class="modal-close" id="profileModalClose" type="button" aria-label="プロフィールを閉じる">
+          ×
+        </button>
+        <div class="modal-content profile-modal-content" id="profileModalContent"></div>
+      </div>
+    </div>
+
     <div
       class="lightbox-overlay"
       id="lightboxOverlay"
@@ -210,7 +259,8 @@
       ></video>
     </div>
 
-    <script type="module" src="/app.js" defer></script>
+    <script src="/vendor/matter.js"></script>
+    <script type="module" src="/app.js"></script>
     <!--
       本HTMLは https://shuntofujii.com/ のポートフォリオテンプレートに基づいています。
       二次利用・改変時もこの出典表記は残してください（ライセンス・出典の明示のため）。

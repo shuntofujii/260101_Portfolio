@@ -140,4 +140,48 @@ describe('renderProjectNavigation', () => {
     expect(handlers.onClick).toHaveBeenCalledTimes(1);
     expect(handlers.onClick).toHaveBeenCalledWith(projects[0], firstItem);
   });
+
+  it('touchend で既定動作を抑止し click-through を防ぐ', () => {
+    const nav = document.createElement('nav');
+    const projects = createProjects();
+    const handlers = createHandlers();
+    Object.defineProperty(nav, 'scrollWidth', {
+      configurable: true,
+      get: () => nav.childElementCount * 100
+    });
+    Object.defineProperty(nav, 'clientWidth', {
+      configurable: true,
+      get: () => 400
+    });
+
+    renderProjectNavigation(nav, projects, {
+      baseAssetsUrl: '',
+      projectThumbnailSizePx: 90,
+      thumbnailFetchPriorityCount: 2,
+      handlers
+    });
+
+    const firstItem = nav.querySelector('.project-item');
+    const thumb = firstItem.querySelector('.project-thumbnail');
+    const touchStart = new Event('touchstart', { bubbles: true, cancelable: true });
+    Object.defineProperty(touchStart, 'touches', {
+      value: [{ clientX: 30, clientY: 40 }],
+      configurable: true
+    });
+    Object.defineProperty(touchStart, 'target', {
+      value: thumb,
+      configurable: true
+    });
+    nav.dispatchEvent(touchStart);
+
+    let prevented = false;
+    const touchEnd = new Event('touchend', { bubbles: true, cancelable: true });
+    touchEnd.preventDefault = () => {
+      prevented = true;
+    };
+    nav.dispatchEvent(touchEnd);
+
+    expect(prevented).toBe(true);
+    expect(handlers.onClick).toHaveBeenCalledTimes(1);
+  });
 });

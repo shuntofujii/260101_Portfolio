@@ -196,11 +196,14 @@ function setupProjectItemListeners(projectNavigationEl, projects, handlers) {
     }
   };
 
-  const onNavTouchEndCapture = () => {
+  const onNavTouchEndCapture = (e) => {
     if (!touchCandidateItem) return;
     const resolved = resolveProjectByItem(touchCandidateItem);
     touchCandidateItem = null;
     if (!resolved) return;
+    // タップ確定時に既定動作（合成 click）を止め、モーダル表示直後の click-through を防ぐ。
+    if (e?.cancelable) e.preventDefault();
+    e?.stopPropagation?.();
     suppressClickUntil = Date.now() + TOUCH_SYNTHETIC_CLICK_GUARD_MS;
     onClick(resolved.project, resolved.item);
   };
@@ -212,7 +215,7 @@ function setupProjectItemListeners(projectNavigationEl, projects, handlers) {
   projectNavigationEl.addEventListener('click', onNavClickCapture, true);
   projectNavigationEl.addEventListener('touchstart', onNavTouchStartCapture, { capture: true, passive: true });
   projectNavigationEl.addEventListener('touchmove', onNavTouchMoveCapture, { capture: true, passive: true });
-  projectNavigationEl.addEventListener('touchend', onNavTouchEndCapture, { capture: true, passive: true });
+  projectNavigationEl.addEventListener('touchend', onNavTouchEndCapture, { capture: true, passive: false });
   projectNavigationEl.addEventListener('touchcancel', onNavTouchCancelCapture, { capture: true, passive: true });
 
   projectNavigationEl.__navDelegationCleanup = () => {

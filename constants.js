@@ -45,6 +45,34 @@ export const CURSOR_CONFIG = {
 
 export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 
+/** プロフィール入場アニメ（Matter.js） */
+export const PROFILE_INTRO_ASSETS_V = '?v=20260429';
+/** 真上を0°、時計回りに真左が90°（Matter は y 下向き正＝上は vy 負） */
+export const PROFILE_INTRO_LAUNCH_FROM_UP_MIN_DEG = 45;
+export const PROFILE_INTRO_LAUNCH_FROM_UP_MAX_DEG = 90;
+/** Matter の目安 y≈1。落下中の加速感（初速は別調整） */
+export const PROFILE_INTRO_GRAVITY_Y = 1.52;
+/** Engine gravity と掛け合わせるスケール（既定 0.001）。上げると落下が速く重く感じる */
+export const PROFILE_INTRO_GRAVITY_SCALE = 0.00112;
+/** 最大シミュレーション時間（この時間で強制終了→差し替え） */
+export const PROFILE_INTRO_MAX_MS = 8000;
+/** 運動エネルギーが下回ってからこの時間経過で静止とみなす */
+export const PROFILE_INTRO_SETTLE_MS = 520;
+/** 静止判定の運動エネルギー閾値（大きいほど早く終わる） */
+export const PROFILE_INTRO_KINETIC_EPS = 3.2;
+export const PROFILE_INTRO_START_SIZE_PX = 44;
+/** 放出時の基準高さに掛ける倍率（ボタン内へ収めるクリップはそのまま） */
+export const PROFILE_INTRO_START_SIZE_SCALE_MIN = 0.86;
+export const PROFILE_INTRO_START_SIZE_SCALE_MAX = 1.16;
+export const PROFILE_INTRO_TARGET_WIDTH_FRAC = 2 / 3;
+/** 静止後 shuntofujii.webp → 重ね画像に見せてからモーダルへ（ms） */
+export const PROFILE_INTRO_SWAP_HOLD_MS = 420;
+/** 顔の衝突形状（楕円近似）: 画像実寸より細身にする係数 */
+export const PROFILE_INTRO_FACE_COLLIDER_WIDTH_RATIO = 0.84;
+export const PROFILE_INTRO_FACE_COLLIDER_HEIGHT_RATIO = 0.94;
+/** 楕円近似の分割数（多いほど自然、重い） */
+export const PROFILE_INTRO_FACE_POLYGON_SIDES = 36;
+
 /** コンテキストパネルで「Opening Soon」を付与するプロジェクト id（projects.json の id と一致） */
 export const OPENING_SOON_PROJECT_ID = 'project-08';
 

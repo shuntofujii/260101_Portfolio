@@ -4,7 +4,10 @@ import {
   getPathnameProjectSlug,
   findLegacyProjectFromHash,
   applyModalHistoryForProject,
+  isProfileModalPath,
+  applyHistoryForProfileModal,
   restoreBaseHistoryOnModalClose,
+  restoreBaseHistoryOnProfileModalClose,
   applyModalDocumentMeta,
   restoreBaseDocumentMeta
 } from '../appRouting.js';
@@ -60,11 +63,37 @@ describe('appRouting.js', () => {
     expect(pushSpy).toHaveBeenCalledTimes(1);
   });
 
+  it('isProfileModalPath は /profile/ を判定する', () => {
+    expect(isProfileModalPath('/profile/')).toBe(true);
+    expect(isProfileModalPath('/profile')).toBe(true);
+    expect(isProfileModalPath('/ejic/')).toBe(false);
+  });
+
+  it('applyHistoryForProfileModal は path が異なる時のみ pushState する', () => {
+    history.replaceState(null, '', '/');
+    const pushSpy = vi.spyOn(history, 'pushState');
+
+    applyHistoryForProfileModal();
+    expect(pushSpy).toHaveBeenCalledTimes(1);
+
+    history.replaceState(null, '', '/profile/');
+    applyHistoryForProfileModal();
+    expect(pushSpy).toHaveBeenCalledTimes(1);
+  });
+
   it('restoreBaseHistoryOnModalClose は slug path なら / へ戻す', () => {
     history.replaceState(null, '', '/ejic/');
     const replaceSpy = vi.spyOn(history, 'replaceState');
 
     restoreBaseHistoryOnModalClose('Base Title');
+    expect(replaceSpy).toHaveBeenCalledWith(null, 'Base Title', '/');
+  });
+
+  it('restoreBaseHistoryOnProfileModalClose は /profile/ なら / へ戻す', () => {
+    history.replaceState(null, '', '/profile/');
+    const replaceSpy = vi.spyOn(history, 'replaceState');
+
+    restoreBaseHistoryOnProfileModalClose('Base Title');
     expect(replaceSpy).toHaveBeenCalledWith(null, 'Base Title', '/');
   });
 

@@ -14,6 +14,13 @@ export const state = {
   modalTriggerElement: null,
   modalFocusTrapHandler: null,
 
+  // Profile modal / intro（入場アニメは profileIntroActive で排他）
+  profileModalOpen: false,
+  profileIsClosing: false,
+  profileIntroActive: false,
+  profileModalTriggerElement: null,
+  profileFocusTrapHandler: null,
+
   // Lightbox
   lightboxTriggerElement: null,
   lightboxFocusTrapHandler: null,

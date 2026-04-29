@@ -8,6 +8,7 @@ export function initializeAppRefs(options = {}) {
 
   setRefs({
     portfolioTitle: document.getElementById('portfolioTitle'),
+    profileOpenBtn: document.getElementById('profileOpenBtn'),
     contextPanel: document.getElementById('contextPanel'),
     focusVisual: document.getElementById('focusVisual'),
     heroVideoBase: document.getElementById('bgVideo'),
@@ -20,6 +21,10 @@ export function initializeAppRefs(options = {}) {
     modalContainer: document.querySelector('.modal-container'),
     modalClose: document.getElementById('modalClose'),
     modalContent: document.getElementById('modalContent'),
+    profileModalOverlay: document.getElementById('profileModalOverlay'),
+    profileModalContainer: document.getElementById('profileModalContainer'),
+    profileModalClose: document.getElementById('profileModalClose'),
+    profileModalContent: document.getElementById('profileModalContent'),
     lightboxOverlay: document.getElementById('lightboxOverlay'),
     lightboxImage: document.getElementById('lightboxImage'),
     lightboxVideo: document.getElementById('lightboxVideo'),

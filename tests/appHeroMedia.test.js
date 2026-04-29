@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../videoCache.js', () => ({
   ensureVideoPlayUrl: vi.fn((url) => Promise.resolve(url))
@@ -11,6 +11,14 @@ describe('updateHeroMedia', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
+    vi.stubGlobal('requestAnimationFrame', (cb) => {
+      cb();
+      return 0;
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('同一 canonical src では再初期化しない', () => {
@@ -48,5 +56,33 @@ describe('updateHeroMedia', () => {
     expect(video.style.objectFit).toBe('cover');
     expect(video.style.objectPosition).toBe('center center');
     expect(video.style.getPropertyValue('transform')).toBe('');
+  });
+
+  it('準備完了イベントまで opacity 0 を維持し、準備後に再生する', async () => {
+    const video = document.createElement('video');
+    video.play = vi.fn(() => Promise.resolve());
+    video.load = vi.fn();
+
+    updateHeroMedia(
+      { type: 'video', src: '/ready.webm' },
+      video,
+      { videoUpdateFadeDelayMs: 0, videoShowFallbackMs: 200 }
+    );
+
+    vi.advanceTimersByTime(0);
+    await Promise.resolve();
+
+    expect(video.style.opacity).toBe('0');
+    expect(video.play).not.toHaveBeenCalled();
+
+    Object.defineProperty(video, 'readyState', {
+      configurable: true,
+      get: () => 2
+    });
+    video.dispatchEvent(new Event('loadeddata'));
+    await Promise.resolve();
+
+    expect(video.play).toHaveBeenCalledTimes(1);
+    expect(video.style.opacity).toBe('1');
   });
 });

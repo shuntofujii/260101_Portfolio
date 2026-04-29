@@ -7,7 +7,9 @@ export function bindGlobalEventListeners(refs, handlers) {
     onFocusVisualTouchStart,
     onModalTouchStart,
     onModalTouchMove,
-    onModalTouchEnd
+    onModalTouchEnd,
+    onCloseProfileModal,
+    onProfileOpenClick
   } = handlers;
 
   const removeListeners = [];
@@ -56,6 +58,30 @@ export function bindGlobalEventListeners(refs, handlers) {
   }
 
   addListener(refs.portfolioTitle, 'click', onPortfolioTitleClick);
+
+  const triggerProfileClose = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    onCloseProfileModal();
+  };
+  if (refs.profileModalClose && typeof onCloseProfileModal === 'function') {
+    addListener(refs.profileModalClose, 'click', triggerProfileClose);
+    addListener(refs.profileModalClose, 'pointerup', triggerProfileClose, { passive: false });
+    addListener(refs.profileModalClose, 'touchend', triggerProfileClose, { passive: false });
+  }
+  if (refs.profileModalOverlay && typeof onCloseProfileModal === 'function') {
+    addListener(refs.profileModalOverlay, 'click', (e) => {
+      if (e.target === refs.profileModalOverlay) onCloseProfileModal();
+    });
+  }
+  if (refs.profileOpenBtn && typeof onProfileOpenClick === 'function') {
+    addListener(refs.profileOpenBtn, 'click', (e) => {
+      e.stopPropagation();
+      onProfileOpenClick(e);
+    });
+  }
 
   /*
    * #focusVisual は pointer-events: none のため、ここでは document で拾う。
