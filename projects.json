@@ -15,70 +15,292 @@
     "description": "デートプラン投稿・評価サイト「DATEs」をリリースしました。\nサービス設計〜UI/UXデザイン〜フロントコーディング、SNS運用、また自治体との連携など、代表として必死に手を動かしました。",
     "projectSlug": "dates",
     "modalMetaItems": [
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
-      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" },
-      { "label": "Team", "value": "Marketing：小泉 昂也 / Development：橋口 健志、山下 郁矢 / Omine：久次米 啓佑", "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260427" }
+      {
+        "label": "Domain",
+        "value": "$domain",
+        "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260429"
+      },
+      {
+        "label": "Year",
+        "value": "$year",
+        "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260429"
+      },
+      {
+        "label": "Disciplines",
+        "value": "$disciplines",
+        "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260429"
+      },
+      {
+        "label": "Toolkits",
+        "value": "$toolkits",
+        "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429"
+      },
+      {
+        "label": "Team",
+        "value": "Marketing：小泉 昂也 / Development：橋口 健志、山下 郁矢 / Omine：久次米 啓佑",
+        "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260429"
+      }
     ],
     "explicitModal": {
       "segments": [
-        { "type": "imageRow", "files": ["dates_p_1.webp", "dates_p_2.webp"] },
-        { "type": "imageRow", "files": ["dates_p_3.webp", "dates_p_4.webp", "dates_p_5.webp"] },
-        { "type": "sectionTitle", "text": "Media Deck" },
-        { "type": "imageRow", "files": ["deck_p_1.webp", "deck_p_2.webp"] },
-        { "type": "imageRow", "files": ["deck_p_3.webp", "deck_p_4.webp", "deck_p_5.webp"] },
-        { "type": "imageRow", "files": ["deck_p_6.webp", "deck_p_7.webp", "deck_p_8.webp"] },
-        { "type": "imageRow", "files": ["deck_p_9.webp", "deck_p_10.webp", "deck_p_11.webp"] },
-        { "type": "sectionTitle", "text": "Logo" },
-        { "type": "imageRow", "files": ["logoprocess_p_1.webp", "logoprocess_p_2.webp", "logoprocess_p_3.webp", "logoprocess_p_4.webp", "logoprocess_p_5.webp"] },
-        { "type": "sectionTitle", "text": "SNS" },
-        { "type": "imageRow", "files": ["plan_p_1.webp", "plan_p_2.webp"] },
-        { "type": "imageRow", "files": ["plan_p_3.webp", "plan_p_4.webp", "plan_p_5.webp"] },
-        { "type": "subtitle", "text": "Plans" },
-        { "type": "imageRow", "files": ["SNS_p_1.webp", "SNS_p_2.webp", "SNS_p_3.webp"] },
-        { "type": "imageRow", "files": ["SNS_p_4.webp", "SNS_p_5.webp", "SNS_p_6.webp"] },
-        { "type": "imageRow", "files": ["SNS_p_7.webp", "SNS_p_8.webp", "SNS_p_9.webp"] },
-        { "type": "imageRow", "files": ["SNS_p_10.webp", "SNS_p_11.webp", "SNS_p_12.webp"] },
-        { "type": "sectionTitle", "text": "YOKOLAB" },
-        { "type": "subtitle", "text": "Proposal 1" },
-        { "type": "imageRow", "files": ["proposal1_p_1.webp", "proposal1_p_2.webp"] },
-        { "type": "imageRow", "files": ["proposal1_p_3.webp", "proposal1_p_4.webp", "proposal1_p_5.webp"] },
-        { "type": "imageRow", "files": ["proposal1_p_6.webp", "proposal1_p_7.webp", "proposal1_p_8.webp"] },
-        { "type": "imageRow", "files": ["proposal1_p_9.webp", "proposal1_p_10.webp", "proposal1_p_11.webp"] },
-        { "type": "subtitle", "text": "Proposal 2" },
-        { "type": "imageRow", "files": ["proposal2_p_1.webp", "proposal2_p_2.webp"] },
-        { "type": "imageRow", "files": ["proposal2_p_3.webp", "proposal2_p_4.webp", "proposal2_p_5.webp"] },
-        { "type": "imageRow", "files": ["proposal2_p_6.webp", "proposal2_p_7.webp", "proposal2_p_8.webp"] },
-        { "type": "imageRow", "files": ["proposal2_p_9.webp", "proposal2_p_10.webp", "proposal2_p_11.webp"] },
-        { "type": "imageRow", "files": ["proposal2_p_12.webp", "proposal2_p_13.webp", "proposal2_p_14.webp"] },
-        { "type": "subtitle", "text": "News" },
-        { "type": "imageRow", "files": ["news_p_1.webp", "news_p_2.webp"] },
-        { "type": "sectionTitle", "text": "Others" },
-        { "type": "imageRow", "files": ["DATEsT_p_1.webp", "DATEsT_p_2.webp"] },
-        { "type": "imageRow", "files": ["others_p_1.webp", "others_p_2.webp", "others_p_3.webp"] },
-        { "type": "sectionTitle", "text": "Team" },
-        { "type": "imageRow", "files": ["member_p_1.webp"] },
-        { "type": "imageRow", "files": ["member_2.webp", "member_3.webp", "member_4.webp", "member_5.webp"], "imageStyle": "circle" }
+        {
+          "type": "imageRow",
+          "files": [
+            "dates_p_1.webp",
+            "dates_p_2.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "dates_p_3.webp",
+            "dates_p_4.webp",
+            "dates_p_5.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "Media Deck"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "deck_p_1.webp",
+            "deck_p_2.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "deck_p_3.webp",
+            "deck_p_4.webp",
+            "deck_p_5.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "deck_p_6.webp",
+            "deck_p_7.webp",
+            "deck_p_8.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "deck_p_9.webp",
+            "deck_p_10.webp",
+            "deck_p_11.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "Logo"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "logoprocess_p_1.webp",
+            "logoprocess_p_2.webp",
+            "logoprocess_p_3.webp",
+            "logoprocess_p_4.webp",
+            "logoprocess_p_5.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "SNS"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "plan_p_1.webp",
+            "plan_p_2.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "plan_p_3.webp",
+            "plan_p_4.webp",
+            "plan_p_5.webp"
+          ]
+        },
+        {
+          "type": "subtitle",
+          "text": "Plans"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "SNS_p_1.webp",
+            "SNS_p_2.webp",
+            "SNS_p_3.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "SNS_p_4.webp",
+            "SNS_p_5.webp",
+            "SNS_p_6.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "SNS_p_7.webp",
+            "SNS_p_8.webp",
+            "SNS_p_9.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "SNS_p_10.webp",
+            "SNS_p_11.webp",
+            "SNS_p_12.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "YOKOLAB"
+        },
+        {
+          "type": "subtitle",
+          "text": "Proposal 1"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "proposal1_p_1.webp",
+            "proposal1_p_2.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "proposal1_p_3.webp",
+            "proposal1_p_4.webp",
+            "proposal1_p_5.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "proposal1_p_6.webp",
+            "proposal1_p_7.webp",
+            "proposal1_p_8.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "proposal1_p_9.webp",
+            "proposal1_p_10.webp",
+            "proposal1_p_11.webp"
+          ]
+        },
+        {
+          "type": "subtitle",
+          "text": "Proposal 2"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "proposal2_p_1.webp",
+            "proposal2_p_2.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "proposal2_p_3.webp",
+            "proposal2_p_4.webp",
+            "proposal2_p_5.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "proposal2_p_6.webp",
+            "proposal2_p_7.webp",
+            "proposal2_p_8.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "proposal2_p_9.webp",
+            "proposal2_p_10.webp",
+            "proposal2_p_11.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "proposal2_p_12.webp",
+            "proposal2_p_13.webp",
+            "proposal2_p_14.webp"
+          ]
+        },
+        {
+          "type": "subtitle",
+          "text": "News"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "news_p_1.webp",
+            "news_p_2.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "Others"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "DATEsT_p_1.webp",
+            "DATEsT_p_2.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "others_p_1.webp",
+            "others_p_2.webp",
+            "others_p_3.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "Team"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "member_p_1.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "member_2.webp",
+            "member_3.webp",
+            "member_4.webp",
+            "member_5.webp"
+          ],
+          "imageStyle": "circle"
+        }
       ]
     },
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-01.webm?v=20260427"
+      "src": "https://assets.shuntofujii.com/top/video-01.webm?v=20260429"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-01.webp?v=20260427",
-    "gallery": [
-      {
-        "type": "image",
-        "src": "https://assets.shuntofujii.com/dates/placeholder-image.jpg?v=20260427",
-        "caption": "メインビジュアル"
-      },
-      {
-        "type": "video",
-        "src": "https://assets.shuntofujii.com/dates/placeholder-video.webm?v=20260427",
-        "caption": "モーションデザイン"
-      }
-    ],
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-01.webp?v=20260429",
     "links": [
       {
         "label": "Behance",
@@ -103,56 +325,165 @@
     "description": "マイクロソフト社主催の新規事業ピッチイベント「Empower Japan Intrapreneur Community」のクリエイティブディレクションを行いました。\nイベントのロゴ、発表者登壇時の事業紹介動画、Teams背景など、幅広く制作させていただきました。",
     "projectSlug": "ejic",
     "modalMetaItems": [
-      { "label": "Client", "value": "日本マイクロソフト株式会社", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260427" },
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
-      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
+      {
+        "label": "Client",
+        "value": "日本マイクロソフト株式会社",
+        "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260429"
+      },
+      {
+        "label": "Domain",
+        "value": "$domain",
+        "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260429"
+      },
+      {
+        "label": "Year",
+        "value": "$year",
+        "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260429"
+      },
+      {
+        "label": "Disciplines",
+        "value": "$disciplines",
+        "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260429"
+      },
+      {
+        "label": "Toolkits",
+        "value": "$toolkits",
+        "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429"
+      }
     ],
     "explicitModal": {
       "segments": [
-        { "type": "sectionTitle", "text": "Intro Video" },
-        { "type": "video", "file": "fix_m_1.webm" },
-        { "type": "imageRow", "files": ["fix_p_1.webp", "fix_p_2.webp"] },
-        { "type": "video", "file": "spaceship_m_1.webm" },
-        { "type": "imageRow", "files": ["spaceship_p_1.webp", "spaceship_p_2.webp", "spaceship_p_3.webp"] },
-        { "type": "video", "file": "fix_m_2.webm" },
-        { "type": "sectionTitle", "text": "Collateral" },
-        { "type": "subtitle", "text": "Teams Background" },
-        { "type": "imageRow", "files": ["background_p_1.webp", "background_p_2.webp", "background_p_3.webp"] },
-        { "type": "subtitle", "text": "Ranking Assets" },
-        { "type": "imageRow", "files": ["ranking_p_1.webp", "ranking_p_2.webp"] },
-        { "type": "imageRow", "files": ["ranking_p_3.webp", "ranking_p_4.webp"] },
-        { "type": "sectionTitle", "text": "Logo" },
-        { "type": "imageRow", "files": ["logo_p_1.webp"] },
-        { "type": "imageRow", "files": ["logo_p_2.webp"] },
-        { "type": "subtitle", "text": "Showcase" },
-        { "type": "imageRow", "files": ["logo_p_3.webp", "logo_p_4.webp"] },
-        { "type": "sectionTitle", "text": "Early Works" },
-        { "type": "video", "file": "2ndevent_m_1.webm" },
-        { "type": "imageRow", "files": ["2ndevent_p_1.webp", "2ndevent_p_2.webp"] },
-        { "type": "imageRow", "files": ["2ndeventbackground_p_1.webp"] },
-        { "type": "sectionTitle", "text": "Event Highlights" },
-        { "type": "imageRow", "files": ["other_p_1.webp", "other_p_2.webp"] }
+        {
+          "type": "sectionTitle",
+          "text": "Intro Video"
+        },
+        {
+          "type": "video",
+          "file": "fix_m_1.webm"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "fix_p_1.webp",
+            "fix_p_2.webp"
+          ]
+        },
+        {
+          "type": "video",
+          "file": "spaceship_m_1.webm"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "spaceship_p_1.webp",
+            "spaceship_p_2.webp",
+            "spaceship_p_3.webp"
+          ]
+        },
+        {
+          "type": "video",
+          "file": "fix_m_2.webm"
+        },
+        {
+          "type": "sectionTitle",
+          "text": "Collateral"
+        },
+        {
+          "type": "subtitle",
+          "text": "Teams Background"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "background_p_1.webp",
+            "background_p_2.webp",
+            "background_p_3.webp"
+          ]
+        },
+        {
+          "type": "subtitle",
+          "text": "Ranking Assets"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "ranking_p_1.webp",
+            "ranking_p_2.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "ranking_p_3.webp",
+            "ranking_p_4.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "Logo"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "logo_p_1.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "logo_p_2.webp"
+          ]
+        },
+        {
+          "type": "subtitle",
+          "text": "Showcase"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "logo_p_3.webp",
+            "logo_p_4.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "Early Works"
+        },
+        {
+          "type": "video",
+          "file": "2ndevent_m_1.webm"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "2ndevent_p_1.webp",
+            "2ndevent_p_2.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "2ndeventbackground_p_1.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "Event Highlights"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "other_p_1.webp",
+            "other_p_2.webp"
+          ]
+        }
       ]
     },
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-02.webm?v=20260427"
+      "src": "https://assets.shuntofujii.com/top/video-02.webm?v=20260429"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-02.webp?v=20260427",
-    "gallery": [
-      {
-        "type": "video",
-        "src": "https://assets.shuntofujii.com/ejic/fix_m_1.webm?v=20260427",
-        "caption": "Intro Video"
-      },
-      {
-        "type": "image",
-        "src": "https://assets.shuntofujii.com/ejic/fix_p_1.webp?v=20260427",
-        "caption": "プロセス"
-      }
-    ],
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-02.webp?v=20260429",
     "links": [
       {
         "label": "YouTube",
@@ -177,34 +508,37 @@
     "tagline": "ARの普及を見越したSNS",
     "description": "香港に拠点を置くAR×Web3の会社IZUMOxr.Ltdにて、Marketing Managerを務めました。\n2022年6月の事業立ち上げから、2023年12月までの1年半で、コミュニティ立ち上げ(Discord登録者約1万人)やSNS立ち上げ(𝕏フォロワー約2万人)、それらに関わるキャンペーン実施やクリエイティブ制作など幅広くプロジェクトに携わりました。",
     "modalMetaItems": [
-      { "label": "Client", "value": "IZUMOxr Ltd.", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260427" },
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
-      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
+      {
+        "label": "Client",
+        "value": "IZUMOxr Ltd.",
+        "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260429"
+      },
+      {
+        "label": "Domain",
+        "value": "$domain",
+        "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260429"
+      },
+      {
+        "label": "Year",
+        "value": "$year",
+        "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260429"
+      },
+      {
+        "label": "Disciplines",
+        "value": "$disciplines",
+        "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260429"
+      },
+      {
+        "label": "Toolkits",
+        "value": "$toolkits",
+        "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429"
+      }
     ],
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-04.webm?v=20260427"
+      "src": "https://assets.shuntofujii.com/top/video-04.webm?v=20260429"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-04.webp?v=20260427",
-    "gallery": [
-      {
-        "type": "image",
-        "src": "https://assets.shuntofujii.com/izumo/placeholder-image.jpg?v=20260427",
-        "caption": "ロゴデザイン"
-      },
-      {
-        "type": "image",
-        "src": "https://assets.shuntofujii.com/izumo/placeholder-image.jpg?v=20260427",
-        "caption": "パッケージデザイン"
-      },
-      {
-        "type": "video",
-        "src": "https://assets.shuntofujii.com/izumo/placeholder-video.webm?v=20260427",
-        "caption": "ブランドムービー"
-      }
-    ],
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-04.webp?v=20260429",
     "links": [
       {
         "label": "Web",
@@ -321,17 +655,37 @@
     "tagline": "AR × 人から生まれる新体験",
     "description": "国内有数のMR開発会社MuuMu社のサービス「デテクル」のマーケティング戦略策定及び、その実行を担当しております。\n戦略策定のためのリサーチ、実行に伴う制作〜商談まで全てのプロセスを担っております。",
     "modalMetaItems": [
-      { "label": "Client", "value": "株式会社MuuMu", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260427" },
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
-      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
+      {
+        "label": "Client",
+        "value": "株式会社MuuMu",
+        "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260429"
+      },
+      {
+        "label": "Domain",
+        "value": "$domain",
+        "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260429"
+      },
+      {
+        "label": "Year",
+        "value": "$year",
+        "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260429"
+      },
+      {
+        "label": "Disciplines",
+        "value": "$disciplines",
+        "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260429"
+      },
+      {
+        "label": "Toolkits",
+        "value": "$toolkits",
+        "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429"
+      }
     ],
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-05.webm?v=20260427"
+      "src": "https://assets.shuntofujii.com/top/video-05.webm?v=20260429"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-05.webp?v=20260427",
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-05.webp?v=20260429",
     "projectSlug": "deteqle",
     "cases": [
       {
@@ -362,7 +716,10 @@
             "title": "ゾンビに襲われた",
             "assetPrefix": "content_zombie",
             "videos": 2,
-            "imageGroups": [5, 5]
+            "imageGroups": [
+              5,
+              5
+            ]
           }
         ]
       },
@@ -387,13 +744,6 @@
         ]
       }
     ],
-    "gallery": [
-      {
-        "type": "video",
-        "src": "https://assets.shuntofujii.com/deteqle/placeholder-video.webm?v=20260427",
-        "caption": "メインアニメーション"
-      }
-    ],
     "links": []
   },
   {
@@ -413,112 +763,309 @@
     "projectSlug": "rockpaperdead",
     "explicitModal": {
       "segments": [
-        { "type": "sectionTitle", "text": "Trailer" },
-        { "type": "video", "file": "Trailer_m_1.webm" },
-        { "type": "sectionTitle", "text": "Brian's House" },
-        { "type": "imageRow", "files": ["brianhouse_p_1.webp"] },
         {
-          "type": "mediaRow",
-          "items": [
-            { "type": "video", "file": "brianhouseprocess_m_1.webm" },
-            { "type": "video", "file": "brianhouseprocess_m_2.webm" }
-          ]
+          "type": "sectionTitle",
+          "text": "Trailer"
         },
-        { "type": "sectionTitle", "text": "GPS君" },
-        { "type": "imageRow", "files": ["gps_p_1.webp"] },
         {
-          "type": "mediaRow",
-          "items": [
-            { "type": "image", "file": "gpsprocess_p_1.webp" },
-            { "type": "video", "file": "gpsprocess_m_2.webm" }
-          ]
+          "type": "video",
+          "file": "Trailer_m_1.webm"
         },
-        { "type": "sectionTitle", "text": "Colosseum" },
-        { "type": "imageRow", "files": ["colosseum_p_1.webp"] },
-        { "type": "imageRow", "files": ["colosseumprocess_p_1.webp", "colosseumprocess_p_2.webp"] },
-        { "type": "sectionTitle", "text": "SWAT" },
-        { "type": "imageRow", "files": ["swat_p_1.webp"] },
         {
-          "type": "mediaRow",
-          "items": [
-            { "type": "image", "file": "swatprocess_p_1.webp" },
-            { "type": "video", "file": "swatprocess_m_2.webm" }
-          ]
+          "type": "sectionTitle",
+          "text": "Brian's House"
         },
-        { "type": "sectionTitle", "text": "GanGoe's House" },
-        { "type": "imageRow", "files": ["gangoehouse_p_1.webp"] },
-        {
-          "type": "mediaRow",
-          "items": [
-            { "type": "image", "file": "gangoehouseprocess_p_2.webp" },
-            { "type": "video", "file": "gangoehouseprocess_m_6.webm" }
-          ]
-        },
-        { "type": "imageRow", "files": ["gangoehouseprocess_p_3.webp"] },
-        { "type": "video", "file": "gangoehouseprocess_m_1.webm" },
-        { "type": "imageRow", "files": ["gangoehouseprocess_p_4.webp", "gangoehouseprocess_p_5.webp"] },
-        {
-          "type": "mediaRow",
-          "items": [
-            { "type": "video", "file": "gangoehouseprocess_m_7.webm" },
-            { "type": "video", "file": "gangoehouseprocess_m_8.webm" }
-          ]
-        },
-        { "type": "sectionTitle", "text": "Red Carpet" },
-        { "type": "imageRow", "files": ["interview_p_1.webp"] },
-        {
-          "type": "mediaRow",
-          "items": [
-            { "type": "video", "file": "interviewprocess_m_1.webm" },
-            { "type": "image", "file": "interviewprocess_p_1.webp" }
-          ]
-        },
-        { "type": "imageRow", "files": ["interviewprocess_p_2.webp"] },
-        { "type": "sectionTitle", "text": "Cars" },
-        { "type": "imageRow", "files": ["numberplate_p_1.webp", "numberplate_p_2.webp", "numberplate_p_3.webp"] },
         {
           "type": "imageRow",
-          "files": ["numberplateprocess_p_1.webp", "numberplateprocess_p_2.webp", "numberplateprocess_p_3.webp"]
+          "files": [
+            "brianhouse_p_1.webp"
+          ]
         },
-        { "type": "sectionTitle", "text": "Team" },
-        { "type": "imageRow", "files": ["groupphoto_p_1.webp"] },
-        { "type": "sectionTitle", "text": "グーチョキデッド" },
-        { "type": "imageRow", "files": ["rockpaperdead_p_1.webp"] },
-        { "type": "imageRow", "files": ["rockpaperdeadprocess_p_1.webp", "rockpaperdeadprocess_p_2.webp"] },
-        { "type": "imageRow", "files": ["rockpaperdeadprocess_p_3.webp"] },
-        { "type": "sectionTitle", "text": "ZFILMS" },
-        { "type": "imageRow", "files": ["logo_p_1.webp"] },
-        { "type": "imageRow", "files": ["logoprocess_p_1.webp", "logoprocess_p_2.webp"] },
-        { "type": "imageRow", "files": ["logoprocess_p_3.webp"] },
-        { "type": "sectionTitle", "text": "ディレクターズ葛藤" },
-        { "type": "imageRow", "files": ["katto_p_1.webp"] },
-        { "type": "imageRow", "files": ["katto_p_2.webp", "katto_p_3.webp"] }
+        {
+          "type": "mediaRow",
+          "items": [
+            {
+              "type": "video",
+              "file": "brianhouseprocess_m_1.webm"
+            },
+            {
+              "type": "video",
+              "file": "brianhouseprocess_m_2.webm"
+            }
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "GPS君"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "gps_p_1.webp"
+          ]
+        },
+        {
+          "type": "mediaRow",
+          "items": [
+            {
+              "type": "image",
+              "file": "gpsprocess_p_1.webp"
+            },
+            {
+              "type": "video",
+              "file": "gpsprocess_m_2.webm"
+            }
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "Colosseum"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "colosseum_p_1.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "colosseumprocess_p_1.webp",
+            "colosseumprocess_p_2.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "SWAT"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "swat_p_1.webp"
+          ]
+        },
+        {
+          "type": "mediaRow",
+          "items": [
+            {
+              "type": "image",
+              "file": "swatprocess_p_1.webp"
+            },
+            {
+              "type": "video",
+              "file": "swatprocess_m_2.webm"
+            }
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "GanGoe's House"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "gangoehouse_p_1.webp"
+          ]
+        },
+        {
+          "type": "mediaRow",
+          "items": [
+            {
+              "type": "image",
+              "file": "gangoehouseprocess_p_2.webp"
+            },
+            {
+              "type": "video",
+              "file": "gangoehouseprocess_m_6.webm"
+            }
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "gangoehouseprocess_p_3.webp"
+          ]
+        },
+        {
+          "type": "video",
+          "file": "gangoehouseprocess_m_1.webm"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "gangoehouseprocess_p_4.webp",
+            "gangoehouseprocess_p_5.webp"
+          ]
+        },
+        {
+          "type": "mediaRow",
+          "items": [
+            {
+              "type": "video",
+              "file": "gangoehouseprocess_m_7.webm"
+            },
+            {
+              "type": "video",
+              "file": "gangoehouseprocess_m_8.webm"
+            }
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "Red Carpet"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "interview_p_1.webp"
+          ]
+        },
+        {
+          "type": "mediaRow",
+          "items": [
+            {
+              "type": "video",
+              "file": "interviewprocess_m_1.webm"
+            },
+            {
+              "type": "image",
+              "file": "interviewprocess_p_1.webp"
+            }
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "interviewprocess_p_2.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "Cars"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "numberplate_p_1.webp",
+            "numberplate_p_2.webp",
+            "numberplate_p_3.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "numberplateprocess_p_1.webp",
+            "numberplateprocess_p_2.webp",
+            "numberplateprocess_p_3.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "Team"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "groupphoto_p_1.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "グーチョキデッド"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "rockpaperdead_p_1.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "rockpaperdeadprocess_p_1.webp",
+            "rockpaperdeadprocess_p_2.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "rockpaperdeadprocess_p_3.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "ZFILMS"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "logo_p_1.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "logoprocess_p_1.webp",
+            "logoprocess_p_2.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "logoprocess_p_3.webp"
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "ディレクターズ葛藤"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "katto_p_1.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "katto_p_2.webp",
+            "katto_p_3.webp"
+          ]
+        }
       ]
     },
     "modalMetaItems": [
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
-      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" },
-      { "label": "Team", "value": "Director & Producer：浅尾 尭洋 / Line Producer：渡邉 康裕", "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260427" }
+      {
+        "label": "Domain",
+        "value": "$domain",
+        "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260429"
+      },
+      {
+        "label": "Year",
+        "value": "$year",
+        "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260429"
+      },
+      {
+        "label": "Disciplines",
+        "value": "$disciplines",
+        "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260429"
+      },
+      {
+        "label": "Toolkits",
+        "value": "$toolkits",
+        "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429"
+      },
+      {
+        "label": "Team",
+        "value": "Director & Producer：浅尾 尭洋 / Line Producer：渡邉 康裕",
+        "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260429"
+      }
     ],
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-06.webm?v=20260427"
+      "src": "https://assets.shuntofujii.com/top/video-06.webm?v=20260429"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-06.webp?v=20260427",
-    "gallery": [
-      {
-        "type": "image",
-        "src": "https://assets.shuntofujii.com/rockpaperdead/rockpaperdead_p_1.webp?v=20260427",
-        "caption": "メインビジュアル"
-      },
-      {
-        "type": "image",
-        "src": "https://assets.shuntofujii.com/rockpaperdead/placeholder-image.jpg?v=20260427",
-        "caption": "アプリケーション"
-      }
-    ],
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-06.webp?v=20260429",
     "links": []
   },
   {
@@ -537,16 +1084,32 @@
     "tagline": "完全個室セルフマシンピラティス",
     "description": "セルフでピラティスを行うためのレッスン動画のディレクションを担っております。\n撮影〜画面UI制作〜編集の全工程を行っております。",
     "modalMetaItems": [
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
-      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
+      {
+        "label": "Domain",
+        "value": "$domain",
+        "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260429"
+      },
+      {
+        "label": "Year",
+        "value": "$year",
+        "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260429"
+      },
+      {
+        "label": "Disciplines",
+        "value": "$disciplines",
+        "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260429"
+      },
+      {
+        "label": "Toolkits",
+        "value": "$toolkits",
+        "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429"
+      }
     ],
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-07.webm?v=20260427"
+      "src": "https://assets.shuntofujii.com/top/video-07.webm?v=20260429"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-07.webp?v=20260427",
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-07.webp?v=20260429",
     "projectSlug": "sepila",
     "cases": [
       {
@@ -567,7 +1130,10 @@
             "title": "Main",
             "assetPrefix": "color",
             "videos": 1,
-            "imageGroups": [3, 3]
+            "imageGroups": [
+              3,
+              3
+            ]
           }
         ]
       },
@@ -580,18 +1146,6 @@
             "images": 2
           }
         ]
-      }
-    ],
-    "gallery": [
-      {
-        "type": "video",
-        "src": "https://assets.shuntofujii.com/sepila/placeholder-video.webm?v=20260427",
-        "caption": "ブランドムービー"
-      },
-      {
-        "type": "image",
-        "src": "https://assets.shuntofujii.com/sepila/placeholder-image.jpg?v=20260427",
-        "caption": "ロゴデザイン"
       }
     ],
     "links": []
@@ -611,16 +1165,32 @@
     "tagline": "人間監査法人パイオニア",
     "description": "珈琲好きの友人と事業の立ち上げを行っております。",
     "modalMetaItems": [
-      { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
-      { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
-      { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
-      { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
+      {
+        "label": "Domain",
+        "value": "$domain",
+        "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260429"
+      },
+      {
+        "label": "Year",
+        "value": "$year",
+        "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260429"
+      },
+      {
+        "label": "Disciplines",
+        "value": "$disciplines",
+        "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260429"
+      },
+      {
+        "label": "Toolkits",
+        "value": "$toolkits",
+        "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429"
+      }
     ],
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-08.webm?v=20260427"
+      "src": "https://assets.shuntofujii.com/top/video-08.webm?v=20260429"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-08.webp?v=20260427",
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-08.webp?v=20260429",
     "projectSlug": "kujico",
     "cases": [
       {
@@ -633,13 +1203,6 @@
             "images": 5
           }
         ]
-      }
-    ],
-    "gallery": [
-      {
-        "type": "image",
-        "src": "https://assets.shuntofujii.com/kujico/trailer_p_1.webp?v=20260427",
-        "caption": "メインビジュアル"
       }
     ],
     "links": []
@@ -657,121 +1220,395 @@
     "projectSlug": "others",
     "explicitModal": {
       "segments": [
-        { "type": "sectionTitle", "text": "EARN POKER" },
-        { "type": "video", "file": "EARNPOKER_m_1.webm" },
+        {
+          "type": "sectionTitle",
+          "text": "EARN POKER"
+        },
+        {
+          "type": "video",
+          "file": "EARNPOKER_m_1.webm"
+        },
         {
           "type": "sectionMeta",
           "items": [
-            { "label": "Client", "value": "StudioZ株式会社", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260427" },
-            { "label": "Domain", "value": "Mobile App", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
-            { "label": "Year", "value": "2025", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
-            { "label": "Disciplines", "value": "Product Video", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
-            { "label": "Toolkits", "value": "After Effects / Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
+            {
+              "label": "Client",
+              "value": "StudioZ株式会社",
+              "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260429"
+            },
+            {
+              "label": "Domain",
+              "value": "Mobile App",
+              "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260429"
+            },
+            {
+              "label": "Year",
+              "value": "2025",
+              "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260429"
+            },
+            {
+              "label": "Disciplines",
+              "value": "Product Video",
+              "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260429"
+            },
+            {
+              "label": "Toolkits",
+              "value": "After Effects / Illustrator",
+              "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429"
+            }
           ]
         },
-        { "type": "sectionTitle", "text": "YOKOLAB" },
-        { "type": "video", "file": "YOKOLAB_m_1.webm" },
+        {
+          "type": "sectionTitle",
+          "text": "YOKOLAB"
+        },
+        {
+          "type": "video",
+          "file": "YOKOLAB_m_1.webm"
+        },
         {
           "type": "sectionMeta",
           "items": [
-            { "label": "Client", "value": "横瀬町", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260427" },
-            { "label": "Domain", "value": "Event", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
-            { "label": "Year", "value": "2024", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
-            { "label": "Disciplines", "value": "Highlight Video", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
-            { "label": "Toolkits", "value": "Camera & Gear / After Effects", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
+            {
+              "label": "Client",
+              "value": "横瀬町",
+              "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260429"
+            },
+            {
+              "label": "Domain",
+              "value": "Event",
+              "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260429"
+            },
+            {
+              "label": "Year",
+              "value": "2024",
+              "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260429"
+            },
+            {
+              "label": "Disciplines",
+              "value": "Highlight Video",
+              "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260429"
+            },
+            {
+              "label": "Toolkits",
+              "value": "Camera & Gear / After Effects",
+              "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429"
+            }
           ]
         },
-        { "type": "sectionTitle", "text": "OMOROID" },
-        { "type": "imageRow", "files": ["omoroid_p_1.webp", "omoroid_p_2.webp"] },
-        { "type": "imageRow", "files": ["omoroid_p_3.webp", "omoroid_p_4.webp"] },
         {
-          "type": "sectionMeta",
-          "items": [
-            { "label": "Client", "value": "株式会社NTTドコモ", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260427" },
-            { "label": "Domain", "value": "Web Media", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
-            { "label": "Year", "value": "2023-2025", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
-            { "label": "Disciplines", "value": "Creative Direction / Editorial Direction / Project Management", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
-            { "label": "Toolkits", "value": "Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
+          "type": "sectionTitle",
+          "text": "OMOROID"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "omoroid_p_1.webp",
+            "omoroid_p_2.webp"
           ]
         },
-        { "type": "sectionTitle", "text": "ZABTON" },
-        { "type": "video", "file": "ZABTON_m_1.webm" },
-        { "type": "imageRow", "files": ["ZABTON_p_1.webp", "ZABTON_p_2.webp"] },
         {
-          "type": "sectionMeta",
-          "items": [
-            { "label": "Domain", "value": "Mobile App", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
-            { "label": "Prize", "value": "Tokyo Web3 Hackathon 2nd Prize", "icon": "https://assets.shuntofujii.com/icons/prize.svg?v=20260427" },
-            { "label": "Year", "value": "2022", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
-            { "label": "Disciplines", "value": "UIUX Design / Product Video", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
-            { "label": "Toolkits", "value": "Camera & Gear / XD / After Effects / DaVinci Resolve", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" },
-            { "label": "Team", "value": "Concept：Harry So / Development：Luka Fujiwara", "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260427" }
+          "type": "imageRow",
+          "files": [
+            "omoroid_p_3.webp",
+            "omoroid_p_4.webp"
           ]
         },
-        { "type": "sectionTitle", "text": "FLAMMA" },
-        { "type": "video", "file": "FLAMMA_m_1.webm" },
-        { "type": "video", "file": "FLAMMABTS_m_1.webm" },
         {
           "type": "sectionMeta",
           "items": [
-            { "label": "Domain", "value": "Film Production", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
-            { "label": "Year", "value": "2021", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
-            { "label": "Disciplines", "value": "Art Direction / Music / Actor", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
-            { "label": "Toolkits", "value": "Photoshop / After Effects / Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" },
-            { "label": "Team", "value": "Director & Producer：浅尾 尭洋 / Director of Photography：中川 裕基", "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260427" }
+            {
+              "label": "Client",
+              "value": "株式会社NTTドコモ",
+              "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260429"
+            },
+            {
+              "label": "Domain",
+              "value": "Web Media",
+              "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260429"
+            },
+            {
+              "label": "Year",
+              "value": "2023-2025",
+              "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260429"
+            },
+            {
+              "label": "Disciplines",
+              "value": "Creative Direction / Editorial Direction / Project Management",
+              "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260429"
+            },
+            {
+              "label": "Toolkits",
+              "value": "Illustrator",
+              "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429"
+            }
           ]
         },
-        { "type": "sectionTitle", "text": "IVS" },
-        { "type": "subtitle", "text": "IVS 2023" },
-        { "type": "imageRow", "files": ["IVS2023_p_1.webp"] },
-        { "type": "imageRow", "files": ["IVS2023_p_2.webp", "IVS2023_p_3.webp"] },
-        { "type": "subtitle", "text": "IVS 2022" },
-        { "type": "imageRow", "files": ["IVSNahaJet_p_1.webp", "IVSNahaJet_p_2.webp"] },
-        { "type": "imageRow", "files": ["IVSNahaJet_p_3.webp", "IVSNahaJet_p_4.webp", "IVSNahaJet_p_5.webp"] },
-        { "type": "imageRow", "files": ["IVSNahaJet_p_6.webp", "IVSNahaJet_p_7.webp"] },
-        { "type": "imageRow", "files": ["IVSNahaPhoto_p_0.webp"] },
-        { "type": "imageRow", "files": ["IVSNahaPhoto_p_1.webp", "IVSNahaPhoto_p_2.webp", "IVSNahaPhoto_p_3.webp", "IVSNahaPhoto_p_4.webp", "IVSNahaPhoto_p_5.webp"] },
-        { "type": "imageRow", "files": ["IVSNahaT_p_1.webp"] },
-        { "type": "imageRow", "files": ["IVSNahaT_p_2.webp", "IVSNahaT_p_3.webp"] },
-        { "type": "imageRow", "files": ["IVSNahaT_p_4.webp", "IVSNahaT_p_5.webp", "IVSNahaT_p_6.webp"] },
-        { "type": "subtitle", "text": "IVS 2021" },
-        { "type": "imageRow", "files": ["IVSNasu_p_1.webp"] },
-        { "type": "imageRow", "files": ["IVSNasu_p_3.webp", "IVSNasu_p_4.webp"] },
-        { "type": "subtitle", "text": "LAUNCHPAD Entertainment" },
-        { "type": "imageRow", "files": ["IVSEnt_p_1.webp"] },
-        { "type": "imageRow", "files": ["IVSEnt_p_2.webp", "IVSEnt_p_3.webp", "IVSEnt_p_4.webp"] },
-        { "type": "subtitle", "text": "IVS 2021 Spring" },
-        { "type": "imageRow", "files": ["IVS2021spring_p_1.webp"] },
-        { "type": "imageRow", "files": ["IVS2021spring_p_2.webp", "IVS2021spring_p_3.webp"] },
+        {
+          "type": "sectionTitle",
+          "text": "ZABTON"
+        },
+        {
+          "type": "video",
+          "file": "ZABTON_m_1.webm"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "ZABTON_p_1.webp",
+            "ZABTON_p_2.webp"
+          ]
+        },
         {
           "type": "sectionMeta",
           "items": [
-            { "label": "Client", "value": "IVS株式会社", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260427" },
-            { "label": "Domain", "value": "Startup Conference", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260427" },
-            { "label": "Year", "value": "2021-2023", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260427" },
-            { "label": "Disciplines", "value": "Graphic Design / Crew", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260427" },
-            { "label": "Toolkits", "value": "Photoshop / Illustrator", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" }
+            {
+              "label": "Domain",
+              "value": "Mobile App",
+              "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260429"
+            },
+            {
+              "label": "Prize",
+              "value": "Tokyo Web3 Hackathon 2nd Prize",
+              "icon": "https://assets.shuntofujii.com/icons/prize.svg?v=20260429"
+            },
+            {
+              "label": "Year",
+              "value": "2022",
+              "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260429"
+            },
+            {
+              "label": "Disciplines",
+              "value": "UIUX Design / Product Video",
+              "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260429"
+            },
+            {
+              "label": "Toolkits",
+              "value": "Camera & Gear / XD / After Effects / DaVinci Resolve",
+              "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429"
+            },
+            {
+              "label": "Team",
+              "value": "Concept：Harry So / Development：Luka Fujiwara",
+              "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260429"
+            }
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "FLAMMA"
+        },
+        {
+          "type": "video",
+          "file": "FLAMMA_m_1.webm"
+        },
+        {
+          "type": "video",
+          "file": "FLAMMABTS_m_1.webm"
+        },
+        {
+          "type": "sectionMeta",
+          "items": [
+            {
+              "label": "Domain",
+              "value": "Film Production",
+              "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260429"
+            },
+            {
+              "label": "Year",
+              "value": "2021",
+              "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260429"
+            },
+            {
+              "label": "Disciplines",
+              "value": "Art Direction / Music / Actor",
+              "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260429"
+            },
+            {
+              "label": "Toolkits",
+              "value": "Photoshop / After Effects / Illustrator",
+              "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429"
+            },
+            {
+              "label": "Team",
+              "value": "Director & Producer：浅尾 尭洋 / Director of Photography：中川 裕基",
+              "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260429"
+            }
+          ]
+        },
+        {
+          "type": "sectionTitle",
+          "text": "IVS"
+        },
+        {
+          "type": "subtitle",
+          "text": "IVS 2023"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVS2023_p_1.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVS2023_p_2.webp",
+            "IVS2023_p_3.webp"
+          ]
+        },
+        {
+          "type": "subtitle",
+          "text": "IVS 2022"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVSNahaJet_p_1.webp",
+            "IVSNahaJet_p_2.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVSNahaJet_p_3.webp",
+            "IVSNahaJet_p_4.webp",
+            "IVSNahaJet_p_5.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVSNahaJet_p_6.webp",
+            "IVSNahaJet_p_7.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVSNahaPhoto_p_0.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVSNahaPhoto_p_1.webp",
+            "IVSNahaPhoto_p_2.webp",
+            "IVSNahaPhoto_p_3.webp",
+            "IVSNahaPhoto_p_4.webp",
+            "IVSNahaPhoto_p_5.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVSNahaT_p_1.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVSNahaT_p_2.webp",
+            "IVSNahaT_p_3.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVSNahaT_p_4.webp",
+            "IVSNahaT_p_5.webp",
+            "IVSNahaT_p_6.webp"
+          ]
+        },
+        {
+          "type": "subtitle",
+          "text": "IVS 2021"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVSNasu_p_1.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVSNasu_p_3.webp",
+            "IVSNasu_p_4.webp"
+          ]
+        },
+        {
+          "type": "subtitle",
+          "text": "LAUNCHPAD Entertainment"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVSEnt_p_1.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVSEnt_p_2.webp",
+            "IVSEnt_p_3.webp",
+            "IVSEnt_p_4.webp"
+          ]
+        },
+        {
+          "type": "subtitle",
+          "text": "IVS 2021 Spring"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVS2021spring_p_1.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "IVS2021spring_p_2.webp",
+            "IVS2021spring_p_3.webp"
+          ]
+        },
+        {
+          "type": "sectionMeta",
+          "items": [
+            {
+              "label": "Client",
+              "value": "IVS株式会社",
+              "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260429"
+            },
+            {
+              "label": "Domain",
+              "value": "Startup Conference",
+              "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260429"
+            },
+            {
+              "label": "Year",
+              "value": "2021-2023",
+              "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260429"
+            },
+            {
+              "label": "Disciplines",
+              "value": "Graphic Design / Crew",
+              "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260429"
+            },
+            {
+              "label": "Toolkits",
+              "value": "Photoshop / Illustrator",
+              "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429"
+            }
           ]
         }
       ]
     },
     "heroMedia": {
       "type": "video",
-      "src": "https://assets.shuntofujii.com/top/video-09.webm?v=20260427"
+      "src": "https://assets.shuntofujii.com/top/video-09.webm?v=20260429"
     },
-    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-09.webp?v=20260427",
-    "gallery": [
-      {
-        "type": "video",
-        "src": "https://assets.shuntofujii.com/others/placeholder-video.webm?v=20260427",
-        "caption": "メインモーション"
-      },
-      {
-        "type": "image",
-        "src": "https://assets.shuntofujii.com/others/placeholder-image.jpg?v=20260427",
-        "caption": "コンセプト"
-      }
-    ],
+    "thumbnail": "https://assets.shuntofujii.com/top/thumbnail-09.webp?v=20260429",
     "links": [
       {
         "label": "Behance",

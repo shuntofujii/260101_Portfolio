@@ -51,7 +51,7 @@
 ├── media.js            # メディア表示（画像/動画グリッド、cases 用カード、動画プレイヤー）
 ├── mediaLayout.js      # メディアURL生成とグリッドレイアウト計算（media.js から分離）
 ├── videoCache.js       # 動画URL解決・`<link rel="preload">`・アイドル時プリロード
-├── projectVideoUrls.js # projects.json からヒーロー・cases・gallery の動画 URL を列挙（上記と連携）
+├── projectVideoUrls.js # projects.json からヒーロー・cases・explicitModal 等の動画 URL を列挙（上記と連携）
 ├── cursorEffect.js     # カーソル軌跡エフェクト・アクセント色の時間変化（Three.js を CDN から動的 import）
 ├── meta-audit.js       # meta監査（hover左上/モーダルmeta の乖離防止）
 ├── sitemap.xml         # サイトマップ（SEO・更新時に lastmod を更新推奨）
@@ -79,7 +79,7 @@
 9. **`appModalSwipeController.js`** … モーダルのスワイプ遷移（ゴースト表示・確定/キャンセル）を担当します。
 10. **`appProjectInteractions.js`** … プロジェクト hover/touch/click と context panel の更新を担当します。
 11. **`videoCache.js`** … 動画URL解決（現在は canonical URL ベース）と `<link rel="preload">`、アイドル時プリロードキューを提供します。
-12. **`projectVideoUrls.js`** … `heroMedia`、トップレベル `initiatives`、`cases` 内の `videos` / `hasVideo`、`gallery` 内の動画 URL を集約します。
+12. **`projectVideoUrls.js`** … `heroMedia`、トップレベル `initiatives`、`cases` 内の `videos` / `hasVideo`、`explicitModal` の動画セグメントなど、モーダルが参照する動画 URL を集約します。
 13. **`mediaLayout.js`** … メディアURL組み立てと画像グリッド配置計算の純粋関数群です。
 14. **`lightboxShared.js`** … ライトボックスの共通ユーティリティ（表示対象解決や座標取得）を提供します。
 15. **`media.js` / `modal.js` / `lightbox.js`** … モーダル内メディア、モーダル開閉、拡大表示（ライトボックス）を分担します。

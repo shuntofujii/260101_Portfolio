@@ -20,6 +20,7 @@ function walkCases(set, projectSlug, cases) {
 
 /**
  * 1プロジェクトに紐づく動画 URL のみ抽出（一覧ホバー・モーダル時の先読み用）
+ * heroMedia・cases・initiatives・explicitModal の動画のみ（モーダルが実際に参照する URL と一致）
  * @param {object} project projects.json の1要素
  * @returns {{ urls: string[], heroVideo: string | null }}
  */
@@ -33,10 +34,6 @@ export function collectVideoUrlsForProject(project) {
     set.add(project.heroMedia.src);
     heroVideo = project.heroMedia.src;
   }
-
-  project.gallery?.forEach((item) => {
-    if (item.type === 'video' && item.src) set.add(item.src);
-  });
 
   const slug = project.projectSlug;
   if (slug) {
@@ -74,9 +71,6 @@ export function collectProjectVideoUrls(projects) {
       all.add(project.heroMedia.src);
       hero.push(project.heroMedia.src);
     }
-    project.gallery?.forEach((item) => {
-      if (item.type === 'video' && item.src) all.add(item.src);
-    });
     if (project.projectSlug) {
       walkCases(all, project.projectSlug, project.cases);
       project.initiatives?.forEach((init) => addInitiativeVideos(all, project.projectSlug, init));

@@ -648,20 +648,8 @@ body.modal-open .context-panel {
   }
 }
 
-/* 無限ループ時、プレビュー強調で item の margin が増えると scrollWidth が変わり、
-   segment 幅の計算がずれて端で再センタリングが連発する（微動・ガタつき） */
-.project-navigation.is-infinite-loop .project-item.thumbnail-preview-active:not(.selected) {
-  margin-left: 0;
-  margin-right: 0;
-}
-
-.project-navigation.is-infinite-loop .project-item.thumbnail-preview-active:not(.selected) + .project-item:not(.selected) {
-  margin-left: 0;
-}
-
-.project-navigation.is-infinite-loop .project-item:not(.selected):has(+ .project-item.thumbnail-preview-active:not(.selected)) {
-  margin-right: 0;
-}
+/* 無限ループ時もプレビュー周りの margin を使う。各セグメントで同じ projectIndex に
+   thumbnail-preview-active を同期すれば scrollWidth/3 が保たれる（appProjectInteractions） */
 
 body.modal-open .project-navigation {
   transform: translateX(-50%) translateY(60px) !important;
@@ -820,7 +808,7 @@ body.modal-open .project-navigation {
   }
 }
 
-/* プレビュー中のアイテムの前後を左右に広げる（無限ループ時は上で margin を打ち消し） */
+/* プレビュー中のアイテムの前後を左右に広げる */
 .project-item.thumbnail-preview-active:not(.selected) + .project-item:not(.selected) {
   margin-left: 8px;
 }
@@ -1822,10 +1810,10 @@ body.modal-open .modal-overlay {
   }
 
   .project-item {
-    width: 75px;
-    height: 75px;
-    min-width: 75px;
-    min-height: 75px;
+    width: 82px;
+    height: 82px;
+    min-width: 82px;
+    min-height: 82px;
   }
 
   .modal-container {
@@ -1905,7 +1893,7 @@ body.modal-open .modal-overlay {
   .project-navigation {
     bottom: calc(2px + var(--safe-bottom));
     gap: 0.75rem;
-    /* 65px サムネでもリング・box-shadow が同じ px 幅のため下側をやや多めに */
+    /* 小さいサムネでもリング・box-shadow が同じ px 幅のため下側をやや多めに */
     padding-top: 58px;
     padding-bottom: 36px;
     padding-left: calc(1.75rem + var(--safe-left));
@@ -1913,10 +1901,10 @@ body.modal-open .modal-overlay {
   }
 
   .project-item {
-    width: 65px;
-    height: 65px;
-    min-width: 65px;
-    min-height: 65px;
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+    min-height: 72px;
   }
 
   .modal-content {

@@ -46,7 +46,7 @@ export function createProjectInteractionController(deps) {
           </div>
           ${safeTools ? `
           <div class="context-info-item row">
-            <img src="https://assets.shuntofujii.com/icons/toolkits.svg?v=20260427" alt="Toolkits" class="toolkit-icon" width="14" height="14" decoding="async" loading="lazy" />
+            <img src="https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429" alt="Toolkits" class="toolkit-icon" width="14" height="14" decoding="async" loading="lazy" />
             <span class="context-info-value value">${safeTools}</span>
           </div>
           ` : ''}
@@ -60,7 +60,15 @@ export function createProjectInteractionController(deps) {
     refs.projectNavigation.querySelectorAll('.project-item').forEach((el) => {
       el.classList.remove(THUMBNAIL_PREVIEW_ACTIVE_CLASS);
     });
-    if (itemElement) {
+    if (!itemElement) return;
+    const index = itemElement.dataset.projectIndex;
+    if (index !== undefined && index !== '') {
+      refs.projectNavigation
+        .querySelectorAll(`.project-item[data-project-index="${CSS.escape(String(index))}"]`)
+        .forEach((el) => {
+          el.classList.add(THUMBNAIL_PREVIEW_ACTIVE_CLASS);
+        });
+    } else {
       itemElement.classList.add(THUMBNAIL_PREVIEW_ACTIVE_CLASS);
     }
   }

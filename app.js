@@ -33,6 +33,7 @@ import { bindGlobalEventListeners } from './appEventBindings.js';
 import { createModalSwipeController } from './appModalSwipeController.js';
 import { createProjectInteractionController } from './appProjectInteractions.js';
 import { createAppBootstrapController } from './appBootstrap.js';
+import { initAnimatedFavicon } from './animatedFavicon.js';
 import { createModalRoutingController } from './appModalRoutingController.js';
 import {
   clearHoverLeaveTimer as clearHoverLeaveTimerState,
@@ -342,3 +343,4 @@ function showErrorState() {
 
 // 初期化実行
 init();
+initAnimatedFavicon();
