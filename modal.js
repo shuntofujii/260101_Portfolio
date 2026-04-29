@@ -128,9 +128,23 @@ export function openModal(project, triggerElement) {
   const refs = getRefs();
   state.modalTriggerElement = triggerElement || null;
 
+  const resetModalScrollPosition = () => {
+    if (refs.modalContent) {
+      refs.modalContent.scrollTop = 0;
+      if (typeof refs.modalContent.scrollTo === 'function') {
+        refs.modalContent.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }
+    }
+    if (refs.modalContainer) {
+      refs.modalContainer.scrollTop = 0;
+      if (typeof refs.modalContainer.scrollTo === 'function') {
+        refs.modalContainer.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }
+    }
+  };
+
   renderModalContent(project, refs.modalContent);
-  if (refs.modalContent) refs.modalContent.scrollTop = 0;
-  if (refs.modalContainer) refs.modalContainer.scrollTop = 0;
+  resetModalScrollPosition();
 
   if (refs.modalOverlay && refs.modalContainer) {
     // クローズ時に上書きした短縮トランジションを毎回リセット
@@ -144,6 +158,10 @@ export function openModal(project, triggerElement) {
     requestAnimationFrame(() => {
       document.body.classList.add('modal-open');
       refs.modalContainer.dataset.state = 'open';
+      // レイアウト確定後に再リセットし、前回スクロール位置の残留を防ぐ
+      requestAnimationFrame(() => {
+        resetModalScrollPosition();
+      });
       requestAnimationFrame(() => {
         if (refs.modalClose) refs.modalClose.focus();
         if (state.modalFocusTrapHandler) document.removeEventListener('keydown', state.modalFocusTrapHandler);
