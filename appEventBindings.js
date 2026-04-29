@@ -19,17 +19,23 @@ export function bindGlobalEventListeners(refs, handlers) {
     removeListeners.push(() => target.removeEventListener(type, listener, options));
   };
 
-  const triggerModalClose = (e) => {
+  const triggerModalCloseFromClick = (e) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
     onCloseModal();
   };
-  addListener(refs.modalClose, 'click', triggerModalClose);
+  const triggerModalCloseFromPointerOrTouch = (e) => {
+    if (e) {
+      e.preventDefault();
+    }
+    onCloseModal();
+  };
+  addListener(refs.modalClose, 'click', triggerModalCloseFromClick);
   // click 合成が落ちる端末向けに pointer/touch も受ける
-  addListener(refs.modalClose, 'pointerup', triggerModalClose, { passive: false });
-  addListener(refs.modalClose, 'touchend', triggerModalClose, { passive: false });
+  addListener(refs.modalClose, 'pointerup', triggerModalCloseFromPointerOrTouch, { passive: false });
+  addListener(refs.modalClose, 'touchend', triggerModalCloseFromPointerOrTouch, { passive: false });
   addListener(refs.modalOverlay, 'click', (e) => {
     if (e.target === refs.modalOverlay) onCloseModal();
   });
@@ -59,17 +65,23 @@ export function bindGlobalEventListeners(refs, handlers) {
 
   addListener(refs.portfolioTitle, 'click', onPortfolioTitleClick);
 
-  const triggerProfileClose = (e) => {
+  const triggerProfileCloseFromClick = (e) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
     onCloseProfileModal();
   };
+  const triggerProfileCloseFromPointerOrTouch = (e) => {
+    if (e) {
+      e.preventDefault();
+    }
+    onCloseProfileModal();
+  };
   if (refs.profileModalClose && typeof onCloseProfileModal === 'function') {
-    addListener(refs.profileModalClose, 'click', triggerProfileClose);
-    addListener(refs.profileModalClose, 'pointerup', triggerProfileClose, { passive: false });
-    addListener(refs.profileModalClose, 'touchend', triggerProfileClose, { passive: false });
+    addListener(refs.profileModalClose, 'click', triggerProfileCloseFromClick);
+    addListener(refs.profileModalClose, 'pointerup', triggerProfileCloseFromPointerOrTouch, { passive: false });
+    addListener(refs.profileModalClose, 'touchend', triggerProfileCloseFromPointerOrTouch, { passive: false });
   }
   if (refs.profileModalOverlay && typeof onCloseProfileModal === 'function') {
     addListener(refs.profileModalOverlay, 'click', (e) => {
