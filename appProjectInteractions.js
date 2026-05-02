@@ -55,7 +55,7 @@ export function createProjectInteractionController(deps) {
           </div>
           ${safeTools ? `
           <div class="context-info-item row">
-            <img src="https://assets.shuntofujii.com/icons/toolkits.svg?v=20260502" alt="Toolkits" class="toolkit-icon" width="14" height="14" decoding="async" loading="lazy" />
+            <img src="https://assets.shuntofujii.com/icons/toolkits.svg?v=20260503" alt="Toolkits" class="toolkit-icon" width="14" height="14" decoding="async" loading="lazy" />
             <span class="context-info-value value">${safeTools}</span>
           </div>
           ` : ''}

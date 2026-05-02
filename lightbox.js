@@ -32,6 +32,13 @@ let lightboxSwipePreviewDirection = 0;
 let lightboxSwipePreviewTargetEl = null;
 let lightboxClickNavigateQueued = false;
 
+/** パス上の拡張子で判定（`...webm?v=1` は endsWith('.webm') にならない） */
+function urlPathLooksLikeWebm(url) {
+  if (!url || typeof url !== 'string') return false;
+  const pathOnly = url.split(/[?#]/)[0];
+  return /\.webm$/i.test(pathOnly);
+}
+
 function clearLightboxSwipePreview() {
   if (lightboxSwipePreviewEl) {
     lightboxSwipePreviewEl.remove();
@@ -64,7 +71,7 @@ function createLightboxSwipePreviewElement(targetEl) {
     if (!videoEl) return null;
     const previewSrc = videoEl.poster || videoEl.dataset.canonicalVideoSrc || videoEl.src;
     if (!previewSrc) return null;
-    if (previewSrc.endsWith('.webm')) {
+    if (urlPathLooksLikeWebm(previewSrc)) {
       const v = document.createElement('video');
       v.className = 'lightbox-video';
       v.src = previewSrc;

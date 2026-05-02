@@ -71,7 +71,7 @@ export const CURSOR_CONFIG = {
 export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 
 /** CDN 画像・動画・アイコン共通のキャッシュバスター（先頭は ?） */
-export const ASSETS_CACHE_V = '?v=20260502';
+export const ASSETS_CACHE_V = '?v=20260503';
 
 /** プロフィール入場アニメ（Matter.js） */
 export const PROFILE_INTRO_ASSETS_V = ASSETS_CACHE_V;

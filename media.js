@@ -183,6 +183,7 @@ export function stopAllInlineVideos() {
       }
       if (controls) controls.classList.remove('visible');
       if (posterLayer) posterLayer.style.opacity = '1';
+      video.dataset.videoInlinePlayed = '';
     }
   });
   state.currentPlayingVideo = null;
@@ -201,8 +202,15 @@ export function initVideoPlayer(videoShell) {
 
   function syncPosterLayer() {
     if (!posterLayer) return;
-    const atStart = video.paused && video.currentTime < 0.05;
-    posterLayer.style.opacity = atStart ? '1' : '0';
+    /**
+     * 旧: paused && currentTime < 0.05 のみ → メタデータ後にブラウザが僅かに currentTime を進め、
+     * 未再生でもポスター img が透明になりビデオ下地だけ黒く見えることがある。
+     * 「インライン再生したことがある」までは currentTime に依存せずポスターを維持する。
+     */
+    const playedBefore = video.dataset.videoInlinePlayed === '1';
+    const showPoster =
+      video.paused && (!playedBefore || video.currentTime < 0.12);
+    posterLayer.style.opacity = showPoster ? '1' : '0';
   }
 
   function enterPlayingState() {
@@ -269,6 +277,11 @@ export function initVideoPlayer(videoShell) {
       video.pause();
     }
   }
+
+  video.addEventListener('playing', () => {
+    video.dataset.videoInlinePlayed = '1';
+    syncPosterLayer();
+  });
 
   video.addEventListener('loadedmetadata', () => {
     seekBar.max = 100;
