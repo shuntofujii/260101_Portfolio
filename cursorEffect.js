@@ -1,4 +1,5 @@
 // カーソルエフェクト（色相・Three.js 軌跡）
+// 休止軌道の数式・モード判定・サムネ Node キャッシュは cursorTrailSleep / cursorTrailMode / cursorTrailThumbnails。
 import { state } from './state.js';
 import { getRefs } from './domRefs.js';
 import {
@@ -7,7 +8,9 @@ import {
   CURSOR_CONFIG,
   CURSOR_Z_INDEX
 } from './constants.js';
-import { sleepTrajectoryParams, trajectoryR } from './sleepTrajectory.js';
+import { createSleepTrailRuntime, stepSleepTrailFrame } from './cursorTrailSleep.js';
+import { shouldUseSleepTrajectory } from './cursorTrailMode.js';
+import { createThumbNodeCache } from './cursorTrailThumbnails.js';
 
 function hexToRgb(hex) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -215,13 +218,16 @@ function createCustomCursorEffect(THREE, initialColor) {
   const mouse = new THREE.Vector2();
   const target = new THREE.Vector2();
   const clock = new THREE.Clock();
+  let prevAnimClockTime = null;
+  /** 崩れの視覚強度（UI の state より遅れて追従・戻りはゆっくり） */
+  let brokenVisualBlend = 0;
   const curvePoints = new Array(config.curvePoints).fill(0).map(() => new THREE.Vector2());
   mouse.set(0, 0);
   target.set(0, 0);
 
   let isMouseActive = false;
   let isTouchDevice = false;
-  let sleepModeStartTime = null;
+  const sleepTrail = createSleepTrailRuntime();
   const SLEEP_RADIUS_FONT_MULTIPLIER = 12;
   let currentSleepRadiusX = 150;
   let currentSleepRadiusY = 150;
@@ -236,7 +242,11 @@ function createCustomCursorEffect(THREE, initialColor) {
   const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
   /** 直前フレームでポインタがサムネ上だったか（退出時に履歴をリセットする） */
   let wasPointerOverThumb = false;
-
+  /** 軌跡先端がサムネに入ったときに一度だけ hover 相当を起動するための直近インデックス */
+  let trailHitHoverLastIndex = null;
+  /** 直前フレームが休止軌跡（画面外／未操作／崩れ）だったか（追従復帰時のスナップ用） */
+  let prevUseSleepTrajectory = false;
+  const thumbNodeCache = createThumbNodeCache();
   const detectTouchDevice = () => { isTouchDevice = true; };
 
   const handleMouseMove = (e) => {
@@ -316,6 +326,7 @@ function createCustomCursorEffect(THREE, initialColor) {
       currentSleepRadiusX = 150;
       currentSleepRadiusY = 150;
     }
+    thumbNodeCache.invalidate();
   };
   window.addEventListener('resize', handleResize);
   handleResize();
@@ -323,18 +334,50 @@ function createCustomCursorEffect(THREE, initialColor) {
   function animate() {
     state.cursorAnimationFrameId = requestAnimationFrame(animate);
     const time = clock.getElapsedTime();
+    const dtAnim =
+      prevAnimClockTime == null ? 0 : Math.max(0, Math.min(0.08, time - prevAnimClockTime));
+    prevAnimClockTime = time;
+
+    const blendTgt = state.brokenPeriodActive ? 1 : 0;
+    const bIn = config.brokenVisualBlendInPerSec;
+    const bOut = config.brokenVisualBlendOutPerSec;
+    if (brokenVisualBlend < blendTgt) {
+      brokenVisualBlend = Math.min(blendTgt, brokenVisualBlend + dtAnim * bIn);
+    } else if (brokenVisualBlend > blendTgt) {
+      brokenVisualBlend = Math.max(blendTgt, brokenVisualBlend - dtAnim * bOut);
+    }
+    const snapEps = config.brokenVisualBlendSnapEps ?? 0.03;
+    if (!state.brokenPeriodActive && brokenVisualBlend > 0 && brokenVisualBlend < snapEps) {
+      brokenVisualBlend = 0;
+    }
+
+    const perfNow =
+      typeof performance !== 'undefined' && typeof performance.now === 'function'
+        ? performance.now()
+        : Date.now();
+    const idleThresholdSec = config.cursorIdleSleepTrajectorySec ?? 18;
+    const useSleepTrajectory = shouldUseSleepTrajectory(
+      isMouseActive,
+      perfNow,
+      state.lastUserActivityPerfMs,
+      idleThresholdSec
+    );
 
     const canvasRect = renderer.domElement.getBoundingClientRect();
     const pad = config.thumbnailOverlapPadPx;
     // .project-item は拡大前のレイアウト枠（90px 等）。img の scale は rect に乗らない
-    const thumbNodes = document.querySelectorAll('.project-item');
+    const thumbNodes = thumbNodeCache.getElements();
     const rects = [];
     for (let i = 0; i < thumbNodes.length; i++) {
       rects.push(thumbNodes[i].getBoundingClientRect());
     }
     let pointerOverThumb = false;
+    let hitProjectIndex = null;
     if (rects.length > 0) {
-      const head = isMouseActive ? target : curvePoints[0];
+      const head =
+        isMouseActive && (trailScript?.active || !useSleepTrajectory)
+          ? target
+          : curvePoints[0];
       const cx = canvasRect.left + ((head.x + 1) / 2) * canvasRect.width;
       const cy = canvasRect.top + ((1 - head.y) / 2) * canvasRect.height;
       for (let j = 0; j < rects.length && !pointerOverThumb; j++) {
@@ -347,8 +390,22 @@ function createCustomCursorEffect(THREE, initialColor) {
           cy <= r.bottom + pad
         ) {
           pointerOverThumb = true;
+          const raw = thumbNodes[j]?.dataset?.projectIndex;
+          const pi = raw !== undefined && raw !== '' ? parseInt(raw, 10) : NaN;
+          if (!Number.isNaN(pi)) hitProjectIndex = pi;
         }
       }
+    }
+
+    if (!pointerOverThumb) {
+      trailHitHoverLastIndex = null;
+    } else if (hitProjectIndex !== null && hitProjectIndex !== trailHitHoverLastIndex) {
+      document.dispatchEvent(
+        new CustomEvent('portfolio:trailthumbnailhit', {
+          detail: { projectIndex: hitProjectIndex }
+        })
+      );
+      trailHitHoverLastIndex = hitProjectIndex;
     }
     let curveLerpNow = pointerOverThumb ? config.curveLerpOnThumbnail : config.curveLerp;
 
@@ -420,50 +477,50 @@ function createCustomCursorEffect(THREE, initialColor) {
         trailScript.resolve = null;
         if (typeof resolve === 'function') resolve();
       }
-    } else if (isMouseActive) {
-      if (pointerOverThumb) {
-        // サムネ上: 追従しない（mouse / curvePoints は更新しない）
-      } else if (wasPointerOverThumb) {
-        // サムネから出た直後: 履歴を捨て、表示開始位置を現在のポインタにそろえる
-        mouse.copy(target);
-        for (let i = 0; i < config.curvePoints; i++) curvePoints[i].copy(target);
-      } else {
-        mouse.lerp(target, config.curveLerp);
-        for (let i = config.curvePoints - 1; i > 0; i--) {
-          curvePoints[i].lerp(curvePoints[i - 1], config.curveLerp);
-        }
-        curvePoints[0].copy(mouse);
-      }
+      prevUseSleepTrajectory = useSleepTrajectory;
     } else {
-      const wWidth = window.innerWidth;
-      const wHeight = window.innerHeight;
-      const width = renderer.domElement.width / renderer.getPixelRatio();
-      const I = (currentSleepRadiusX * wWidth) / width;
-      const F = (currentSleepRadiusY * wWidth) / width;
-
-      if (sleepModeStartTime === null) {
-        sleepModeStartTime = time;
-        const { theta: th0, tForR: tr0 } = sleepTrajectoryParams(0, config);
-        const R0 = trajectoryR(tr0);
-        const initialD = I * R0 * Math.cos(th0);
-        const initialV = F * R0 * Math.sin(th0);
-        const initialX = initialD / (wWidth / 2);
-        const initialY = -initialV / (wHeight / 2);
-        for (let i = 0; i < config.curvePoints; i++) curvePoints[i].set(initialX, initialY);
+      if (prevUseSleepTrajectory && !useSleepTrajectory) {
+        // 休止→追従は画面外からの入室と同じ：履歴を潰さず、先端と mouse を揃えてから lerpu でカーソルへ
+        mouse.copy(curvePoints[0]);
       }
 
-      const elapsedSinceSleep = time - sleepModeStartTime;
-      const { theta, tForR } = sleepTrajectoryParams(elapsedSinceSleep, config);
-      const R = trajectoryR(tForR);
-      const D = I * R * Math.cos(theta);
-      const V = F * R * Math.sin(theta);
-      const x = D / (wWidth / 2);
-      const y = -V / (wHeight / 2);
-
-      for (let i = config.curvePoints - 1; i > 0; i--) {
-        curvePoints[i].lerp(curvePoints[i - 1], curveLerpNow);
+      if (useSleepTrajectory) {
+        const wWidth = window.innerWidth;
+        const wHeight = window.innerHeight;
+        const width = renderer.domElement.width / renderer.getPixelRatio();
+        const I = (currentSleepRadiusX * wWidth) / width;
+        const F = (currentSleepRadiusY * wWidth) / width;
+        stepSleepTrailFrame({
+          runtime: sleepTrail,
+          clockTimeSec: time,
+          config,
+          brokenVisualBlend,
+          I,
+          F,
+          wWidth,
+          wHeight,
+          curveLerpNow,
+          curvePoints
+        });
+      } else if (isMouseActive) {
+        if (pointerOverThumb) {
+          // サムネ上: 追従しない（mouse / curvePoints は更新しない）
+        } else {
+          if (wasPointerOverThumb) {
+            // サムネから出た直後も履歴を潰さず、先端と mouse を揃えてから lerpu
+            mouse.copy(curvePoints[0]);
+          }
+          mouse.lerp(target, config.curveLerp);
+          for (let i = config.curvePoints - 1; i > 0; i--) {
+            curvePoints[i].lerp(curvePoints[i - 1], config.curveLerp);
+          }
+          curvePoints[0].copy(mouse);
+        }
+        // 休止に戻ったフレームで dt が暴れないよう、追従中は前回時刻を無効化
+        sleepTrail.prevSleepFrameTime = null;
       }
-      curvePoints[0].set(x, y);
+
+      prevUseSleepTrajectory = useSleepTrajectory;
     }
 
     if (curvePoints.length >= 2) {

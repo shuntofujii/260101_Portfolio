@@ -1222,6 +1222,50 @@
       "segments": [
         {
           "type": "sectionTitle",
+          "text": "My Portfolio"
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "portfolio_p_0.webp",
+            "portfolio_p_1.webp"
+          ]
+        },
+        {
+          "type": "imageRow",
+          "files": [
+            "portfolio_p_2.webp",
+            "portfolio_p_3.webp",
+            "portfolio_p_4.webp"
+          ]
+        },
+        {
+          "type": "sectionMeta",
+          "items": [
+            {
+              "label": "Domain",
+              "value": "Web Site",
+              "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260429"
+            },
+            {
+              "label": "Year",
+              "value": "2026",
+              "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260429"
+            },
+            {
+              "label": "Disciplines",
+              "value": "Creative Direction / Development",
+              "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260429"
+            },
+            {
+              "label": "Toolkits",
+              "value": "Cursor",
+              "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429"
+            }
+          ]
+        },
+        {
+          "type": "sectionTitle",
           "text": "EARN POKER"
         },
         {

@@ -17,6 +17,7 @@ import {
   GUIDANCE_TYPO_AFTER_FIX_EXTRA_MIN_MS,
   GUIDANCE_TYPO_AFTER_FIX_EXTRA_MAX_MS
 } from './constants.js';
+import { state } from './state.js';
 
 /** 末尾の点滅 `_` は `.guidance-cursor` が担当（HTML）。本文のみ更新する */
 const FULL_PHRASE = 'Please select a project';
@@ -91,6 +92,7 @@ export function initGuidanceTypewriter(guidanceTextEl) {
   }
 
   function effectiveTypoProbability() {
+    if (!state.brokenPeriodActive) return 0;
     return clampProb(
       GUIDANCE_TYPO_PROBABILITY * GUIDANCE_TYPO_CONSECUTIVE_DECAY ** typoStreak
     );

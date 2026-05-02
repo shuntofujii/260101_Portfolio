@@ -1,5 +1,6 @@
 // モーダルの開閉
 import { state } from './state.js';
+import { clearTrailThumbnailHoverTimer } from './appStateTransitions.js';
 import { getRefs } from './domRefs.js';
 import { escapeHtml, createFocusTrap } from './utils.js';
 import { appendExplicitModal, createCaseSection, createInitiativeCard } from './media.js';
@@ -125,6 +126,7 @@ export function renderModalContent(project, modalContentEl) {
 
 export function openModal(project, triggerElement) {
   closeProfileModalIfOpen();
+  clearTrailThumbnailHoverTimer(state);
   const refs = getRefs();
   state.modalTriggerElement = triggerElement || null;
 

@@ -6,6 +6,12 @@ export function clearHoverLeaveTimer(state) {
   state.hoverLeaveTimer = null;
 }
 
+export function clearTrailThumbnailHoverTimer(state) {
+  if (!state.trailThumbnailHoverTimer) return;
+  clearTimeout(state.trailThumbnailHoverTimer);
+  state.trailThumbnailHoverTimer = null;
+}
+
 export function clearProjectSelections() {
   document.querySelectorAll('.project-item').forEach((item) => {
     item.classList.remove('selected');
@@ -62,6 +68,7 @@ export function beginBackgroundFadeOutToInitialState(state, bgLayer, onFadeCompl
 
 export function resetToInitialState(state, refs) {
   clearHoverLeaveTimer(state);
+  clearTrailThumbnailHoverTimer(state);
 
   state.currentState = 'initial';
   state.hoveredProject = null;

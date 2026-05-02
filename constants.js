@@ -8,9 +8,14 @@ export const VIDEO_UPDATE_FADE_DELAY_MS = 100;
 export const VIDEO_SHOW_FALLBACK_MS = 1200;
 export const CURSOR_Z_INDEX = 100;
 
+/** 軌跡ヒット時の hover 維持時間（ms）の下限・上限。この間はランダムに決定する */
+export const TRAIL_THUMBNAIL_HOVER_MIN_MS = 5000;
+export const TRAIL_THUMBNAIL_HOVER_MAX_MS = 20000;
+
 export const COLOR_TRANSITION_DURATION = 60000;
 export const COLOR_UPDATE_THROTTLE_MS = 50;
 
+/** カーソル軌跡（シェーダ・追従・休止軌道）。サイト崩れ抽選は SITE_BROKEN_*。 */
 export const CURSOR_CONFIG = {
   shaderPoints: 16,
   curvePoints: 80,
@@ -24,8 +29,8 @@ export const CURSOR_CONFIG = {
   /** R(t) に渡す t：0 ↔ 50 を同じレートで往復 */
   trajectoryRMin: 0,
   trajectoryRMax: 50,
-  /** この秒数までは R 用 t のみ極めて緩やか（見た目は長く真円に近い） */
-  trajectoryQuietHoldSec: 9,
+  /** この秒数までは R 用 t のみ緩やか（長いほど休止開始が「じわっ」と見える） */
+  trajectoryQuietHoldSec: 4,
   /** ホールド中の R 用 t の増加速度（秒あたり・小さいほど真円が長持ち） */
   trajectoryNoiseQuietRate: 0.035,
   /** 描画の角速度（rad/秒）。ホールド前後で一定＝最初から崩れ始めと同程度の速さで円を描く */
@@ -41,6 +46,26 @@ export const CURSOR_CONFIG = {
   thumbnailOverlapPadPx: 0,
   /** 重なり時の不透明度を 0/1 に近づける補間係数（毎フレーム） */
   thumbnailOpacityLerp: 0.22,
+
+  /**
+   * ページ内にポインタがある状態で、この秒数操作が無いと「画面外と同じ」休止軌跡へ移行する。
+   * （ポインタがページ外に出た場合の休止は、この値に関係なく従来どおり）
+   */
+  cursorIdleSleepTrajectorySec: 12,
+
+  /**
+   * state.brokenPeriodActive に追従する視覚ブレンド（0=円・1=崩れ）。
+   * 通常へ戻るときはゆっくり下げて「戻った」と分かるまで持続。
+   */
+  /** 崩れ開始時、見た目が早く激しく乗る（1/s） */
+  brokenVisualBlendInPerSec: 2.35,
+  /** 通常へ: 大きいほど早く見た目が円へ（state より遅れを解消しやすい） */
+  brokenVisualBlendOutPerSec: 0.58,
+  /** 通常フラグかつ blend がこれ未満なら 0 にスナップ（残りの微かな崩れを消す） */
+  brokenVisualBlendSnapEps: 0.03,
+
+  /** 崩れ中: 位相の混沌レート c に掛ける倍率（1 より大きいほど R(t) 周方向の位相が速く振れる） */
+  brokenTRPhaseAggro: 1.95,
 };
 
 export const baseAssetsUrl = 'https://assets.shuntofujii.com';
@@ -136,3 +161,76 @@ export const GUIDANCE_TYPO_PAUSE_BEFORE_DELETE_MAX_MS = 400;
  */
 export const GUIDANCE_TYPO_AFTER_FIX_EXTRA_MIN_MS = 95;
 export const GUIDANCE_TYPO_AFTER_FIX_EXTRA_MAX_MS = 270;
+
+// --- サイト全体「崩れ」期間（通常 ↔ 崩れの一元管理・siteBrokenPeriod.js） ---
+
+/** `initSiteBrokenPeriod` 呼び出しからこの時間は必ず通常期間（着地後の猶予） */
+export const SITE_BROKEN_GRACE_AFTER_LAND_MS = 5000;
+
+/** 通常中、「崩れへ入るか」評価までの待ち下限（ms）+ ジッター */
+export const SITE_BROKEN_EVAL_MIN_MS = 3000;
+
+/** 崩れ中、「通常へ戻るか」評価までの待ち下限（ms）。やや短くして戻りを増やす */
+export const SITE_BROKEN_EVAL_MIN_MS_WHILE_BROKEN = 2600;
+
+/** `SITE_BROKEN_EVAL_MIN_MS` に加算するランダム（ms） */
+export const SITE_BROKEN_EVAL_JITTER_MS = 7000;
+
+/**
+ * 崩れ期間中に候補が来たとき、通常期間へ戻る確率（0〜1）。
+ * 通常→崩れより高めにすると「戻る」が目立ちやすい。
+ */
+export const SITE_BROKEN_TO_NORMAL_CHANCE = 0.68;
+
+/**
+ * 通常期間中に候補が来たとき、崩れ期間へ入るベース確率（0〜1）。
+ * 実効値は未操作ブースト・連続崩れブースト後に `SITE_BROKEN_TO_BROKEN_CAP` で頭打ち。
+ */
+export const SITE_BROKEN_TO_BROKEN_CHANCE = 0.48;
+
+/**
+ * 未操作が `SITE_BROKEN_IDLE_BOOST_SATURATION_SEC` に達すると、この分だけベース確率に加算（0〜1）。
+ */
+export const SITE_BROKEN_TO_BROKEN_IDLE_MAX_EXTRA = 0.26;
+
+/** 上記の未操作ブーストが飽和するまでの秒数 */
+export const SITE_BROKEN_IDLE_BOOST_SATURATION_SEC = 14;
+
+/**
+ * 崩れが終わってからこの秒数以内なら、通常→崩れの確率に追加（終わった直後ほど強い）。
+ */
+export const SITE_BROKEN_REPEAT_WINDOW_SEC = 12;
+
+/** `SITE_BROKEN_REPEAT_WINDOW_SEC` 直後に足す確率の最大（線形減衰） */
+export const SITE_BROKEN_REPEAT_BROKEN_EXTRA = 0.18;
+
+/** 通常→崩れの抽選確率の上限（ブースト合成後） */
+export const SITE_BROKEN_TO_BROKEN_CAP = 0.9;
+
+/** 内部 tick（ms） */
+export const SITE_BROKEN_POLL_MS = 500;
+
+/**
+ * 着地からこの秒数を過ぎると「長め滞在」バイアスが付き始める（猶予後の経過秒）。
+ */
+export const SITE_BROKEN_DWELL_BIAS_START_SEC = 28;
+
+/**
+ * この秒数経過で滞在バイアスが最大（その間は線形）。
+ */
+export const SITE_BROKEN_DWELL_BIAS_SAT_SEC = 100;
+
+/**
+ * `stayBrokenAffinity`（滞在×未操作の合成）が最大のとき、崩れ→通常の確率に掛る係数の下限（0〜1）。
+ */
+export const SITE_BROKEN_DWELL_TO_NORMAL_SCALE_MIN = 0.11;
+
+/**
+ * 滞在バイアス最大時に通常→崩れへ足せる追加確率（あわせて CAP で頭打ち）。
+ */
+export const SITE_BROKEN_DWELL_TO_BROKEN_EXTRA = 0.32;
+
+/**
+ * 滞在×未操作の両方が高いときだけ足す追加確率（「長く見ていて動いてない」とより崩れやすい）。
+ */
+export const SITE_BROKEN_DWELL_IDLE_SYNERGY_EXTRA = 0.16;

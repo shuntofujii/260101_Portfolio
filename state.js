@@ -8,6 +8,8 @@ export const state = {
   hoveredProject: null,
   selectedProject: null,
   hoverLeaveTimer: null,
+  /** 軌跡ヒット時の一時 hover を解除するタイマー */
+  trailThumbnailHoverTimer: null,
 
   // Modal
   isClosing: false,
@@ -29,6 +31,24 @@ export const state = {
 
   // Background/visual transition
   bgLayerFadeCompleteHandler: null,
+
+  /**
+   * サイト全体の「崩れ」期間（休止時カーソル軌跡の混沌・プロフィールボタン揺らぎ・ガイダンス誤字）。
+   * `siteBrokenPeriod.js` が評価し、各演出が参照する。
+   */
+  brokenPeriodActive: false,
+
+  /**
+   * 最後のユーザー操作時刻（performance.now）。未操作時間の算出用。
+   * `siteBrokenPeriod.js` の markActivity / init で更新。
+   */
+  lastUserActivityPerfMs: null,
+
+  /**
+   * 直近「崩れ→通常」に戻った時刻（performance.now）。
+   * 連続して崩れやすくするブースト用（siteBrokenPeriod.js）。
+   */
+  lastBrokenExitPerfMs: null,
 
   // Cursor effect
   cursorEffectInstance: null,

@@ -1,9 +1,8 @@
 /**
  * スリープ時の背景軌跡
  * 位置: x = R(tR) cos(θ), y = R(tR) sin(θ)
- * - θ は一定角速度で単調に増加
- * - tR は 0 → Rmax → 0 → … を繰り返す
- * - 上昇/下降の速度にランダム倍率を掛ける（平均倍率は 1.0）
+ * - θ は経過秒 elapsedSec に対して一定角速度で単調に増加（常に同じ時間軸）
+ * - tR は別パラメータ rPhaseSec の位相から決める（崩れ期間は速く、通常期間は遅く位相を進める＝dt×係数のみ切替）
  */
 
 /**
@@ -22,7 +21,23 @@ export function trajectoryR(t) {
 }
 
 /**
+ * ノイズ倍率（従来どおり elapsed ベース）
  * @param {number} elapsedSec
+ * @param {*} config
+ */
+export function sleepTrajectoryNoiseScale(elapsedSec, config) {
+  const { trajectorySpeedRandomMin, trajectorySpeedRandomMax, trajectorySpeedRandomHz } = config;
+  const e = Math.max(0, elapsedSec);
+  const randomHz = Math.max(0.001, trajectorySpeedRandomHz);
+  const noise = smoothValueNoise(e * randomHz, 7.123);
+  return lerp(trajectorySpeedRandomMin, trajectorySpeedRandomMax, noise);
+}
+
+/**
+ * θ は elapsedSec、tForR は rPhaseSec（別積分）で決定。位相→tForR の式は常に同一（リセットなしで連続）。
+ *
+ * @param {number} elapsedSec 休止開始からの経過（θ 用・リセットは「マウス休止に入った時」のみ）
+ * @param {number} rPhaseSec tForR 用位相（毎フレーム dt×係数で加算）
  * @param {{
  *   trajectoryThetaMin: number,
  *   trajectoryRMin: number,
@@ -37,7 +52,7 @@ export function trajectoryR(t) {
  * }} config
  * @returns {{ theta: number, tForR: number }}
  */
-export function sleepTrajectoryParams(elapsedSec, config) {
+export function sleepTrajectoryFromPhase(elapsedSec, rPhaseSec, config) {
   const {
     trajectoryThetaMin,
     trajectoryRMin,
@@ -45,17 +60,12 @@ export function sleepTrajectoryParams(elapsedSec, config) {
     trajectoryQuietHoldSec,
     trajectoryNoiseQuietRate,
     trajectoryAngularRate,
-    trajectoryChaosRate,
-    trajectorySpeedRandomMin,
-    trajectorySpeedRandomMax,
-    trajectorySpeedRandomHz
+    trajectoryChaosRate
   } = config;
 
   const e = Math.max(0, elapsedSec);
   const theta = trajectoryThetaMin + e * trajectoryAngularRate;
-  const randomHz = Math.max(0.001, trajectorySpeedRandomHz);
-  const noise = smoothValueNoise(e * randomHz, 7.123);
-  const randomRateScale = lerp(trajectorySpeedRandomMin, trajectorySpeedRandomMax, noise);
+  const randomRateScale = sleepTrajectoryNoiseScale(e, config);
 
   const hold = trajectoryQuietHoldSec;
   const q = trajectoryNoiseQuietRate * randomRateScale;
@@ -68,11 +78,10 @@ export function sleepTrajectoryParams(elapsedSec, config) {
   const TUp = hold + upFastSec;
   const cycleLen = 2 * TUp;
 
-  const phaseTime = TUp > 0 ? e % cycleLen : 0;
+  const phaseTime = cycleLen > 0 ? rPhaseSec % cycleLen : 0;
 
   let tForR;
   if (phaseTime < TUp) {
-    // 上昇: 0 → rMax（従来と同じ二段レート）
     if (phaseTime < hold) {
       tForR = rMin + phaseTime * q;
     } else {
@@ -80,7 +89,6 @@ export function sleepTrajectoryParams(elapsedSec, config) {
     }
     tForR = Math.min(rMax, Math.max(rMin, tForR));
   } else {
-    // 下降: rMax → 0（上昇と対称なレート）
     const tau = phaseTime - TUp;
     if (tau < upFastSec) {
       tForR = rMax - tau * c;

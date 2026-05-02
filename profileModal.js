@@ -1,11 +1,27 @@
 // プロフィールモーダル（入場アニメは profileIntro 系で後段から接続）
 import { getRefs } from './domRefs.js';
 import { state } from './state.js';
+import { clearTrailThumbnailHoverTimer } from './appStateTransitions.js';
 import { escapeHtml, createFocusTrap } from './utils.js';
 import { setBackgroundModalState } from './modalChrome.js';
 import { baseAssetsUrl } from './constants.js';
+import { createImageGrid } from './media.js';
 
 const ASSETS_V = '?v=20260429';
+
+/** 1995-09-25 生まれ。誕生日を迎えるまでは前年齢（ローカル日付基準）。 */
+const PROFILE_BIRTH = new Date(1995, 8, 25);
+
+function computeProfileAgeYears(asOf = new Date()) {
+  let age = asOf.getFullYear() - PROFILE_BIRTH.getFullYear();
+  const md = asOf.getMonth() - PROFILE_BIRTH.getMonth();
+  if (md < 0 || (md === 0 && asOf.getDate() < PROFILE_BIRTH.getDate())) age -= 1;
+  return age;
+}
+
+const PROFILE_CONCEPT = 'ザ・フジイ・オリジナル';
+
+const PROFILE_LOGO_FILES = ['logo_p_1.webp', 'logo_p_2.webp', 'logo_p_3.webp', 'logo_p_4.webp'];
 
 const PROFILE_BIO_PARAGRAPHS = [
   '大手通信事業社でM&Aやメディア立ち上げなどを担当。現在は全社のマーケティング戦略を策定している。',
@@ -53,6 +69,7 @@ function buildProfileMetaHtml() {
 
 export function renderProfileContent(modalContentEl) {
   const profileImg = `${baseAssetsUrl}/profile/profile.webp${ASSETS_V}`;
+  const age = computeProfileAgeYears();
   const bodyHtml = PROFILE_BIO_PARAGRAPHS.map((p) => {
     const t = escapeHtml(p).replace(/\n/g, '<br>');
     return `<p class="profile-modal-paragraph">${t}</p>`;
@@ -61,7 +78,6 @@ export function renderProfileContent(modalContentEl) {
 
   modalContentEl.innerHTML = `
     <h2 class="visually-hidden" id="profileModalTitleHeading">Profile</h2>
-    <h3 class="case-title">藤井 洵斗 / SHUNTO FUJII (30)</h3>
     <div class="profile-modal-hero">
       <img
         class="profile-modal-photo"
@@ -73,11 +89,25 @@ export function renderProfileContent(modalContentEl) {
         fetchpriority="high"
       />
     </div>
+    <h3 class="case-title profile-modal-name-title">藤井 洵斗 / SHUNTO FUJII (${age})</h3>
+    <p class="modal-tagline profile-modal-concept">${escapeHtml(PROFILE_CONCEPT)}</p>
     <div class="profile-modal-bio modal-description">
       ${bodyHtml}
     </div>
     ${metaHtml}
   `;
+
+  const profileLogoBase = `${baseAssetsUrl}/profile`;
+  const logoImages = PROFILE_LOGO_FILES.map((f) => ({
+    src: `${profileLogoBase}/${f}${ASSETS_V}`
+  }));
+  const logoGrid = createImageGrid(logoImages, null, true, null, null, 0, 'Profile');
+  if (logoGrid) {
+    const logosSection = document.createElement('section');
+    logosSection.className = 'modal-initiatives profile-modal-logos';
+    logosSection.appendChild(logoGrid);
+    modalContentEl.appendChild(logosSection);
+  }
 }
 
 function finalizeProfileClose(refs) {
@@ -149,12 +179,29 @@ export function closeProfileModalIfOpen() {
 }
 
 export function openProfileModal(triggerElement) {
+  clearTrailThumbnailHoverTimer(state);
   const refs = getRefs();
   state.profileModalTriggerElement = triggerElement || null;
 
   if (!refs.profileModalOverlay || !refs.profileModalContainer || !refs.profileModalContent) return;
 
+  const resetProfileModalScrollPosition = () => {
+    if (refs.profileModalContent) {
+      refs.profileModalContent.scrollTop = 0;
+      if (typeof refs.profileModalContent.scrollTo === 'function') {
+        refs.profileModalContent.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }
+    }
+    if (refs.profileModalContainer) {
+      refs.profileModalContainer.scrollTop = 0;
+      if (typeof refs.profileModalContainer.scrollTo === 'function') {
+        refs.profileModalContainer.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }
+    }
+  };
+
   renderProfileContent(refs.profileModalContent);
+  resetProfileModalScrollPosition();
 
   refs.profileModalOverlay.style.transition = '';
   refs.profileModalContainer.style.transition = '';
@@ -170,6 +217,9 @@ export function openProfileModal(triggerElement) {
   requestAnimationFrame(() => {
     document.body.classList.add('modal-open');
     refs.profileModalContainer.dataset.state = 'open';
+    requestAnimationFrame(() => {
+      resetProfileModalScrollPosition();
+    });
     requestAnimationFrame(() => {
       if (refs.profileModalClose) refs.profileModalClose.focus();
       if (state.profileFocusTrapHandler) document.removeEventListener('keydown', state.profileFocusTrapHandler);

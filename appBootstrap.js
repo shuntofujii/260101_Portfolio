@@ -80,21 +80,25 @@ export function createAppBootstrapController(deps) {
     if (!isMobileViewport()) {
       return initCursorEffect();
     }
-    const run = () => initCursorEffect();
-    if (typeof requestIdleCallback === 'function') {
-      requestIdleCallback(() => run(), { timeout: 2800 });
-    } else {
-      setTimeout(run, 200);
-    }
-    return Promise.resolve();
+    return new Promise((resolve) => {
+      const run = () => {
+        initCursorEffect().then(resolve).catch(resolve);
+      };
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(run, { timeout: 1200 });
+      } else {
+        setTimeout(run, 200);
+      }
+    });
   }
 
   async function init() {
     try {
+      const cursorInitPromise = scheduleCursorEffectInit();
       state.projects = await fetchProjectsData();
       warmupInitialHeroVideos(state.projects);
       bootstrapUiAfterDataReady();
-      await scheduleCursorEffectInit();
+      await cursorInitPromise;
     } catch (error) {
       console.error('Error loading projects:', error);
       showErrorState();

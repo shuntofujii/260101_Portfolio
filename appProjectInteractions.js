@@ -1,4 +1,8 @@
-import { THUMBNAIL_PREVIEW_ACTIVE_CLASS } from './constants.js';
+import {
+  THUMBNAIL_PREVIEW_ACTIVE_CLASS,
+  TRAIL_THUMBNAIL_HOVER_MIN_MS,
+  TRAIL_THUMBNAIL_HOVER_MAX_MS
+} from './constants.js';
 
 export function createProjectInteractionController(deps) {
   const {
@@ -7,6 +11,7 @@ export function createProjectInteractionController(deps) {
     openingSoonProjectId,
     escapeHtml,
     clearHoverLeaveTimer,
+    clearTrailThumbnailHoverTimer,
     clearProjectSelections,
     resetHeroVideoBase,
     beginBackgroundFadeOutToInitialState,
@@ -79,6 +84,7 @@ export function createProjectInteractionController(deps) {
 
   function handleProjectHover(project, itemElement) {
     clearHoverLeaveTimer();
+    clearTrailThumbnailHoverTimer();
 
     syncThumbnailPreviewItem(itemElement);
 
@@ -104,6 +110,7 @@ export function createProjectInteractionController(deps) {
 
   function handleProjectLeave() {
     clearHoverLeaveTimer();
+    clearTrailThumbnailHoverTimer();
 
     if (state.currentState !== 'modal' && !state.selectedProject) {
       refs.titleText.textContent = 'PORTFOLIO';
@@ -136,13 +143,75 @@ export function createProjectInteractionController(deps) {
   function handleProjectClick(project, triggerItemEl) {
     if (state.profileModalOpen || state.profileIntroActive) return;
     clearHoverLeaveTimer();
+    clearTrailThumbnailHoverTimer();
     openProjectModalFromRoute(project, triggerItemEl ?? null);
+  }
+
+  function escapeProjectIdForSelector(projectId) {
+    return typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+      ? CSS.escape(String(projectId))
+      : String(projectId).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  }
+
+  /** 実ポインタが該当サムネ上にいるか（軌跡ヒットのタイマー終了時と同じ判定） */
+  function isRealPointerOverHoveredProjectItem(project) {
+    const nav = refs.projectNavigation;
+    if (!nav || !project) return false;
+    const safeId = escapeProjectIdForSelector(project.id);
+    try {
+      return Boolean(nav.querySelector(`.project-item[data-project-id="${safeId}"]:hover`));
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * 軌跡ヒットで始めた hover 維持タイマーがある状態で、ユーザーがマウスを動かす／クリック等したら解除。
+   * 実機カーソルがまだサムネ上なら通常 hover とみなしてそのまま。
+   */
+  function cancelTrailHoverOnUserActivity() {
+    if (state.trailThumbnailHoverTimer == null) return;
+    clearTrailThumbnailHoverTimer();
+    const project = state.hoveredProject;
+    if (!project || !shouldProcessProjectPointerInteraction()) return;
+    if (isRealPointerOverHoveredProjectItem(project)) return;
+    handleProjectLeave();
+  }
+
+  /** カーソル軌跡がサムネと重なったとき（sleep 軌道含む）— 通常の hover/touch と同じ見た目を一定時間維持 */
+  function handleTrailThumbnailHit(project, itemElement) {
+    if (!shouldProcessProjectPointerInteraction()) return;
+    if (!project || !itemElement) return;
+
+    clearTrailThumbnailHoverTimer();
+    handleProjectHover(project, itemElement);
+
+    const span = Math.max(0, TRAIL_THUMBNAIL_HOVER_MAX_MS - TRAIL_THUMBNAIL_HOVER_MIN_MS);
+    const durationMs = TRAIL_THUMBNAIL_HOVER_MIN_MS + Math.floor(Math.random() * (span + 1));
+
+    state.trailThumbnailHoverTimer = window.setTimeout(() => {
+      state.trailThumbnailHoverTimer = null;
+      if (!shouldProcessProjectPointerInteraction()) return;
+      if (state.hoveredProject?.id !== project.id) return;
+      const nav = refs.projectNavigation;
+      if (nav) {
+        const safeId = escapeProjectIdForSelector(project.id);
+        try {
+          if (nav.querySelector(`.project-item[data-project-id="${safeId}"]:hover`)) return;
+        } catch {
+          /* ignore */
+        }
+      }
+      handleProjectLeave();
+    }, durationMs);
   }
 
   return {
     handleProjectItemMouseEnter,
     handleProjectItemMouseLeave,
     handleProjectItemTouchStart,
-    handleProjectClick
+    handleProjectClick,
+    handleTrailThumbnailHit,
+    cancelTrailHoverOnUserActivity
   };
 }

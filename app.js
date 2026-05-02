@@ -35,9 +35,12 @@ import { createModalSwipeController } from './appModalSwipeController.js';
 import { createProjectInteractionController } from './appProjectInteractions.js';
 import { createAppBootstrapController } from './appBootstrap.js';
 import { initAnimatedFavicon } from './animatedFavicon.js';
+import { initProfileOpenButtonMotion } from './profileOpenButtonMotion.js';
+import { initSiteBrokenPeriod } from './siteBrokenPeriod.js';
 import { createModalRoutingController } from './appModalRoutingController.js';
 import {
   clearHoverLeaveTimer as clearHoverLeaveTimerState,
+  clearTrailThumbnailHoverTimer as clearTrailThumbnailHoverTimerState,
   clearProjectSelections as clearProjectSelectionsView,
   resetHeroVideoBase as resetHeroVideoBaseView,
   beginBackgroundFadeOutToInitialState as beginBackgroundFadeOutToInitialStateView,
@@ -63,6 +66,7 @@ const PROJECT_SWIPE_MAX_Y = 72;
 const PROJECT_SWIPE_LOCK_Y = 14;
 const PROJECT_SWIPE_COMMIT_MS = 260;
 let profileIntroPhysicsModulePromise = null;
+let trailThumbnailHitListenerAbort = null;
 
 const refs = initializeAppRefs({ openLightbox, openLightboxVideo });
 
@@ -199,6 +203,10 @@ function isMobileViewport() {
 
 function clearHoverLeaveTimer() {
   clearHoverLeaveTimerState(state);
+}
+
+function clearTrailThumbnailHoverTimer() {
+  clearTrailThumbnailHoverTimerState(state);
 }
 
 function clearProjectSelections() {
@@ -367,12 +375,20 @@ function renderInitialState() {
 // プロジェクト選択UIの描画
 // ============================================
 function renderProjectNavigation() {
+  if (trailThumbnailHitListenerAbort) {
+    trailThumbnailHitListenerAbort.abort();
+    trailThumbnailHitListenerAbort = null;
+  }
+  trailThumbnailHitListenerAbort = new AbortController();
+  const { signal } = trailThumbnailHitListenerAbort;
+
   const projectInteractionController = createProjectInteractionController({
     state,
     refs,
     openingSoonProjectId: OPENING_SOON_PROJECT_ID,
     escapeHtml,
     clearHoverLeaveTimer,
+    clearTrailThumbnailHoverTimer,
     clearProjectSelections,
     resetHeroVideoBase,
     beginBackgroundFadeOutToInitialState,
@@ -380,6 +396,28 @@ function renderProjectNavigation() {
     preloadProjectVideos,
     openProjectModalFromRoute
   });
+
+  document.addEventListener(
+    'portfolio:trailthumbnailhit',
+    (e) => {
+      const idx = e.detail?.projectIndex;
+      if (typeof idx !== 'number' || Number.isNaN(idx) || !state.projects[idx]) return;
+      const project = state.projects[idx];
+      const item = refs.projectNavigation?.querySelector(
+        `.project-item[data-project-index="${CSS.escape(String(idx))}"]`
+      );
+      if (!item) return;
+      projectInteractionController.handleTrailThumbnailHit(project, item);
+    },
+    { signal }
+  );
+
+  const opts = { signal, passive: true };
+  const cancelTrail = () => projectInteractionController.cancelTrailHoverOnUserActivity();
+  window.addEventListener('mousemove', cancelTrail, opts);
+  window.addEventListener('pointerdown', cancelTrail, opts);
+  window.addEventListener('click', cancelTrail, opts);
+  window.addEventListener('touchstart', cancelTrail, opts);
 
   renderProjectNavigationView(refs.projectNavigation, state.projects, {
     baseAssetsUrl,
@@ -460,6 +498,9 @@ function showErrorState() {
   refs.titleText.textContent = 'ERROR';
 }
 
-// 初期化実行
-init();
+// 初期化実行（崩れ期間の起点はデータ取得完了後＝bootstrap 完了時）
+init().finally(() => {
+  initSiteBrokenPeriod();
+});
 initAnimatedFavicon();
+initProfileOpenButtonMotion();

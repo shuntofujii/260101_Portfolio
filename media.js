@@ -511,6 +511,14 @@ export function appendExplicitModal(project, parentEl) {
   const base = `${baseAssetsUrl}/${slug}`;
   const altPrefix = project.title ? String(project.title) : '';
 
+  /** モーダル表示直後に確実に読み込む（hidden 解除前後の lazy 取りこぼし防止） */
+  const eagerLoadImagesInGrid = (grid) => {
+    if (!grid) return;
+    grid.querySelectorAll('img').forEach((img) => {
+      img.loading = 'eager';
+    });
+  };
+
   segments.forEach((seg) => {
     if (!seg || !seg.type) return;
 
@@ -546,6 +554,7 @@ export function appendExplicitModal(project, parentEl) {
       const forceHorizontal = seg.files.length > 1;
       const grid = createImageGrid(images, null, forceHorizontal, null, null, 0, altPrefix);
       if (grid) {
+        eagerLoadImagesInGrid(grid);
         if (seg.imageStyle === 'circle') {
           grid.dataset.imageStyle = 'circle';
         }
@@ -571,7 +580,10 @@ export function appendExplicitModal(project, parentEl) {
             0,
             altPrefix
           );
-          if (grid) row.appendChild(grid);
+          if (grid) {
+            eagerLoadImagesInGrid(grid);
+            row.appendChild(grid);
+          }
         } else if (item.type === 'video' && item.file) {
           row.appendChild(createInteractiveVideoShell(`${base}/${item.file}`));
         }

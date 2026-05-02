@@ -262,7 +262,16 @@ body {
 }
 
 .profile-modal-hero {
-  margin: 0.75rem 0 2rem;
+  margin: 0 0 1.625rem;
+  width: 100%;
+}
+
+.profile-modal-name-title {
+  margin-top: 0;
+}
+
+.profile-modal-concept {
+  margin-top: 0;
 }
 
 .profile-modal-name {
@@ -275,7 +284,7 @@ body {
 
 .profile-modal-photo {
   width: 100%;
-  max-width: min(280px, 100%);
+  max-width: 100%;
   height: auto;
   border-radius: 14px;
   display: block;
@@ -1331,6 +1340,14 @@ body.modal-open .modal-overlay:not([hidden]) {
   padding-top: 3rem;
 }
 
+.profile-modal-logos {
+  padding-top: 1.75rem;
+}
+
+.profile-modal-logos .mediaGrid {
+  margin-bottom: 0;
+}
+
 .initiative-list {
   display: flex;
   flex-direction: column;
@@ -2073,6 +2090,10 @@ body.modal-open .modal-overlay:not([hidden]) {
   .modal-initiatives {
     margin-top: 0;
     padding-top: 2rem;
+  }
+
+  .profile-modal-logos {
+    padding-top: 1.25rem;
   }
 
   .initiative-list {
