@@ -22,16 +22,22 @@ export function ensureVideoPlayUrl(canonicalUrl) {
 }
 
 /**
- * モーダル内インライン動画をシンプルに接続（src 直指定 + metadata）
+ * モーダル内インライン動画をシンプルに接続（src 直指定）
  * @param {HTMLVideoElement} videoEl
  * @param {string} canonicalSrc
+ * @param {{ preload?: 'none' | 'metadata' | 'auto' }} [options]
+ *   `preload: 'none'` のときは `load()` を呼ばず、ポスター画像の表示を優先する（再生開始までデコードを遅延）
  */
-export function attachVideoElement(videoEl, canonicalSrc) {
+export function attachVideoElement(videoEl, canonicalSrc, options = {}) {
   if (!videoEl || !canonicalSrc) return;
   videoEl.dataset.canonicalVideoSrc = canonicalSrc;
   const playUrl = getPlayUrlIfCached(canonicalSrc) || canonicalSrc;
   videoEl.src = playUrl;
-  videoEl.preload = 'metadata';
+  const preload = options.preload ?? 'metadata';
+  videoEl.preload = preload;
+  if (preload === 'none') {
+    return;
+  }
   videoEl.load();
 }
 

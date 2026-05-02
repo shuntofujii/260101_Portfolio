@@ -1497,6 +1497,19 @@ body.modal-open .modal-overlay:not([hidden]) {
   background: #000;
 }
 
+/* 再生前・先頭停止時は img でポスターを重ねる（video の未デコード領域が黒でも隠れる） */
+.video-poster-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.2s ease;
+}
+
 .video-overlay-play {
   position: absolute;
   inset: 0;

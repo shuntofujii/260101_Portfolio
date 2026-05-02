@@ -19,7 +19,6 @@ import {
   THUMBNAIL_FETCH_PRIORITY_COUNT
 } from './constants.js';
 import { escapeHtml } from './utils.js';
-import { initCursorEffect } from './cursorEffect.js';
 import { initGuidanceTypewriter } from './guidanceTypewriter.js';
 import { openModal, closeModal, renderModalContent } from './modal.js';
 import { openProfileModal, closeProfileModal } from './profileModal.js';
@@ -188,7 +187,6 @@ const appBootstrapController = createAppBootstrapController({
   scheduleIdleVideoPreload,
   ensureVideoPlayUrl,
   initGuidanceTypewriter,
-  initCursorEffect,
   applyInitialRoute,
   renderInitialState,
   renderProjectNavigation,
@@ -502,5 +500,23 @@ function showErrorState() {
 init().finally(() => {
   initSiteBrokenPeriod();
 });
-initAnimatedFavicon();
-initProfileOpenButtonMotion();
+
+function scheduleNonCriticalChromeInit() {
+  const run = () => {
+    initAnimatedFavicon();
+    initProfileOpenButtonMotion();
+  };
+  const kick = () => {
+    if (typeof requestIdleCallback === 'function') {
+      requestIdleCallback(run, { timeout: 2800 });
+    } else {
+      setTimeout(run, 120);
+    }
+  };
+  if (document.readyState === 'complete') {
+    kick();
+  } else {
+    window.addEventListener('load', kick, { once: true });
+  }
+}
+scheduleNonCriticalChromeInit();

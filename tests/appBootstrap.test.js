@@ -20,7 +20,6 @@ function createController(overrides = {}) {
     scheduleIdleVideoPreload: vi.fn(),
     ensureVideoPlayUrl: vi.fn(() => Promise.resolve('ok')),
     initGuidanceTypewriter: vi.fn(),
-    initCursorEffect: vi.fn(() => Promise.resolve()),
     applyInitialRoute: vi.fn(),
     renderInitialState: vi.fn(),
     renderProjectNavigation: vi.fn(),

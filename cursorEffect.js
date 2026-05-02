@@ -1,90 +1,13 @@
 // カーソルエフェクト（色相・Three.js 軌跡）
 // 休止軌道の数式・モード判定・サムネ Node キャッシュは cursorTrailSleep / cursorTrailMode / cursorTrailThumbnails。
+// 色相の CSS 変数更新は accentColorTheme.js と共有
 import { state } from './state.js';
 import { getRefs } from './domRefs.js';
-import {
-  COLOR_TRANSITION_DURATION,
-  COLOR_UPDATE_THROTTLE_MS,
-  CURSOR_CONFIG,
-  CURSOR_Z_INDEX
-} from './constants.js';
+import { CURSOR_CONFIG, CURSOR_Z_INDEX } from './constants.js';
+import { hexToRgb, getColorFromHue, startColorTransition } from './accentColorTheme.js';
 import { createSleepTrailRuntime, stepSleepTrailFrame } from './cursorTrailSleep.js';
 import { shouldUseSleepTrajectory } from './cursorTrailMode.js';
 import { createThumbNodeCache } from './cursorTrailThumbnails.js';
-
-function hexToRgb(hex) {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-      }
-    : null;
-}
-
-function getColorFromHue(hue) {
-  const saturation = 100;
-  const value = 100;
-  const c = (value / 100) * (saturation / 100);
-  const x = c * (1 - Math.abs((hue / 60) % 2 - 1));
-  const m = value / 100 - c;
-  let r, g, b;
-  if (hue < 60) { r = c; g = x; b = 0; }
-  else if (hue < 120) { r = x; g = c; b = 0; }
-  else if (hue < 180) { r = 0; g = c; b = x; }
-  else if (hue < 240) { r = 0; g = x; b = c; }
-  else if (hue < 300) { r = x; g = 0; b = c; }
-  else { r = c; g = 0; b = x; }
-  const red = Math.round((r + m) * 255);
-  const green = Math.round((g + m) * 255);
-  const blue = Math.round((b + m) * 255);
-  return `#${red.toString(16).padStart(2, '0')}${green.toString(16).padStart(2, '0')}${blue.toString(16).padStart(2, '0')}`;
-}
-
-function getCurrentAccentColor() {
-  if (state.colorTransitionStartTime === null) {
-    if (state.initialHue === null) state.initialHue = Math.random() * 360;
-    return getColorFromHue(state.initialHue);
-  }
-  const currentTime = performance.now();
-  const elapsed = currentTime - state.colorTransitionStartTime;
-  const hue = (state.initialHue + (elapsed / COLOR_TRANSITION_DURATION) * 360) % 360;
-  return getColorFromHue(hue);
-}
-
-function updateCursorEffectColor(color) {
-  if (!state.cursorEffectInstance) return;
-  try {
-    state.cursorEffectInstance.updateColor(color);
-  } catch (error) {
-    console.error('[Cursor Effect] Failed to update color:', error);
-  }
-}
-
-function updateAccentColor() {
-  const color = getCurrentAccentColor();
-  state.currentAccentColor = color;
-  document.documentElement.style.setProperty('--accent-color', color);
-  updateCursorEffectColor(color);
-  return color;
-}
-
-function startColorTransition() {
-  if (state.colorAnimationFrameId) cancelAnimationFrame(state.colorAnimationFrameId);
-  state.colorTransitionStartTime = performance.now();
-  state.lastColorUpdateTime = 0;
-
-  function animateColor() {
-    const now = performance.now();
-    if (now - state.lastColorUpdateTime >= COLOR_UPDATE_THROTTLE_MS) {
-      state.lastColorUpdateTime = now;
-      updateAccentColor();
-    }
-    state.colorAnimationFrameId = requestAnimationFrame(animateColor);
-  }
-  animateColor();
-}
 
 function createCustomCursorEffect(THREE, initialColor) {
   const el = document.body;
@@ -674,14 +597,23 @@ function createCustomCursorEffect(THREE, initialColor) {
 
 export async function initCursorEffect() {
   try {
-    const THREE = await import('https://unpkg.com/three@0.160.0/build/three.module.js');
+    const THREE = await import('/vendor/three.module.js');
     if (state.cursorEffectInstance) destroyCursorEffect();
     if (state.initialHue === null) state.initialHue = Math.random() * 360;
     const initialColor = getColorFromHue(state.initialHue);
     state.currentAccentColor = initialColor;
     state.cursorEffectInstance = createCustomCursorEffect(THREE, initialColor);
     document.documentElement.style.setProperty('--accent-color', initialColor);
-    startColorTransition();
+    startColorTransition({
+      syncWebGlColor: (color) => {
+        if (!state.cursorEffectInstance) return;
+        try {
+          state.cursorEffectInstance.updateColor(color);
+        } catch (err) {
+          console.error('[Cursor Effect] Failed to update color:', err);
+        }
+      }
+    });
   } catch (error) {
     console.error('[Cursor Effect] Failed to initialize cursor effect:', error);
   }

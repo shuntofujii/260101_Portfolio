@@ -6,6 +6,29 @@ import { attachVideoElement } from './videoCache.js';
 import { buildImageUrl, buildVideoUrl, getImageGridLayout, getLayoutSpan } from './mediaLayout.js';
 export { buildVideoUrl } from './mediaLayout.js';
 
+/**
+ * 動画 URL のパス部分のみ `.webm` → `.webp`（`?v=` 等のクエリ・ハッシュは維持）
+ * `...webm?v=1` に対して `.webm$` 置換が効かず img が webm を指してしまうのを防ぐ。
+ */
+export function posterImageUrlFromVideoUrl(videoUrl) {
+  if (!videoUrl || typeof videoUrl !== 'string') return '';
+  let hash = '';
+  let rest = videoUrl;
+  const hashIdx = rest.indexOf('#');
+  if (hashIdx >= 0) {
+    hash = rest.slice(hashIdx);
+    rest = rest.slice(0, hashIdx);
+  }
+  let query = '';
+  const qIdx = rest.indexOf('?');
+  if (qIdx >= 0) {
+    query = rest.slice(qIdx);
+    rest = rest.slice(0, qIdx);
+  }
+  const baseWebp = rest.replace(/\.webm$/i, '.webp');
+  return baseWebp + query + hash;
+}
+
 function isMobileViewport() {
   return window.matchMedia(`(max-width: ${BREAKPOINT_MOBILE_PX}px)`).matches;
 }
@@ -153,11 +176,13 @@ export function stopAllInlineVideos() {
       videoShell.classList.remove('playing');
       const overlayPlay = videoShell.querySelector('.video-overlay-play');
       const controls = videoShell.querySelector('.video-controls');
+      const posterLayer = videoShell.querySelector('.video-poster-layer');
       if (overlayPlay) {
         overlayPlay.style.opacity = '1';
         overlayPlay.style.pointerEvents = 'auto';
       }
       if (controls) controls.classList.remove('visible');
+      if (posterLayer) posterLayer.style.opacity = '1';
     }
   });
   state.currentPlayingVideo = null;
@@ -167,11 +192,18 @@ export function initVideoPlayer(videoShell) {
   const video = videoShell.querySelector('.video');
   const overlayPlay = videoShell.querySelector('.video-overlay-play');
   const controls = videoShell.querySelector('.video-controls');
+  const posterLayer = videoShell.querySelector('.video-poster-layer');
   const playPauseBtn = controls?.querySelector('.btn-playpause');
   const seekBar = controls?.querySelector('.seek');
   const muteBtn = controls?.querySelector('.btn-mute');
 
   if (!video || !overlayPlay || !controls) return;
+
+  function syncPosterLayer() {
+    if (!posterLayer) return;
+    const atStart = video.paused && video.currentTime < 0.05;
+    posterLayer.style.opacity = atStart ? '1' : '0';
+  }
 
   function enterPlayingState() {
     videoShell.classList.add('playing');
@@ -180,6 +212,7 @@ export function initVideoPlayer(videoShell) {
     controls.classList.add('visible');
     playPauseBtn.setAttribute('aria-label', 'Pause');
     playPauseBtn.classList.add('playing');
+    syncPosterLayer();
   }
 
   function enterPausedState() {
@@ -189,6 +222,7 @@ export function initVideoPlayer(videoShell) {
     controls.classList.remove('visible');
     playPauseBtn.setAttribute('aria-label', 'Play');
     playPauseBtn.classList.remove('playing');
+    syncPosterLayer();
   }
 
   function updatePlayButton() {
@@ -236,11 +270,23 @@ export function initVideoPlayer(videoShell) {
     }
   }
 
-  video.addEventListener('loadedmetadata', () => { seekBar.max = 100; updateSeekBar(); });
-  video.addEventListener('timeupdate', updateSeekBar);
+  video.addEventListener('loadedmetadata', () => {
+    seekBar.max = 100;
+    updateSeekBar();
+    syncPosterLayer();
+  });
+  video.addEventListener('timeupdate', () => {
+    updateSeekBar();
+    syncPosterLayer();
+  });
+  video.addEventListener('seeked', syncPosterLayer);
   video.addEventListener('play', updatePlayButton);
   video.addEventListener('pause', updatePlayButton);
-  video.addEventListener('ended', () => { video.currentTime = 0; updatePlayButton(); });
+  video.addEventListener('ended', () => {
+    video.currentTime = 0;
+    updatePlayButton();
+    syncPosterLayer();
+  });
 
   overlayPlay.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -268,11 +314,12 @@ export function initVideoPlayer(videoShell) {
 
   updatePlayButton();
   updateMuteButton();
+  syncPosterLayer();
 }
 
 /** モーダル内インライン動画: ポスター・アスペクト比・コントロールを含むシェルを1つ生成 */
 function createInteractiveVideoShell(canonicalSrc, posterOverride = null) {
-  const posterUrl = posterOverride ?? canonicalSrc.replace(/\.webm$/, '.webp');
+  const posterUrl = posterOverride ?? posterImageUrlFromVideoUrl(canonicalSrc);
   const videoShell = document.createElement('div');
   videoShell.className = 'video-shell';
 
@@ -281,26 +328,36 @@ function createInteractiveVideoShell(canonicalSrc, posterOverride = null) {
   video.playsInline = true;
   video.setAttribute('playsinline', 'true');
   video.setAttribute('webkit-playsinline', 'true');
-  video.preload = 'metadata';
   video.poster = posterUrl;
-  attachVideoElement(video, canonicalSrc);
+  attachVideoElement(video, canonicalSrc, { preload: 'none' });
   video.muted = false;
   video.loop = true;
   video.setAttribute('controlslist', 'nodownload noplaybackrate noremoteplayback');
   video.setAttribute('disablepictureinpicture', 'true');
 
-  const posterImg = new Image();
-  posterImg.onload = () => {
-    videoShell.style.aspectRatio = `${posterImg.naturalWidth} / ${posterImg.naturalHeight}`;
-  };
-  posterImg.onerror = () => {
-    video.addEventListener('loadedmetadata', () => {
-      if (video.videoWidth && video.videoHeight) {
-        videoShell.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
-      }
-    }, { once: true });
-  };
-  posterImg.src = posterUrl;
+  /** video 先読みで先頭フレームが黒くポスターを潰すのを防ぐ（img で常に見えるようにする） */
+  const posterLayer = document.createElement('img');
+  posterLayer.className = 'video-poster-layer';
+  posterLayer.src = posterUrl;
+  posterLayer.alt = '';
+  posterLayer.decoding = 'async';
+  posterLayer.draggable = false;
+  posterLayer.addEventListener('load', () => {
+    if (posterLayer.naturalWidth && posterLayer.naturalHeight) {
+      videoShell.style.aspectRatio = `${posterLayer.naturalWidth} / ${posterLayer.naturalHeight}`;
+    }
+  });
+  posterLayer.addEventListener('error', () => {
+    video.addEventListener(
+      'loadedmetadata',
+      () => {
+        if (video.videoWidth && video.videoHeight) {
+          videoShell.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+        }
+      },
+      { once: true }
+    );
+  });
 
   const overlayPlay = document.createElement('button');
   overlayPlay.className = 'video-overlay-play';
@@ -332,6 +389,7 @@ function createInteractiveVideoShell(canonicalSrc, posterOverride = null) {
   controls.appendChild(muteBtn);
 
   videoShell.appendChild(video);
+  videoShell.appendChild(posterLayer);
   videoShell.appendChild(overlayPlay);
   videoShell.appendChild(controls);
   initVideoPlayer(videoShell);
@@ -350,7 +408,7 @@ export function createVideoGrid(videos, projectSlug, initiativeName = null, case
       canonicalSrc = buildVideoUrl(projectSlug, initiativeName, caseName, index + 1);
     } else {
       canonicalSrc = videoData.src;
-      posterOverride = (videoData.src || '').replace(/\.webm$/, '.webp');
+      posterOverride = videoData.src ? posterImageUrlFromVideoUrl(videoData.src) : null;
     }
     grid.appendChild(createInteractiveVideoShell(canonicalSrc, posterOverride));
   });

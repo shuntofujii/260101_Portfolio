@@ -10,7 +10,6 @@ export function createAppBootstrapController(deps) {
     scheduleIdleVideoPreload,
     ensureVideoPlayUrl,
     initGuidanceTypewriter,
-    initCursorEffect,
     applyInitialRoute,
     renderInitialState,
     renderProjectNavigation,
@@ -76,18 +75,23 @@ export function createAppBootstrapController(deps) {
     scheduleIdleVideoPreload(urls, priorityFirst);
   }
 
+  /**
+   * cursorEffect（Three.js 軌跡）を動的 import。モバイルはアイドル後に開始して初期描画を優先するが、軌跡は表示する。
+   */
   function scheduleCursorEffectInit() {
+    const run = async () => {
+      const m = await import('./cursorEffect.js');
+      await m.initCursorEffect();
+    };
     if (!isMobileViewport()) {
-      return initCursorEffect();
+      return run();
     }
     return new Promise((resolve) => {
-      const run = () => {
-        initCursorEffect().then(resolve).catch(resolve);
-      };
+      const exec = () => run().then(resolve).catch(resolve);
       if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(run, { timeout: 1200 });
+        requestIdleCallback(exec, { timeout: 1200 });
       } else {
-        setTimeout(run, 200);
+        setTimeout(exec, 200);
       }
     });
   }
