@@ -104,8 +104,8 @@ export function renderProfileContent(modalContentEl) {
         fetchpriority="high"
       />
     </div>
-    <h3 class="case-title profile-modal-name-title">藤井 洵斗 / SHUNTO FUJII (${age})</h3>
-    <p class="profile-modal-reading" lang="ja">ふじいしゅんと／フジイシュント</p>
+    <h3 class="case-title profile-modal-name-title">藤井 洵斗（${age}）</h3>
+    <p class="profile-modal-reading" lang="ja">ふじい しゅんと / フジイ シュント / SHUNTO FUJII</p>
     <p class="modal-tagline profile-modal-concept">${escapeHtml(PROFILE_CONCEPT)}</p>
     <div class="profile-modal-bio modal-description">
       ${bodyHtml}

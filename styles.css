@@ -271,12 +271,9 @@ body {
 }
 
 .profile-modal-reading {
-  margin: 0.35rem 0 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 400;
-  line-height: 1.45;
+  margin: 0.25rem 0 0.75rem;
   color: var(--text-secondary);
-  letter-spacing: 0.02em;
+  font-size: 0.75rem;
 }
 
 .profile-modal-concept {
@@ -1872,6 +1869,10 @@ body.modal-open .modal-overlay:not([hidden]) {
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 0.75rem 0;
+}
+
+.case-title.profile-modal-name-title {
+  margin-bottom: 0;
 }
 
 .initiative-section {
