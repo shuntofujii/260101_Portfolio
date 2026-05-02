@@ -116,6 +116,22 @@ function canUseAnimatedFavicon() {
   return true;
 }
 
+function isMobileViewportForFavicon() {
+  return typeof matchMedia === 'function' && matchMedia('(max-width: 768px)').matches;
+}
+
+function scheduleAnimatedFaviconWork(run) {
+  if (!isMobileViewportForFavicon()) {
+    run();
+    return;
+  }
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(run, { timeout: 3500 });
+  } else {
+    setTimeout(run, 1600);
+  }
+}
+
 export function initAnimatedFavicon() {
   if (typeof document === 'undefined') return;
 
@@ -132,6 +148,12 @@ export function initAnimatedFavicon() {
     return;
   }
 
+  scheduleAnimatedFaviconWork(() => {
+    startAnimatedFaviconAfterIdle(iconLink, applyStaticFavicon);
+  });
+}
+
+function startAnimatedFaviconAfterIdle(iconLink, applyStaticFavicon) {
   const canvas = document.createElement('canvas');
   canvas.width = CANVAS_PX;
   canvas.height = CANVAS_PX;

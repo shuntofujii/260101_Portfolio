@@ -61,6 +61,12 @@
     <link rel="manifest" href="/site.webmanifest" />
 
     <link rel="preload" href="/projects.json" as="fetch" crossorigin="anonymous" />
+    <link
+      rel="preload"
+      as="image"
+      href="https://assets.shuntofujii.com/top/shuntofujii_2.webp?v=20260502"
+      fetchpriority="high"
+    />
 
     <link rel="dns-prefetch" href="https://assets.shuntofujii.com" />
     <link rel="preconnect" href="https://assets.shuntofujii.com" crossorigin />
@@ -70,6 +76,7 @@
 
     <!-- レイアウト・配色を先に適用し、Inter は非ブロッキングで読み込む（display=swap は Fonts のクエリで指定） -->
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="modulepreload" href="/app.js" />
     <link
       rel="preload"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
@@ -163,6 +170,7 @@
             width="609"
             height="720"
             decoding="async"
+            fetchpriority="low"
           />
           <img
             class="profile-open-img profile-open-img--front"
@@ -171,6 +179,7 @@
             width="609"
             height="720"
             decoding="async"
+            fetchpriority="high"
           />
         </span>
       </button>
@@ -302,8 +311,7 @@
       ></video>
     </div>
 
-    <!-- matter-js UMD: ES modules の default export が無いため先に window.Matter を付与（app / matterResolve 用） -->
-    <script src="/vendor/matter.js"></script>
+    <!-- matter-js はプロフィール入場時のみ matterResolve.js が /vendor/matter.js を遅延読み込み -->
     <script type="module" src="/app.js"></script>
     <!--
       本HTMLは https://shuntofujii.com/ のポートフォリオテンプレートに基づいています。
