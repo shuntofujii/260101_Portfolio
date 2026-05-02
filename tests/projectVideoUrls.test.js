@@ -17,10 +17,10 @@ describe('projectVideoUrls', () => {
     const { urls, heroVideo } = collectVideoUrlsForProject(project);
     expect(heroVideo).toBe('/hero.webm');
     expect(urls).toContain('/hero.webm');
-    expect(urls.some((url) => url.endsWith('/demo/alpha_m_1.webm'))).toBe(true);
-    expect(urls.some((url) => url.endsWith('/demo/alpha_m_2.webm'))).toBe(true);
-    expect(urls.some((url) => url.endsWith('/demo/raw.webm'))).toBe(true);
-    expect(urls.some((url) => url.endsWith('/demo/row.webm'))).toBe(true);
+    expect(urls.some((url) => url.split('?')[0].endsWith('/demo/alpha_m_1.webm'))).toBe(true);
+    expect(urls.some((url) => url.split('?')[0].endsWith('/demo/alpha_m_2.webm'))).toBe(true);
+    expect(urls.some((url) => url.split('?')[0].endsWith('/demo/raw.webm'))).toBe(true);
+    expect(urls.some((url) => url.split('?')[0].endsWith('/demo/row.webm'))).toBe(true);
   });
 
   it('collectProjectVideoUrls は不正入力時に空配列を返す', () => {

@@ -1,7 +1,7 @@
 {
   "name": "SHUNTO FUJII | Portfolio",
   "short_name": "SHUNTO FUJII",
-  "description": "藤井洵斗（SHUNTO FUJII）のポートフォリオ。Creative Direction, Service Design, Marketing Strategyの実績。",
+  "description": "藤井洵斗（ふじいしゅんと／フジイシュント／SHUNTO FUJII）のポートフォリオサイト。Creative Direction, Service Design, Marketing Strategy, Business Devなど幅広い領域にて「本質的な課題解決」と「新たな価値創造」を行なってきたプロジェクト実績を紹介します。",
   "start_url": "/",
   "scope": "/",
   "display": "browser",
@@ -10,12 +10,12 @@
   "lang": "ja",
   "icons": [
     {
-      "src": "https://assets.shuntofujii.com/top/shuntofujii.webp?v=20260429",
+      "src": "https://assets.shuntofujii.com/top/shuntofujii.webp?v=20260502",
       "sizes": "any",
       "type": "image/webp"
     },
     {
-      "src": "https://assets.shuntofujii.com/top/ogp.webp?v=20260429",
+      "src": "https://assets.shuntofujii.com/top/ogp.webp?v=20260502",
       "sizes": "1200x630",
       "type": "image/webp",
       "purpose": "any"

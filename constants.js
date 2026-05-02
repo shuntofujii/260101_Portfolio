@@ -70,8 +70,11 @@ export const CURSOR_CONFIG = {
 
 export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 
+/** CDN 画像・動画・アイコン共通のキャッシュバスター（先頭は ?） */
+export const ASSETS_CACHE_V = '?v=20260502';
+
 /** プロフィール入場アニメ（Matter.js） */
-export const PROFILE_INTRO_ASSETS_V = '?v=20260429';
+export const PROFILE_INTRO_ASSETS_V = ASSETS_CACHE_V;
 /** 真上を0°、時計回りに真左が90°（Matter は y 下向き正＝上は vy 負） */
 export const PROFILE_INTRO_LAUNCH_FROM_UP_MIN_DEG = 45;
 export const PROFILE_INTRO_LAUNCH_FROM_UP_MAX_DEG = 90;

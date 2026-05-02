@@ -1,7 +1,5 @@
 // タブのアイコンを Canvas で合成・更新（2枚の WebP を重ね、中心周りに不規則に揺らす）
-import { baseAssetsUrl } from './constants.js';
-
-const FAVICON_CACHE_BUSTER = 'v=20260429';
+import { ASSETS_CACHE_V, baseAssetsUrl } from './constants.js';
 const CANVAS_PX = 48;
 const MAX_SWING_RAD = (15 * Math.PI) / 180;
 /** shuntofujii_2 の上下揺れ（px、キャンバス中心基準） */
@@ -12,11 +10,10 @@ const MODE_DURATION_MS_MIN = 280;
 const MODE_DURATION_MS_MAX = 1400;
 const FAVICON_UPDATE_INTERVAL_MS = 90;
 
-const imgUrl = (name) =>
-  `${baseAssetsUrl}/top/${name}.webp?${FAVICON_CACHE_BUSTER}`;
+const imgUrl = (name) => `${baseAssetsUrl}/top/${name}.webp${ASSETS_CACHE_V}`;
 
 /** 動的ファビコンが使えない・使わない場合のフォールバック（top/favicon.ico） */
-const staticFaviconHref = `${baseAssetsUrl}/top/favicon.ico?${FAVICON_CACHE_BUSTER}`;
+const staticFaviconHref = `${baseAssetsUrl}/top/favicon.ico${ASSETS_CACHE_V}`;
 
 function randRange(a, b) {
   return a + Math.random() * (b - a);

@@ -1,3 +1,5 @@
+import { ASSETS_CACHE_V } from './constants.js';
+
 function createThumbnail(project, index, options) {
   const {
     baseAssetsUrl,
@@ -7,7 +9,7 @@ function createThumbnail(project, index, options) {
 
   const thumbnail = document.createElement('img');
   thumbnail.className = 'project-thumbnail';
-  thumbnail.src = project.thumbnail || `${baseAssetsUrl}/top/placeholder-image.jpg`;
+  thumbnail.src = project.thumbnail || `${baseAssetsUrl}/top/placeholder-image.jpg${ASSETS_CACHE_V}`;
   thumbnail.alt = '';
   thumbnail.width = projectThumbnailSizePx;
   thumbnail.height = projectThumbnailSizePx;

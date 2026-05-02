@@ -270,6 +270,15 @@ body {
   margin-top: 0;
 }
 
+.profile-modal-reading {
+  margin: 0.35rem 0 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
 .profile-modal-concept {
   margin-top: 0;
 }
@@ -296,6 +305,16 @@ body {
 
 .profile-modal-bio .profile-modal-paragraph:last-child {
   margin-bottom: 0;
+}
+
+.profile-modal-mail {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.profile-modal-mail:hover {
+  opacity: 0.85;
 }
 
 .profile-modal-meta {

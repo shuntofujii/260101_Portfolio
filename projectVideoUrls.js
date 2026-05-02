@@ -1,5 +1,5 @@
 // projects.json から動画URL一覧を抽出（media.js の命名規則と一致させる）
-import { baseAssetsUrl } from './constants.js';
+import { ASSETS_CACHE_V, baseAssetsUrl } from './constants.js';
 import { buildVideoUrl } from './media.js';
 
 function addInitiativeVideos(set, projectSlug, initiative) {
@@ -41,12 +41,12 @@ export function collectVideoUrlsForProject(project) {
     project.initiatives?.forEach((init) => addInitiativeVideos(set, slug, init));
     project.explicitModal?.segments?.forEach((seg) => {
       if (seg?.type === 'video' && seg.file) {
-        set.add(`${baseAssetsUrl}/${slug}/${seg.file}`);
+        set.add(`${baseAssetsUrl}/${slug}/${seg.file}${ASSETS_CACHE_V}`);
       }
       if (seg?.type === 'mediaRow' && Array.isArray(seg.items)) {
         seg.items.forEach((item) => {
           if (item?.type === 'video' && item.file) {
-            set.add(`${baseAssetsUrl}/${slug}/${item.file}`);
+            set.add(`${baseAssetsUrl}/${slug}/${item.file}${ASSETS_CACHE_V}`);
           }
         });
       }
@@ -76,12 +76,12 @@ export function collectProjectVideoUrls(projects) {
       project.initiatives?.forEach((init) => addInitiativeVideos(all, project.projectSlug, init));
       project.explicitModal?.segments?.forEach((seg) => {
         if (seg?.type === 'video' && seg.file) {
-          all.add(`${baseAssetsUrl}/${project.projectSlug}/${seg.file}`);
+          all.add(`${baseAssetsUrl}/${project.projectSlug}/${seg.file}${ASSETS_CACHE_V}`);
         }
         if (seg?.type === 'mediaRow' && Array.isArray(seg.items)) {
           seg.items.forEach((item) => {
             if (item?.type === 'video' && item.file) {
-              all.add(`${baseAssetsUrl}/${project.projectSlug}/${item.file}`);
+              all.add(`${baseAssetsUrl}/${project.projectSlug}/${item.file}${ASSETS_CACHE_V}`);
             }
           });
         }

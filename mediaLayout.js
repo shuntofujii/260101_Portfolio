@@ -1,4 +1,4 @@
-import { baseAssetsUrl } from './constants.js';
+import { ASSETS_CACHE_V, baseAssetsUrl } from './constants.js';
 
 function buildAssetPrefix(initiativeName, caseName = null) {
   return caseName ? `${initiativeName}_${caseName}` : initiativeName;
@@ -6,12 +6,12 @@ function buildAssetPrefix(initiativeName, caseName = null) {
 
 export function buildImageUrl(projectSlug, initiativeName, caseName = null, number = 1) {
   const prefix = buildAssetPrefix(initiativeName, caseName);
-  return `${baseAssetsUrl}/${projectSlug}/${prefix}_p_${number}.webp`;
+  return `${baseAssetsUrl}/${projectSlug}/${prefix}_p_${number}.webp${ASSETS_CACHE_V}`;
 }
 
 export function buildVideoUrl(projectSlug, initiativeName, caseName = null, number = 1) {
   const prefix = buildAssetPrefix(initiativeName, caseName);
-  return `${baseAssetsUrl}/${projectSlug}/${prefix}_m_${number}.webm`;
+  return `${baseAssetsUrl}/${projectSlug}/${prefix}_m_${number}.webm${ASSETS_CACHE_V}`;
 }
 
 export function getImageGridLayout(count, isMobile) {

@@ -375,12 +375,12 @@ export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 ```json
 {
   "modalMetaItems": [
-    { "label": "Client", "value": "株式会社○○", "icon": "https://assets.shuntofujii.com/icons/client.svg" },
-    { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg" },
-    { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg" },
-    { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg" },
-    { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg" },
-    { "label": "Team", "value": "Role：Name / ...", "icon": "https://assets.shuntofujii.com/icons/team.svg" }
+    { "label": "Client", "value": "株式会社○○", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260502" },
+    { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260502" },
+    { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260502" },
+    { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260502" },
+    { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260502" },
+    { "label": "Team", "value": "Role：Name / ...", "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260502" }
   ]
 }
 ```
@@ -464,7 +464,7 @@ node meta-audit.js
 {baseAssetsUrl}/{projectSlug}/{filename}
 ```
 
-例: `https://assets.shuntofujii.com/izumo/strategy2024_p_1.webp`
+例: `https://assets.shuntofujii.com/izumo/strategy2024_p_1.webp?v=20260502`（実行時は `ASSETS_CACHE_V` が付与されます）
 
 動画のポスター画像は、動画と同じ basename で拡張子を `.webp` にしたファイルを利用します（コード内で `.webm` → `.webp` に置換）。
 

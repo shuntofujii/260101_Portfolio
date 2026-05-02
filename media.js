@@ -1,7 +1,7 @@
 // メディア（画像・動画グリッド、施策カード、動画プレイヤー）
 import { state } from './state.js';
 import { getRefs } from './domRefs.js';
-import { BREAKPOINT_MOBILE_PX, baseAssetsUrl } from './constants.js';
+import { ASSETS_CACHE_V, BREAKPOINT_MOBILE_PX, baseAssetsUrl } from './constants.js';
 import { attachVideoElement } from './videoCache.js';
 import { buildImageUrl, buildVideoUrl, getImageGridLayout, getLayoutSpan } from './mediaLayout.js';
 export { buildVideoUrl } from './mediaLayout.js';
@@ -544,13 +544,13 @@ export function appendExplicitModal(project, parentEl) {
     }
 
     if (seg.type === 'video' && seg.file) {
-      const url = `${base}/${seg.file}`;
+      const url = `${base}/${seg.file}${ASSETS_CACHE_V}`;
       parentEl.appendChild(createInteractiveVideoShell(url));
       return;
     }
 
     if (seg.type === 'imageRow' && Array.isArray(seg.files) && seg.files.length > 0) {
-      const images = seg.files.map((f) => ({ src: `${base}/${f}` }));
+      const images = seg.files.map((f) => ({ src: `${base}/${f}${ASSETS_CACHE_V}` }));
       const forceHorizontal = seg.files.length > 1;
       const grid = createImageGrid(images, null, forceHorizontal, null, null, 0, altPrefix);
       if (grid) {
@@ -572,7 +572,7 @@ export function appendExplicitModal(project, parentEl) {
         if (!item || !item.type) return;
         if (item.type === 'image' && item.file) {
           const grid = createImageGrid(
-            [{ src: `${base}/${item.file}` }],
+            [{ src: `${base}/${item.file}${ASSETS_CACHE_V}` }],
             null,
             true,
             null,
@@ -585,7 +585,7 @@ export function appendExplicitModal(project, parentEl) {
             row.appendChild(grid);
           }
         } else if (item.type === 'video' && item.file) {
-          row.appendChild(createInteractiveVideoShell(`${base}/${item.file}`));
+          row.appendChild(createInteractiveVideoShell(`${base}/${item.file}${ASSETS_CACHE_V}`));
         }
       });
 

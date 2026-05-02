@@ -4,10 +4,8 @@ import { state } from './state.js';
 import { clearTrailThumbnailHoverTimer } from './appStateTransitions.js';
 import { escapeHtml, createFocusTrap } from './utils.js';
 import { setBackgroundModalState } from './modalChrome.js';
-import { baseAssetsUrl } from './constants.js';
+import { ASSETS_CACHE_V, baseAssetsUrl } from './constants.js';
 import { createImageGrid } from './media.js';
-
-const ASSETS_V = '?v=20260429';
 
 /** 1995-09-25 生まれ。誕生日を迎えるまでは前年齢（ローカル日付基準）。 */
 const PROFILE_BIRTH = new Date(1995, 8, 25);
@@ -23,11 +21,17 @@ const PROFILE_CONCEPT = 'ザ・フジイ・オリジナル';
 
 const PROFILE_LOGO_FILES = ['logo_p_1.webp', 'logo_p_2.webp', 'logo_p_3.webp', 'logo_p_4.webp'];
 
+const PROFILE_CONTACT_EMAIL = 'me@shuntofujii.com';
+
 const PROFILE_BIO_PARAGRAPHS = [
   '大手通信事業社でM&Aやメディア立ち上げなどを担当。現在は全社のマーケティング戦略を策定している。',
-  'フリーランスとしては、Microsoft社主催イベントのクリエイティブディレクションや、「AR×Web3」を掲げるIZUMOxr社のコミュニティマネジメントなど、さまざまなプロジェクトに携わる。',
-  '美術監督を務めた『グーチョキデッド』は、ゆうばり国際ファンタスティック映画にノミネートされた。',
-  '好きな食べ物はうどん。'
+  'フリーランスとしては、Microsoft社主催イベントのクリエイティブディレクションや、「AR×Web3」を掲げるIZUMOxr社のコミュニティマネジメントなど、さまざまなプロジェクトに携わる。\n美術監督を務めた『グーチョキデッド』は、ゆうばり国際ファンタスティック映画にノミネートされた。',
+  {
+    textBefore: '好きな食べ物はうどん。\nお問い合わせは',
+    linkText: 'こちらのメール',
+    textAfter: 'よりお願いいたします。',
+    mailto: PROFILE_CONTACT_EMAIL
+  }
 ];
 
 const PROFILE_META_ITEMS = [
@@ -35,19 +39,19 @@ const PROFILE_META_ITEMS = [
     label: '専門領域',
     value:
       'クリエイティブディレクション / サービスデザイン / マーケティング戦略策定 / 事業開発 / など',
-    icon: `${baseAssetsUrl}/icons/focus.svg${ASSETS_V}`
+    icon: `${baseAssetsUrl}/icons/focus.svg${ASSETS_CACHE_V}`
   },
   {
     label: 'スキル',
     value:
       'Illustrator / Figma / Photoshop / After Effects / DaVinci Resolve / Blender / 撮影 / など',
-    icon: `${baseAssetsUrl}/icons/toolkits.svg${ASSETS_V}`
+    icon: `${baseAssetsUrl}/icons/toolkits.svg${ASSETS_CACHE_V}`
   },
   {
     label: '取引先実績',
     value:
       '日本マイクロソフト株式会社 / 株式会社MuuMu / IVS株式会社 / StudioZ株式会社 / など',
-    icon: `${baseAssetsUrl}/icons/client.svg${ASSETS_V}`
+    icon: `${baseAssetsUrl}/icons/client.svg${ASSETS_CACHE_V}`
   }
 ];
 
@@ -68,9 +72,20 @@ function buildProfileMetaHtml() {
 }
 
 export function renderProfileContent(modalContentEl) {
-  const profileImg = `${baseAssetsUrl}/profile/profile.webp${ASSETS_V}`;
+  const profileImg = `${baseAssetsUrl}/profile/profile.webp${ASSETS_CACHE_V}`;
   const age = computeProfileAgeYears();
   const bodyHtml = PROFILE_BIO_PARAGRAPHS.map((p) => {
+    if (typeof p === 'object' && p !== null && 'mailto' in p) {
+      const addr = p.mailto;
+      if ('linkText' in p) {
+        const before = escapeHtml(p.textBefore ?? '').replace(/\n/g, '<br>');
+        const after = escapeHtml(p.textAfter ?? '');
+        const label = escapeHtml(p.linkText ?? '');
+        return `<p class="profile-modal-paragraph">${before}<a class="profile-modal-mail" href="mailto:${encodeURIComponent(addr)}">${label}</a>${after}</p>`;
+      }
+      const safe = escapeHtml(addr);
+      return `<p class="profile-modal-paragraph"><a class="profile-modal-mail" href="mailto:${encodeURIComponent(addr)}">${safe}</a></p>`;
+    }
     const t = escapeHtml(p).replace(/\n/g, '<br>');
     return `<p class="profile-modal-paragraph">${t}</p>`;
   }).join('');
@@ -90,6 +105,7 @@ export function renderProfileContent(modalContentEl) {
       />
     </div>
     <h3 class="case-title profile-modal-name-title">藤井 洵斗 / SHUNTO FUJII (${age})</h3>
+    <p class="profile-modal-reading" lang="ja">ふじいしゅんと／フジイシュント</p>
     <p class="modal-tagline profile-modal-concept">${escapeHtml(PROFILE_CONCEPT)}</p>
     <div class="profile-modal-bio modal-description">
       ${bodyHtml}
@@ -99,7 +115,7 @@ export function renderProfileContent(modalContentEl) {
 
   const profileLogoBase = `${baseAssetsUrl}/profile`;
   const logoImages = PROFILE_LOGO_FILES.map((f) => ({
-    src: `${profileLogoBase}/${f}${ASSETS_V}`
+    src: `${profileLogoBase}/${f}${ASSETS_CACHE_V}`
   }));
   const logoGrid = createImageGrid(logoImages, null, true, null, null, 0, 'Profile');
   if (logoGrid) {

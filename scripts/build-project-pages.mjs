@@ -60,7 +60,7 @@ function pageHtml(project) {
   const title = `${project.title} | SHUNTO FUJII`;
   const desc = clipMeta(project.description || project.tagline || '');
   const thumb =
-    project.thumbnail || 'https://assets.shuntofujii.com/top/ogp.webp?v=20260429';
+    project.thumbnail || 'https://assets.shuntofujii.com/top/ogp.webp?v=20260502';
   const ogTitle = escapeHtml(title);
   const ogDesc = escapeHtml(desc);
   const jsonLd = buildJsonLd(project, canonical, thumb);
@@ -108,8 +108,8 @@ function pageHtml(project) {
     <meta name="twitter:image" content="${escapeHtml(thumb)}" />
     <meta name="twitter:image:alt" content="${escapeHtml(project.title)}" />
 
-    <link rel="icon" href="https://assets.shuntofujii.com/top/shuntofujii.webp?v=20260429" />
-    <link rel="apple-touch-icon" href="https://assets.shuntofujii.com/top/favicon.ico?v=20260429" />
+    <link rel="icon" href="https://assets.shuntofujii.com/top/shuntofujii.webp?v=20260502" />
+    <link rel="apple-touch-icon" href="https://assets.shuntofujii.com/top/favicon.ico?v=20260502" />
 
     <link rel="manifest" href="/site.webmanifest" />
 
@@ -152,7 +152,7 @@ ${jsonLd}
         <span class="profile-open-stack" aria-hidden="true">
           <img
             class="profile-open-img profile-open-img--back"
-            src="https://assets.shuntofujii.com/top/shuntofujii_1.webp?v=20260429"
+            src="https://assets.shuntofujii.com/top/shuntofujii_1.webp?v=20260502"
             alt=""
             width="609"
             height="720"
@@ -160,7 +160,7 @@ ${jsonLd}
           />
           <img
             class="profile-open-img profile-open-img--front"
-            src="https://assets.shuntofujii.com/top/shuntofujii_2.webp?v=20260429"
+            src="https://assets.shuntofujii.com/top/shuntofujii_2.webp?v=20260502"
             alt=""
             width="609"
             height="720"

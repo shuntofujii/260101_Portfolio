@@ -9,10 +9,10 @@ import { setBackgroundModalState } from './modalChrome.js';
 import { closeProfileModalIfOpen } from './profileModal.js';
 
 const DEFAULT_MODAL_META_ITEMS = [
-  { label: 'Domain', value: '$domain', icon: 'https://assets.shuntofujii.com/icons/domain.svg?v=20260429' },
-  { label: 'Year', value: '$year', icon: 'https://assets.shuntofujii.com/icons/year.svg?v=20260429' },
-  { label: 'Disciplines', value: '$disciplines', icon: 'https://assets.shuntofujii.com/icons/focus.svg?v=20260429' },
-  { label: 'Toolkits', value: '$toolkits', icon: 'https://assets.shuntofujii.com/icons/toolkits.svg?v=20260429' }
+  { label: 'Domain', value: '$domain', icon: 'https://assets.shuntofujii.com/icons/domain.svg?v=20260502' },
+  { label: 'Year', value: '$year', icon: 'https://assets.shuntofujii.com/icons/year.svg?v=20260502' },
+  { label: 'Disciplines', value: '$disciplines', icon: 'https://assets.shuntofujii.com/icons/focus.svg?v=20260502' },
+  { label: 'Toolkits', value: '$toolkits', icon: 'https://assets.shuntofujii.com/icons/toolkits.svg?v=20260502' }
 ];
 
 function buildModalMetaItems(project) {
