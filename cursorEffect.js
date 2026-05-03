@@ -142,6 +142,8 @@ function createCustomCursorEffect(THREE, initialColor) {
   const target = new THREE.Vector2();
   const clock = new THREE.Clock();
   let prevAnimClockTime = null;
+  /** 初回表示フェード用（マウント直後のみ 0→1） */
+  let initialRevealStartTimeSec = null;
   /** 崩れの視覚強度（UI の state より遅れて追従・戻りはゆっくり） */
   let brokenVisualBlend = 0;
   const curvePoints = new Array(config.curvePoints).fill(0).map(() => new THREE.Vector2());
@@ -257,6 +259,13 @@ function createCustomCursorEffect(THREE, initialColor) {
   function animate() {
     state.cursorAnimationFrameId = requestAnimationFrame(animate);
     const time = clock.getElapsedTime();
+    if (initialRevealStartTimeSec === null) initialRevealStartTimeSec = time;
+    const revealDur = config.cursorTrailInitialRevealSec ?? 0;
+    const revealElapsed = time - initialRevealStartTimeSec;
+    const revealT =
+      revealDur <= 0 ? 1 : Math.min(1, revealElapsed / Math.max(0.001, revealDur));
+    const initialRevealOpacity = revealDur <= 0 ? 1 : easeOutCubic(revealT);
+
     const dtAnim =
       prevAnimClockTime == null ? 0 : Math.max(0, Math.min(0.08, time - prevAnimClockTime));
     prevAnimClockTime = time;
@@ -481,7 +490,10 @@ function createCustomCursorEffect(THREE, initialColor) {
       trailOverlapOpacity += (targetOpacity - trailOverlapOpacity) * lerpK;
       if (Math.abs(trailOverlapOpacity - targetOpacity) < 0.002) trailOverlapOpacity = targetOpacity;
     }
-    const finalOpacity = (trailScript?.active ? 1 : trailOverlapOpacity) * externalOpacityMultiplier;
+    const finalOpacity =
+      (trailScript?.active ? 1 : trailOverlapOpacity) *
+      externalOpacityMultiplier *
+      initialRevealOpacity;
     material.uniforms.uOpacity.value = finalOpacity;
 
     wasPointerOverThumb = pointerOverThumb;
