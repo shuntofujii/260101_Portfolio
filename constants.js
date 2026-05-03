@@ -104,13 +104,15 @@ export const PROFILE_INTRO_FACE_POLYGON_SIDES = 36;
 /** コンテキストパネルで「Opening Soon」を付与するプロジェクト id（projects.json の id と一致） */
 export const OPENING_SOON_PROJECT_ID = 'project-08';
 
-/** 動画 `<link rel="preload">` の上限（デスクトップと同値にした場合はモバイル帯域消費が増える） */
-export const VIDEO_PRELOAD_LINK_MAX_MOBILE = 8;
-export const VIDEO_PRELOAD_LINK_MAX_DESKTOP = 8;
+/**
+ * 動画 prefetch ヒントの同時・上限（`<link rel="prefetch">`。帯域・メインスレッド競合を抑える）
+ */
+export const VIDEO_PRELOAD_LINK_MAX_MOBILE = 4;
+export const VIDEO_PRELOAD_LINK_MAX_DESKTOP = 6;
 
-/** 起動時に先読みヒントで温めるヒーロー動画本数 */
-export const HERO_VIDEO_PREFETCH_COUNT_MOBILE = 8;
-export const HERO_VIDEO_PREFETCH_COUNT_DESKTOP = 8;
+/** 起動時に prefetch で温めるヒーロー動画の最大本数（ホバー前に必要な分だけ） */
+export const HERO_VIDEO_PREFETCH_COUNT_MOBILE = 3;
+export const HERO_VIDEO_PREFETCH_COUNT_DESKTOP = 5;
 
 /** `.project-item` / `.project-thumbnail` の表示サイズ（CLS 用 width/height と一致） */
 export const PROJECT_THUMBNAIL_SIZE_PX = 90;

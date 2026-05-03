@@ -76,33 +76,33 @@ export function createAppBootstrapController(deps) {
   }
 
   /**
-   * cursorEffect（Three.js 軌跡）を動的 import。モバイルはアイドル後に開始して初期描画を優先するが、軌跡は表示する。
+   * Three.js + cursorEffect は重いため、projects 取得・ナビ描画・イベント後にだけ読み込む。
+   * fetch と並列に走らせない／init の完了も待たせない（ファースト操作までの体感を優先）。
+   * requestIdleCallback でメインスレッドの空きに載せ、timeout で遅れすぎないようにする。
    */
   function scheduleCursorEffectInit() {
     const run = async () => {
       const m = await import('./cursorEffect.js');
       await m.initCursorEffect();
     };
-    if (!isMobileViewport()) {
-      return run();
-    }
+    const mobile = isMobileViewport();
+    const idleTimeoutMs = mobile ? 2800 : 1600;
     return new Promise((resolve) => {
       const exec = () => run().then(resolve).catch(resolve);
       if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(exec, { timeout: 1200 });
+        requestIdleCallback(exec, { timeout: idleTimeoutMs });
       } else {
-        setTimeout(exec, 200);
+        setTimeout(exec, mobile ? 450 : 180);
       }
     });
   }
 
   async function init() {
     try {
-      const cursorInitPromise = scheduleCursorEffectInit();
       state.projects = await fetchProjectsData();
       warmupInitialHeroVideos(state.projects);
       bootstrapUiAfterDataReady();
-      await cursorInitPromise;
+      void scheduleCursorEffectInit();
     } catch (error) {
       console.error('Error loading projects:', error);
       showErrorState();

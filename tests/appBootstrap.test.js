@@ -41,7 +41,7 @@ describe('appBootstrap', () => {
     document.body.removeAttribute('data-portfolio-page-slug');
   });
 
-  it('init で取得→先読み→UI起動（カーソルは並列開始）を実行する', async () => {
+  it('init で取得→先読み→UI起動（カーソルは非同期）を実行する', async () => {
     const { controller, deps, state } = createController();
     await controller.init();
 

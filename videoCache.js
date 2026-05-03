@@ -1,6 +1,24 @@
-// 動画URLの正規化キャッシュ（過度な先読みを避け、再生はブラウザ標準に任せる）
+/**
+ * 動画 URL の軽いキャッシュ記録と、任意の `<link rel="prefetch">` ヒント。
+ *
+ * 方針:
+ * - **再生**は常に `<video src>` に任せる（ここではデコードを強制しない）。
+ * - **prefetch** は HTTP キャッシュ温めのみ。`crossOrigin` を付けない（CDN が ACAO を返さないと CORS で失敗する）。
+ * - **localhost / 127.0.0.1** では prefetch を挿入しない（開発時のコンソール汚染・CDN への無駄叩きを防ぐ）。Vitest では挙動を検証するため無効化しない。
+ */
 /** @type {Map<string, string>} canonicalUrl -> playUrl */
 const resolved = new Map();
+
+function shouldBypassOptionalVideoPrefetchHints() {
+  try {
+    if (typeof process !== 'undefined' && process.env?.VITEST) return false;
+  } catch {
+    /* ignore */
+  }
+  if (typeof window === 'undefined' || !window.location?.hostname) return false;
+  const h = window.location.hostname;
+  return h === 'localhost' || h === '127.0.0.1' || h === '[::1]';
+}
 
 function getPlayUrlIfCached(canonicalUrl) {
   if (!canonicalUrl) return null;
@@ -93,11 +111,13 @@ export function scheduleIdleVideoPreload(urls, priorityFirst = []) {
 }
 
 /**
- * ブラウザネイティブの先読みヒント（HTTPキャッシュ温め）
+ * HTTP キャッシュ温め用ヒント（低優先度の `<link rel="prefetch">`）。
+ * `crossOrigin` は付けない（crossOrigin 付きは CORS 応答を要求し、CDN 設定次第で失敗する）。
  * @param {string[]} urls
  * @param {number} [max]
  */
 export function injectVideoLinkPreloads(urls, max = 10) {
+  if (shouldBypassOptionalVideoPrefetchHints()) return;
   const head = document.head;
   if (!head || !urls.length) return;
   const cap = Math.min(max, urls.length);
@@ -109,10 +129,8 @@ export function injectVideoLinkPreloads(urls, max = 10) {
     );
     if (dup) continue;
     const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'video';
+    link.rel = 'prefetch';
     link.href = href;
-    link.crossOrigin = 'anonymous';
     link.setAttribute('data-video-preload', href);
     head.appendChild(link);
   }
