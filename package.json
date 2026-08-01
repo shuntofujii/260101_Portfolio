@@ -5,7 +5,9 @@
   "main": "app.js",
   "scripts": {
     "test": "vitest run --environment jsdom",
-    "test:watch": "vitest --environment jsdom"
+    "test:watch": "vitest --environment jsdom",
+    "upload": "node scripts/upload-asset.mjs",
+    "build:pages": "node scripts/build-project-pages.mjs"
   },
   "repository": {
     "type": "git",
@@ -24,6 +26,8 @@
     "vitest": "^4.1.5"
   },
   "dependencies": {
-    "matter-js": "^0.20.0"
+    "@aws-sdk/client-s3": "^3.888.0",
+    "matter-js": "^0.20.0",
+    "sharp": "^0.34.3"
   }
 }

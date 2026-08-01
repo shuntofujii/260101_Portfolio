@@ -19,13 +19,19 @@ function computeProfileAgeYears(asOf = new Date()) {
 
 const PROFILE_CONCEPT = 'ザ・フジイ・オリジナル';
 
-const PROFILE_LOGO_FILES = ['logo_p_1.webp', 'logo_p_2.webp', 'logo_p_3.webp', 'logo_p_4.webp'];
+const PROFILE_LOGOS = [
+  { file: 'logo_p_5.webp', alt: '取引先ロゴ：東急不動産ホールディングス' },
+  { file: 'logo_p_1.webp', alt: '取引先ロゴ：日本マイクロソフト' },
+  { file: 'logo_p_2.webp', alt: '取引先ロゴ：株式会社MuuMu' },
+  { file: 'logo_p_3.webp', alt: '取引先ロゴ：IVS株式会社' },
+  { file: 'logo_p_4.webp', alt: '取引先ロゴ：StudioZ株式会社' }
+];
 
 const PROFILE_CONTACT_EMAIL = 'me@shuntofujii.com';
 
 const PROFILE_BIO_PARAGRAPHS = [
   '大手通信事業社でM&Aやメディア立ち上げなどを担当。現在は全社のマーケティング戦略を策定している。',
-  'フリーランスとしては、Microsoft社主催イベントのクリエイティブディレクションや、「AR×Web3」を掲げるIZUMOxr社のコミュニティマネジメントなど、さまざまなプロジェクトに携わる。\n美術監督を務めた『グーチョキデッド』は、ゆうばり国際ファンタスティック映画にノミネートされた。',
+  'フリーランスとしては、東急不動産HDにて新規事業開発のコンサルティングやMicrosoft社のイベントクリエイティブディレクションなど、さまざまなプロジェクトに携わる。\n美術監督を務めた『グーチョキデッド』は、ゆうばり国際ファンタスティック映画にノミネートされた。',
   {
     textBefore: '好きな食べ物はうどん。\nお問い合わせは',
     linkText: 'こちらのメール',
@@ -50,7 +56,7 @@ const PROFILE_META_ITEMS = [
   {
     label: '取引先実績',
     value:
-      '日本マイクロソフト株式会社 / 株式会社MuuMu / IVS株式会社 / StudioZ株式会社 / など',
+      '東急不動産ホールディングス / 日本マイクロソフト株式会社 / 株式会社MuuMu / IVS株式会社 / StudioZ株式会社 / など',
     icon: `${baseAssetsUrl}/icons/client.svg${ASSETS_CACHE_V}`
   }
 ];
@@ -97,7 +103,7 @@ export function renderProfileContent(modalContentEl) {
       <img
         class="profile-modal-photo"
         src="${profileImg}"
-        alt=""
+        alt="藤井洵斗のポートレート"
         width="800"
         height="800"
         decoding="async"
@@ -114,10 +120,11 @@ export function renderProfileContent(modalContentEl) {
   `;
 
   const profileLogoBase = `${baseAssetsUrl}/profile`;
-  const logoImages = PROFILE_LOGO_FILES.map((f) => ({
-    src: `${profileLogoBase}/${f}${ASSETS_CACHE_V}`
+  const logoImages = PROFILE_LOGOS.map((logo) => ({
+    src: `${profileLogoBase}/${logo.file}${ASSETS_CACHE_V}`,
+    caption: logo.alt
   }));
-  const logoGrid = createImageGrid(logoImages, null, true, null, null, 0, 'Profile');
+  const logoGrid = createImageGrid(logoImages, null, true, null, null, 0, '取引先ロゴ');
   if (logoGrid) {
     const logosSection = document.createElement('section');
     logosSection.className = 'modal-initiatives profile-modal-logos';

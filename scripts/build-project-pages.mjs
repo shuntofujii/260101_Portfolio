@@ -5,6 +5,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { ASSETS_CACHE_V, baseAssetsUrl } from '../constants.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
@@ -60,7 +61,7 @@ function pageHtml(project) {
   const title = `${project.title} | SHUNTO FUJII`;
   const desc = clipMeta(project.description || project.tagline || '');
   const thumb =
-    project.thumbnail || 'https://assets.shuntofujii.com/top/ogp.webp?v=20260503';
+    project.thumbnail || `${baseAssetsUrl}/top/ogp.webp${ASSETS_CACHE_V}`;
   const ogTitle = escapeHtml(title);
   const ogDesc = escapeHtml(desc);
   const jsonLd = buildJsonLd(project, canonical, thumb);
@@ -108,8 +109,8 @@ function pageHtml(project) {
     <meta name="twitter:image" content="${escapeHtml(thumb)}" />
     <meta name="twitter:image:alt" content="${escapeHtml(project.title)}" />
 
-    <link rel="icon" href="https://assets.shuntofujii.com/top/shuntofujii.webp?v=20260503" />
-    <link rel="apple-touch-icon" href="https://assets.shuntofujii.com/top/favicon.ico?v=20260503" />
+    <link rel="icon" href="${baseAssetsUrl}/top/shuntofujii.webp${ASSETS_CACHE_V}" />
+    <link rel="apple-touch-icon" href="${baseAssetsUrl}/top/favicon.ico${ASSETS_CACHE_V}" />
 
     <link rel="manifest" href="/site.webmanifest" />
 
@@ -152,7 +153,7 @@ ${jsonLd}
         <span class="profile-open-stack" aria-hidden="true">
           <img
             class="profile-open-img profile-open-img--back"
-            src="https://assets.shuntofujii.com/top/shuntofujii_1.webp?v=20260503"
+            src="${baseAssetsUrl}/top/shuntofujii_1.webp${ASSETS_CACHE_V}"
             alt=""
             width="609"
             height="720"
@@ -160,7 +161,7 @@ ${jsonLd}
           />
           <img
             class="profile-open-img profile-open-img--front"
-            src="https://assets.shuntofujii.com/top/shuntofujii_2.webp?v=20260503"
+            src="${baseAssetsUrl}/top/shuntofujii_2.webp${ASSETS_CACHE_V}"
             alt=""
             width="609"
             height="720"

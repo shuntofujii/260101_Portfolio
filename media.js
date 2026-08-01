@@ -96,9 +96,9 @@ export function createImageGrid(images, projectSlug, forceHorizontal = false, in
 
   images.forEach((imageData, index) => {
     const position = startIndex + index + 1;
-    const altText = (imageData && imageData.caption)
-      ? String(imageData.caption).trim()
-      : (optionAltPrefix ? `${optionAltPrefix} 画像 ${position}` : `画像 ${position}`);
+    const caption = imageData && imageData.caption ? String(imageData.caption).trim() : '';
+    const altText = caption
+      || (optionAltPrefix ? `${optionAltPrefix}のビジュアル ${position}` : `ポートフォリオのビジュアル ${position}`);
 
     const item = document.createElement('div');
     item.className = 'mediaItem';
@@ -331,8 +331,11 @@ export function initVideoPlayer(videoShell) {
 }
 
 /** モーダル内インライン動画: ポスター・アスペクト比・コントロールを含むシェルを1つ生成 */
-function createInteractiveVideoShell(canonicalSrc, posterOverride = null) {
+function createInteractiveVideoShell(canonicalSrc, posterOverride = null, labelPrefix = '') {
   const posterUrl = posterOverride ?? posterImageUrlFromVideoUrl(canonicalSrc);
+  const videoLabel = labelPrefix
+    ? `${labelPrefix}の動画`
+    : 'ポートフォリオの動画';
   const videoShell = document.createElement('div');
   videoShell.className = 'video-shell';
 
@@ -342,6 +345,7 @@ function createInteractiveVideoShell(canonicalSrc, posterOverride = null) {
   video.setAttribute('playsinline', 'true');
   video.setAttribute('webkit-playsinline', 'true');
   video.poster = posterUrl;
+  video.setAttribute('aria-label', videoLabel);
   attachVideoElement(video, canonicalSrc, { preload: 'none' });
   video.muted = false;
   video.loop = true;
@@ -352,7 +356,7 @@ function createInteractiveVideoShell(canonicalSrc, posterOverride = null) {
   const posterLayer = document.createElement('img');
   posterLayer.className = 'video-poster-layer';
   posterLayer.src = posterUrl;
-  posterLayer.alt = '';
+  posterLayer.alt = `${videoLabel}のポスター`;
   posterLayer.decoding = 'async';
   posterLayer.draggable = false;
   posterLayer.addEventListener('load', () => {
@@ -375,7 +379,7 @@ function createInteractiveVideoShell(canonicalSrc, posterOverride = null) {
   const overlayPlay = document.createElement('button');
   overlayPlay.className = 'video-overlay-play';
   overlayPlay.type = 'button';
-  overlayPlay.setAttribute('aria-label', 'Play');
+  overlayPlay.setAttribute('aria-label', `${videoLabel}を再生`);
   const playIcon = document.createElement('span');
   playIcon.className = 'icon-play';
   overlayPlay.appendChild(playIcon);
@@ -385,18 +389,18 @@ function createInteractiveVideoShell(canonicalSrc, posterOverride = null) {
   const playPauseBtn = document.createElement('button');
   playPauseBtn.className = 'btn-playpause';
   playPauseBtn.type = 'button';
-  playPauseBtn.setAttribute('aria-label', 'Play');
+  playPauseBtn.setAttribute('aria-label', `${videoLabel}の再生/一時停止`);
   const seekBar = document.createElement('input');
   seekBar.className = 'seek';
   seekBar.type = 'range';
   seekBar.min = '0';
   seekBar.max = '100';
   seekBar.value = '0';
-  seekBar.setAttribute('aria-label', 'Seek');
+  seekBar.setAttribute('aria-label', `${videoLabel}の再生位置`);
   const muteBtn = document.createElement('button');
   muteBtn.className = 'btn-mute';
   muteBtn.type = 'button';
-  muteBtn.setAttribute('aria-label', 'Mute');
+  muteBtn.setAttribute('aria-label', `${videoLabel}のミュート切替`);
   controls.appendChild(playPauseBtn);
   controls.appendChild(seekBar);
   controls.appendChild(muteBtn);
@@ -409,7 +413,7 @@ function createInteractiveVideoShell(canonicalSrc, posterOverride = null) {
   return videoShell;
 }
 
-export function createVideoGrid(videos, projectSlug, initiativeName = null, caseName = null) {
+export function createVideoGrid(videos, projectSlug, initiativeName = null, caseName = null, labelPrefix = '') {
   const grid = document.createElement('div');
   grid.className = 'video-grid';
   grid.dataset.count = String(videos.length);
@@ -423,7 +427,8 @@ export function createVideoGrid(videos, projectSlug, initiativeName = null, case
       canonicalSrc = videoData.src;
       posterOverride = videoData.src ? posterImageUrlFromVideoUrl(videoData.src) : null;
     }
-    grid.appendChild(createInteractiveVideoShell(canonicalSrc, posterOverride));
+    const label = labelPrefix || (videoData && videoData.caption) || '';
+    grid.appendChild(createInteractiveVideoShell(canonicalSrc, posterOverride, label));
   });
 
   return grid;
@@ -444,17 +449,19 @@ export function createInitiativeCard(initiative, projectSlug, showTitle = true) 
   }
 
   const videoCount = initiative.videos ?? (initiative.hasVideo ? 1 : 0);
+  const videoLabel = initiative.title ? String(initiative.title) : initiative.assetPrefix || '';
   if (videoCount > 1) {
     const videoGrid = createVideoGrid(
       Array(videoCount).fill({}),
       projectSlug,
       initiative.assetPrefix,
-      null
+      null,
+      videoLabel
     );
     card.appendChild(videoGrid);
   } else if (videoCount === 1) {
     const videoSrc = buildVideoUrl(projectSlug, initiative.assetPrefix, null, 1);
-    card.appendChild(createInteractiveVideoShell(videoSrc));
+    card.appendChild(createInteractiveVideoShell(videoSrc, null, videoLabel));
   }
 
   if (initiative.imageGroups && initiative.imageGroups.length > 0) {
@@ -580,7 +587,11 @@ export function appendExplicitModal(project, parentEl) {
   if (!slug || !Array.isArray(segments) || segments.length === 0) return;
 
   const base = `${baseAssetsUrl}/${slug}`;
-  const altPrefix = project.title ? String(project.title) : '';
+  const projectTitle = project.title ? String(project.title).trim() : '';
+  let sectionContext = '';
+
+  const resolveAltPrefix = () =>
+    [projectTitle, sectionContext].filter(Boolean).join(' ');
 
   /** モーダル表示直後に確実に読み込む（hidden 解除前後の lazy 取りこぼし防止） */
   const eagerLoadImagesInGrid = (grid) => {
@@ -594,6 +605,7 @@ export function appendExplicitModal(project, parentEl) {
     if (!seg || !seg.type) return;
 
     if (seg.type === 'sectionTitle' && seg.text) {
+      sectionContext = String(seg.text).trim();
       const h = document.createElement('h3');
       h.className = 'explicit-modal-section-title';
       h.textContent = seg.text;
@@ -602,6 +614,7 @@ export function appendExplicitModal(project, parentEl) {
     }
 
     if (seg.type === 'subtitle' && seg.text) {
+      sectionContext = [sectionContext, String(seg.text).trim()].filter(Boolean).join(' ');
       const h = document.createElement('h4');
       h.className = 'explicit-modal-subtitle';
       h.textContent = seg.text;
@@ -616,14 +629,17 @@ export function appendExplicitModal(project, parentEl) {
 
     if (seg.type === 'video' && seg.file) {
       const url = `${base}/${seg.file}${ASSETS_CACHE_V}`;
-      parentEl.appendChild(createInteractiveVideoShell(url));
+      parentEl.appendChild(createInteractiveVideoShell(url, null, resolveAltPrefix()));
       return;
     }
 
     if (seg.type === 'imageRow' && Array.isArray(seg.files) && seg.files.length > 0) {
-      const images = seg.files.map((f) => ({ src: `${base}/${f}${ASSETS_CACHE_V}` }));
+      const images = seg.files.map((f, i) => ({
+        src: `${base}/${f}${ASSETS_CACHE_V}`,
+        caption: Array.isArray(seg.captions) ? seg.captions[i] : undefined
+      }));
       const forceHorizontal = seg.files.length > 1;
-      const grid = createImageGrid(images, null, forceHorizontal, null, null, 0, altPrefix);
+      const grid = createImageGrid(images, null, forceHorizontal, null, null, 0, resolveAltPrefix());
       if (grid) {
         eagerLoadImagesInGrid(grid);
         if (seg.imageStyle === 'circle') {
@@ -643,20 +659,25 @@ export function appendExplicitModal(project, parentEl) {
         if (!item || !item.type) return;
         if (item.type === 'image' && item.file) {
           const grid = createImageGrid(
-            [{ src: `${base}/${item.file}${ASSETS_CACHE_V}` }],
+            [{
+              src: `${base}/${item.file}${ASSETS_CACHE_V}`,
+              caption: item.caption
+            }],
             null,
             true,
             null,
             null,
             0,
-            altPrefix
+            resolveAltPrefix()
           );
           if (grid) {
             eagerLoadImagesInGrid(grid);
             row.appendChild(grid);
           }
         } else if (item.type === 'video' && item.file) {
-          row.appendChild(createInteractiveVideoShell(`${base}/${item.file}${ASSETS_CACHE_V}`));
+          row.appendChild(
+            createInteractiveVideoShell(`${base}/${item.file}${ASSETS_CACHE_V}`, null, resolveAltPrefix())
+          );
         }
       });
 

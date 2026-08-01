@@ -14,8 +14,9 @@
 ### 運用・実装担当者向け
 
 - 実装構成を把握: `📁 ファイル構成` と `モジュールの役割（データの流れ）`
-- 動画の先読み・ホバー再生の調整: `動画プリロード・ヒーロー再生（実装メモ）`
+- 動画の先読み・ホーバー再生の調整: `動画プリロード・ヒーロー再生（実装メモ）`
 - データ仕様を確認: `📦 アセットルール`
+- **画像・動画アップロード（R2）**: [`docs/R2_UPLOAD_SETUP.md`](docs/R2_UPLOAD_SETUP.md)
 - UIルールを確認: `🎨 カスタマイズ`
 - SEO運用を確認: `🔁 デプロイ・データ更新時の推奨手順`
 
@@ -28,7 +29,10 @@
 ├── projects.json       # プロジェクトデータ（8件。cases 構造で施策別メディアも管理可）
 ├── {pageSlug}/         # 各案件の静的HTML（例: ejic/index.html → shuntofujii.com/ejic/）
 ├── scripts/
-│   └── build-project-pages.mjs  # projects.json から {pageSlug}/index.html を再生成
+│   ├── build-project-pages.mjs  # projects.json から {pageSlug}/index.html を再生成
+│   └── upload-asset.mjs           # R2 へ画像・動画をアップロード（npm run upload）
+├── docs/
+│   └── R2_UPLOAD_SETUP.md       # R2 設定・アップロード手順
 ├── routing.js          # /{pageSlug}/ のパス解釈（純粋なルーティング関数）
 ├── app.js              # エントリポイント（初期化・各モジュールのオーケストレーション）
 ├── appDomSetup.js      # DOM参照の収集と refs 初期化（app.js から分離）
@@ -375,12 +379,12 @@ export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 ```json
 {
   "modalMetaItems": [
-    { "label": "Client", "value": "株式会社○○", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260503" },
-    { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260503" },
-    { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260503" },
-    { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260503" },
-    { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260503" },
-    { "label": "Team", "value": "Role：Name / ...", "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260503" }
+    { "label": "Client", "value": "株式会社○○", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260801" },
+    { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260801" },
+    { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260801" },
+    { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260801" },
+    { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260801" },
+    { "label": "Team", "value": "Role：Name / ...", "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260801" }
   ]
 }
 ```
@@ -464,7 +468,7 @@ node meta-audit.js
 {baseAssetsUrl}/{projectSlug}/{filename}
 ```
 
-例: `https://assets.shuntofujii.com/izumo/strategy2024_p_1.webp?v=20260503`（実行時は `ASSETS_CACHE_V` が付与されます）
+例: `https://assets.shuntofujii.com/izumo/strategy2024_p_1.webp?v=20260801`（実行時は `ASSETS_CACHE_V` が付与されます）
 
 動画のポスター画像は、動画と同じ basename で拡張子を `.webp` にしたファイルを利用します（コード内で `.webm` → `.webp` に置換）。
 

@@ -27,7 +27,7 @@
 ### 2. OGP画像の実サイズ
 
 - `index.html` では `og:image:width` / `og:image:height` を **1200×630** にしています。
-- 実際の `https://assets.shuntofujii.com/top/ogp.webp` が別サイズの場合は、**画像を1200×630に揃える**か、**メタの width/height を実寸に合わせる**と、SNSプレビューが崩れにくくなります。
+- `https://assets.shuntofujii.com/top/ogp.webp` も **1200×630** に揃えています（`ASSETS_CACHE_V` / `?v=` とあわせて更新）。
 
 ### 3. sitemap.xml の lastmod
 

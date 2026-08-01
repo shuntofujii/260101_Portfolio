@@ -7,12 +7,13 @@ import { appendExplicitModal, createCaseSection, createInitiativeCard } from './
 import { closeLightbox } from './lightbox.js';
 import { setBackgroundModalState } from './modalChrome.js';
 import { closeProfileModalIfOpen } from './profileModal.js';
+import { ASSETS_CACHE_V, baseAssetsUrl } from './constants.js';
 
 const DEFAULT_MODAL_META_ITEMS = [
-  { label: 'Domain', value: '$domain', icon: 'https://assets.shuntofujii.com/icons/domain.svg?v=20260503' },
-  { label: 'Year', value: '$year', icon: 'https://assets.shuntofujii.com/icons/year.svg?v=20260503' },
-  { label: 'Disciplines', value: '$disciplines', icon: 'https://assets.shuntofujii.com/icons/focus.svg?v=20260503' },
-  { label: 'Toolkits', value: '$toolkits', icon: 'https://assets.shuntofujii.com/icons/toolkits.svg?v=20260503' }
+  { label: 'Domain', value: '$domain', icon: `${baseAssetsUrl}/icons/domain.svg${ASSETS_CACHE_V}` },
+  { label: 'Year', value: '$year', icon: `${baseAssetsUrl}/icons/year.svg${ASSETS_CACHE_V}` },
+  { label: 'Disciplines', value: '$disciplines', icon: `${baseAssetsUrl}/icons/focus.svg${ASSETS_CACHE_V}` },
+  { label: 'Toolkits', value: '$toolkits', icon: `${baseAssetsUrl}/icons/toolkits.svg${ASSETS_CACHE_V}` }
 ];
 
 function buildModalMetaItems(project) {

@@ -10,7 +10,7 @@ function createThumbnail(project, index, options) {
   const thumbnail = document.createElement('img');
   thumbnail.className = 'project-thumbnail';
   thumbnail.src = project.thumbnail || `${baseAssetsUrl}/top/placeholder-image.jpg${ASSETS_CACHE_V}`;
-  thumbnail.alt = '';
+  thumbnail.alt = project.title ? `${project.title}のサムネイル` : 'プロジェクトのサムネイル';
   thumbnail.width = projectThumbnailSizePx;
   thumbnail.height = projectThumbnailSizePx;
   thumbnail.decoding = 'async';

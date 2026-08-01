@@ -1,4 +1,6 @@
 import {
+  ASSETS_CACHE_V,
+  baseAssetsUrl,
   THUMBNAIL_PREVIEW_ACTIVE_CLASS,
   TRAIL_THUMBNAIL_HOVER_MIN_MS,
   TRAIL_THUMBNAIL_HOVER_MAX_MS
@@ -55,7 +57,7 @@ export function createProjectInteractionController(deps) {
           </div>
           ${safeTools ? `
           <div class="context-info-item row">
-            <img src="https://assets.shuntofujii.com/icons/toolkits.svg?v=20260503" alt="Toolkits" class="toolkit-icon" width="14" height="14" decoding="async" loading="lazy" />
+            <img src="${baseAssetsUrl}/icons/toolkits.svg${ASSETS_CACHE_V}" alt="Toolkits" class="toolkit-icon" width="14" height="14" decoding="async" loading="lazy" />
             <span class="context-info-value value">${safeTools}</span>
           </div>
           ` : ''}
