@@ -4,6 +4,7 @@ import { getRefs } from './domRefs.js';
 import { ASSETS_CACHE_V, BREAKPOINT_MOBILE_PX, baseAssetsUrl } from './constants.js';
 import { attachVideoElement } from './videoCache.js';
 import { buildImageUrl, buildVideoUrl, getImageGridLayout, getLayoutSpan } from './mediaLayout.js';
+import { slugifySectionId } from './utils.js';
 export { buildVideoUrl } from './mediaLayout.js';
 
 /**
@@ -609,6 +610,8 @@ export function appendExplicitModal(project, parentEl) {
       const h = document.createElement('h3');
       h.className = 'explicit-modal-section-title';
       h.textContent = seg.text;
+      const sectionId = seg.id ? String(seg.id) : slugifySectionId(seg.text);
+      if (sectionId) h.id = sectionId;
       parentEl.appendChild(h);
       return;
     }

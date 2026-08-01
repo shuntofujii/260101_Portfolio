@@ -30,7 +30,7 @@
     <meta property="og:url" content="https://shuntofujii.com/kujico/" />
     <meta property="og:site_name" content="SHUNTO FUJII Portfolio" />
     <meta property="og:locale" content="ja_JP" />
-    <meta property="og:image" content="https://assets.shuntofujii.com/top/thumbnail-08.webp?v=20260801" />
+    <meta property="og:image" content="https://assets.shuntofujii.com/top/thumbnail-08.webp?v=20260803" />
     <meta property="og:image:type" content="image/webp" />
     <meta property="og:image:alt" content="久次米珈琲焙煎所" />
 
@@ -38,11 +38,11 @@
     <meta name="twitter:site" content="@shuntofujii" />
     <meta name="twitter:title" content="久次米珈琲焙煎所 | SHUNTO FUJII" />
     <meta name="twitter:description" content="珈琲好きの友人と事業の立ち上げを行っております。" />
-    <meta name="twitter:image" content="https://assets.shuntofujii.com/top/thumbnail-08.webp?v=20260801" />
+    <meta name="twitter:image" content="https://assets.shuntofujii.com/top/thumbnail-08.webp?v=20260803" />
     <meta name="twitter:image:alt" content="久次米珈琲焙煎所" />
 
-    <link rel="icon" href="https://assets.shuntofujii.com/top/shuntofujii.webp?v=20260801" />
-    <link rel="apple-touch-icon" href="https://assets.shuntofujii.com/top/favicon.ico?v=20260801" />
+    <link rel="icon" href="https://assets.shuntofujii.com/top/shuntofujii.webp?v=20260803" />
+    <link rel="apple-touch-icon" href="https://assets.shuntofujii.com/top/favicon.ico?v=20260803" />
 
     <link rel="manifest" href="/site.webmanifest" />
 
@@ -79,7 +79,7 @@
       "headline": "人間監査法人パイオニア",
       "description": "珈琲好きの友人と事業の立ち上げを行っております。",
       "url": "https://shuntofujii.com/kujico/",
-      "image": "https://assets.shuntofujii.com/top/thumbnail-08.webp?v=20260801",
+      "image": "https://assets.shuntofujii.com/top/thumbnail-08.webp?v=20260803",
       "creator": {
         "@id": "https://shuntofujii.com/#person"
       },
@@ -96,7 +96,7 @@
       },
       "primaryImageOfPage": {
         "@type": "ImageObject",
-        "url": "https://assets.shuntofujii.com/top/thumbnail-08.webp?v=20260801"
+        "url": "https://assets.shuntofujii.com/top/thumbnail-08.webp?v=20260803"
       },
       "mainEntity": {
         "@id": "https://shuntofujii.com/kujico/#work"
@@ -120,19 +120,21 @@
         <span class="profile-open-stack" aria-hidden="true">
           <img
             class="profile-open-img profile-open-img--back"
-            src="https://assets.shuntofujii.com/top/shuntofujii_1.webp?v=20260801"
+            src="https://assets.shuntofujii.com/top/shuntofujii_1.webp?v=20260803"
             alt=""
             width="609"
             height="720"
             decoding="async"
+            fetchpriority="low"
           />
           <img
             class="profile-open-img profile-open-img--front"
-            src="https://assets.shuntofujii.com/top/shuntofujii_2.webp?v=20260801"
+            src="https://assets.shuntofujii.com/top/shuntofujii_2.webp?v=20260803"
             alt=""
             width="609"
             height="720"
             decoding="async"
+            fetchpriority="high"
           />
         </span>
       </button>
@@ -242,11 +244,13 @@
       id="lightboxOverlay"
       hidden
       aria-hidden="true"
+      inert
     >
       <button
         class="lightbox-close"
         id="lightboxClose"
         aria-label="Close image view"
+        tabindex="-1"
       >
         ×
       </button>

@@ -1,11 +1,10 @@
 // プロフィールモーダル（入場アニメは profileIntro 系で後段から接続）
-import { getRefs } from './domRefs.js';
-import { state } from './state.js';
-import { clearTrailThumbnailHoverTimer } from './appStateTransitions.js';
+import { ASSETS_CACHE_V, baseAssetsUrl } from './constants.js';
 import { escapeHtml, createFocusTrap } from './utils.js';
 import { setBackgroundModalState } from './modalChrome.js';
-import { ASSETS_CACHE_V, baseAssetsUrl } from './constants.js';
-import { createImageGrid } from './media.js';
+import { clearTrailThumbnailHoverTimer } from './appStateTransitions.js';
+import { getRefs } from './domRefs.js';
+import { state } from './state.js';
 
 /** 1995-09-25 生まれ。誕生日を迎えるまでは前年齢（ローカル日付基準）。 */
 const PROFILE_BIRTH = new Date(1995, 8, 25);
@@ -21,17 +20,17 @@ const PROFILE_CONCEPT = 'ザ・フジイ・オリジナル';
 
 const PROFILE_LOGOS = [
   { file: 'logo_p_5.webp', alt: '取引先ロゴ：東急不動産ホールディングス' },
-  { file: 'logo_p_1.webp', alt: '取引先ロゴ：日本マイクロソフト' },
-  { file: 'logo_p_2.webp', alt: '取引先ロゴ：株式会社MuuMu' },
-  { file: 'logo_p_3.webp', alt: '取引先ロゴ：IVS株式会社' },
-  { file: 'logo_p_4.webp', alt: '取引先ロゴ：StudioZ株式会社' }
+  { file: 'logo_p_1.webp', alt: '取引先ロゴ：日本マイクロソフト', pageSlug: 'ejic' },
+  { file: 'logo_p_2.webp', alt: '取引先ロゴ：株式会社MuuMu', pageSlug: 'deteqle' },
+  { file: 'logo_p_3.webp', alt: '取引先ロゴ：IVS株式会社', pageSlug: 'others', sectionId: 'ivs' },
+  { file: 'logo_p_4.webp', alt: '取引先ロゴ：StudioZ株式会社', pageSlug: 'others', sectionId: 'earn-poker' }
 ];
 
 const PROFILE_CONTACT_EMAIL = 'me@shuntofujii.com';
 
 const PROFILE_BIO_PARAGRAPHS = [
   '大手通信事業社でM&Aやメディア立ち上げなどを担当。現在は全社のマーケティング戦略を策定している。',
-  'フリーランスとしては、東急不動産HDにて新規事業開発のコンサルティング、Microsoft社のイベントクリエイティブディレクションなど、さまざまなプロジェクトに従事。',
+  'フリーランスとして、東急不動産HDにて新規事業開発のコンサルティング、Microsoft社のイベントクリエイティブディレクションなど、さまざまなプロジェクトに従事。',
   '美術監督を務めた『グーチョキデッド』は、ゆうばり国際ファンタスティック映画祭にノミネートされた。',
   '好きな食べ物はうどん。',
   {
@@ -122,17 +121,54 @@ export function renderProfileContent(modalContentEl) {
   `;
 
   const profileLogoBase = `${baseAssetsUrl}/profile`;
-  const logoImages = PROFILE_LOGOS.map((logo) => ({
-    src: `${profileLogoBase}/${logo.file}${ASSETS_CACHE_V}`,
-    caption: logo.alt
-  }));
-  const logoGrid = createImageGrid(logoImages, null, true, null, null, 0, '取引先ロゴ');
-  if (logoGrid) {
-    const logosSection = document.createElement('section');
-    logosSection.className = 'modal-initiatives profile-modal-logos';
-    logosSection.appendChild(logoGrid);
-    modalContentEl.appendChild(logosSection);
-  }
+  const logosSection = document.createElement('section');
+  logosSection.className = 'modal-initiatives profile-modal-logos';
+
+  const logoGrid = document.createElement('div');
+  logoGrid.className = 'mediaGrid';
+  logoGrid.dataset.count = String(PROFILE_LOGOS.length);
+  logoGrid.dataset.forceHorizontal = 'true';
+  logoGrid.style.gridTemplateColumns = `repeat(${PROFILE_LOGOS.length}, 1fr)`;
+
+  PROFILE_LOGOS.forEach((logo) => {
+    const item = document.createElement(logo.pageSlug ? 'a' : 'div');
+    item.className = 'mediaItem';
+    item.style.aspectRatio = '16 / 9';
+
+    const img = document.createElement('img');
+    img.src = `${profileLogoBase}/${logo.file}${ASSETS_CACHE_V}`;
+    img.alt = logo.alt;
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    item.appendChild(img);
+
+    if (logo.pageSlug) {
+      const href = logo.sectionId
+        ? `/${logo.pageSlug}/#${logo.sectionId}`
+        : `/${logo.pageSlug}/`;
+      item.href = href;
+      item.setAttribute('aria-label', `${logo.alt}のプロジェクトを開く`);
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.dispatchEvent(
+          new CustomEvent('portfolio:openproject', {
+            detail: {
+              pageSlug: logo.pageSlug,
+              sectionId: logo.sectionId || null
+            }
+          })
+        );
+      });
+    } else {
+      item.setAttribute('role', 'img');
+      item.setAttribute('aria-label', logo.alt);
+    }
+
+    logoGrid.appendChild(item);
+  });
+
+  logosSection.appendChild(logoGrid);
+  modalContentEl.appendChild(logosSection);
 }
 
 function finalizeProfileClose(refs) {

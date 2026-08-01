@@ -13,12 +13,16 @@ function createThumbnail(project, index, options) {
   thumbnail.alt = project.title ? `${project.title}のサムネイル` : 'プロジェクトのサムネイル';
   thumbnail.width = projectThumbnailSizePx;
   thumbnail.height = projectThumbnailSizePx;
+  thumbnail.sizes = `${projectThumbnailSizePx}px`;
   thumbnail.decoding = 'async';
 
+  // LCP 候補になりうるナビサムネは lazy にしない（PSI: lazy が LCP 遅延の主因）
   if (index < thumbnailFetchPriorityCount) {
     thumbnail.fetchPriority = 'high';
+    thumbnail.loading = 'eager';
   } else {
     thumbnail.loading = 'lazy';
+    thumbnail.fetchPriority = 'low';
   }
 
   thumbnail.onerror = function () {

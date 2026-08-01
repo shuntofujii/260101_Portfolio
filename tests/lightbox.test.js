@@ -63,7 +63,7 @@ function setupLightboxDom() {
     height: 200
   });
 
-  return { modalContent, item1, item2, item3, lightboxImage, lightboxVideo };
+  return { modalContent, item1, item2, item3, lightboxOverlay, lightboxImage, lightboxVideo, lightboxClose };
 }
 
 function setupVideoItems(modalContent) {
@@ -152,5 +152,18 @@ describe('lightbox click navigation', () => {
     lightboxVideo.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 120 }));
     vi.advanceTimersByTime(620);
     expect(state.lightboxTriggerElement).toBe(vItem1);
+  });
+
+  it('開閉で aria-hidden / inert / tabindex を切り替える', () => {
+    const { item2, lightboxOverlay, lightboxClose } = setupLightboxDom();
+    lightboxOverlay.setAttribute('aria-hidden', 'true');
+    lightboxOverlay.setAttribute('inert', '');
+    lightboxClose.setAttribute('tabindex', '-1');
+
+    openLightbox('https://example.com/2.jpg', item2, { useOriginAnimation: false });
+
+    expect(lightboxOverlay.getAttribute('aria-hidden')).toBe('false');
+    expect(lightboxOverlay.hasAttribute('inert')).toBe(false);
+    expect(lightboxClose.hasAttribute('tabindex')).toBe(false);
   });
 });

@@ -155,6 +155,61 @@ function bindProfileRouteEventListeners() {
 }
 bindProfileRouteEventListeners();
 
+/** プロフィール取引先ロゴ → 案件モーダル遷移用（セクションへスクロールする場合あり） */
+let pendingModalSectionId = null;
+
+function scrollModalContentToSection(sectionId) {
+  if (!sectionId || !refs.modalContent) return;
+  const safe =
+    typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+      ? CSS.escape(sectionId)
+      : String(sectionId).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  const target = refs.modalContent.querySelector(`#${safe}`);
+  if (!target) return;
+  const scroller = refs.modalContent;
+  const top = target.offsetTop - 16;
+  if (typeof scroller.scrollTo === 'function') {
+    scroller.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  } else {
+    scroller.scrollTop = Math.max(0, top);
+  }
+}
+
+function bindProfileLogoNavigation() {
+  document.addEventListener('portfolio:openproject', (e) => {
+    const pageSlug = e.detail?.pageSlug;
+    const sectionId = e.detail?.sectionId || null;
+    if (!pageSlug || !Array.isArray(state.projects)) return;
+    const project = state.projects.find((p) => p.pageSlug === pageSlug);
+    if (!project) return;
+    pendingModalSectionId = sectionId;
+    openProjectModalFromRoute(project, null);
+    if (sectionId) {
+      const path = pathForProjectSlug(pageSlug);
+      try {
+        history.replaceState(
+          { portfolioModal: true, sectionId },
+          '',
+          `${path}#${encodeURIComponent(sectionId)}`
+        );
+      } catch {
+        /* ignore */
+      }
+    }
+  });
+
+  document.addEventListener('portfolio:modalopen', () => {
+    if (!pendingModalSectionId) return;
+    const sectionId = pendingModalSectionId;
+    pendingModalSectionId = null;
+    // openModal 内の scrollTop=0（二重 rAF）より後にスクロール
+    window.setTimeout(() => {
+      scrollModalContentToSection(sectionId);
+    }, 80);
+  });
+}
+bindProfileLogoNavigation();
+
 function applyInitialRoute() {
   if (isProfileModalPath(window.location.pathname)) {
     openProfileModalFromRoute();

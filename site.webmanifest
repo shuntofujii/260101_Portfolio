@@ -10,12 +10,12 @@
   "lang": "ja",
   "icons": [
     {
-      "src": "https://assets.shuntofujii.com/top/shuntofujii.webp?v=20260801",
+      "src": "https://assets.shuntofujii.com/top/shuntofujii.webp?v=20260803",
       "sizes": "any",
       "type": "image/webp"
     },
     {
-      "src": "https://assets.shuntofujii.com/top/ogp.webp?v=20260801",
+      "src": "https://assets.shuntofujii.com/top/ogp.webp?v=20260803",
       "sizes": "1200x630",
       "type": "image/webp",
       "purpose": "any"

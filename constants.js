@@ -77,7 +77,7 @@ export const CURSOR_CONFIG = {
 export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 
 /** CDN 画像・動画・アイコン共通のキャッシュバスター（先頭は ?）。projects.json / HTML の ?v= と揃える */
-export const ASSETS_CACHE_V = '?v=20260801';
+export const ASSETS_CACHE_V = '?v=20260803';
 
 /** プロフィール入場アニメ（Matter.js） */
 export const PROFILE_INTRO_ASSETS_V = ASSETS_CACHE_V;
@@ -112,13 +112,14 @@ export const OPENING_SOON_PROJECT_ID = 'project-08';
 
 /**
  * 動画 prefetch ヒントの同時・上限（`<link rel="prefetch">`。帯域・メインスレッド競合を抑える）
+ * 起動時の複数本先読みは PageSpeed の巨大ペイロード要因になるため最小限に抑える。
  */
-export const VIDEO_PRELOAD_LINK_MAX_MOBILE = 4;
-export const VIDEO_PRELOAD_LINK_MAX_DESKTOP = 6;
+export const VIDEO_PRELOAD_LINK_MAX_MOBILE = 1;
+export const VIDEO_PRELOAD_LINK_MAX_DESKTOP = 2;
 
 /** 起動時に prefetch で温めるヒーロー動画の最大本数（ホバー前に必要な分だけ） */
-export const HERO_VIDEO_PREFETCH_COUNT_MOBILE = 3;
-export const HERO_VIDEO_PREFETCH_COUNT_DESKTOP = 5;
+export const HERO_VIDEO_PREFETCH_COUNT_MOBILE = 1;
+export const HERO_VIDEO_PREFETCH_COUNT_DESKTOP = 1;
 
 /** `.project-item` / `.project-thumbnail` の表示サイズ（CLS 用 width/height と一致） */
 export const PROJECT_THUMBNAIL_SIZE_PX = 90;
@@ -126,8 +127,11 @@ export const PROJECT_THUMBNAIL_SIZE_PX = 90;
 /** ヒーロー動画プレビューと同一トリガー（mouseenter / touchstart）で付与し、SP の :hover ずれを防ぐ */
 export const THUMBNAIL_PREVIEW_ACTIVE_CLASS = 'thumbnail-preview-active';
 
-/** 優先読み込みするサムネイル数（残りは lazy） */
-export const THUMBNAIL_FETCH_PRIORITY_COUNT = 2;
+/**
+ * 優先読み込みするサムネイル数（残りは lazy）。
+ * 初期ビューで中央付近が LCP になりやすいため、全案件分を eager にする（8枚・小サイズ）。
+ */
+export const THUMBNAIL_FETCH_PRIORITY_COUNT = 8;
 
 /** ガイダンス「Please select a project」タイプライター（文字追加・削除の間隔・停止） */
 

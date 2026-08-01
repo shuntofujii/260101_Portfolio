@@ -158,6 +158,7 @@ ${jsonLd}
             width="609"
             height="720"
             decoding="async"
+            fetchpriority="low"
           />
           <img
             class="profile-open-img profile-open-img--front"
@@ -166,6 +167,7 @@ ${jsonLd}
             width="609"
             height="720"
             decoding="async"
+            fetchpriority="high"
           />
         </span>
       </button>
@@ -275,11 +277,13 @@ ${jsonLd}
       id="lightboxOverlay"
       hidden
       aria-hidden="true"
+      inert
     >
       <button
         class="lightbox-close"
         id="lightboxClose"
         aria-label="Close image view"
+        tabindex="-1"
       >
         ×
       </button>

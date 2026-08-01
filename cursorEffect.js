@@ -32,6 +32,8 @@ function createCustomCursorEffect(THREE, initialColor) {
   // 「比較(明)」合成（対応ブラウザでは背景との明部優先で合成）
   renderer.domElement.style.mixBlendMode = 'lighten';
   renderer.domElement.style.zIndex = String(CURSOR_Z_INDEX);
+  renderer.domElement.setAttribute('aria-hidden', 'true');
+  renderer.domElement.setAttribute('role', 'presentation');
   el.appendChild(renderer.domElement);
 
   const rgb = hexToRgb(initialColor);
@@ -174,10 +176,35 @@ function createCustomCursorEffect(THREE, initialColor) {
   const thumbNodeCache = createThumbNodeCache();
   const detectTouchDevice = () => { isTouchDevice = true; };
 
+  /** getBoundingClientRect の毎フレーム呼び出しを避けるためのキャッシュ */
+  let layoutRectsDirty = true;
+  let layoutRefreshFrameCounter = 0;
+  /** @type {DOMRect | null} */
+  let cachedCanvasRect = null;
+  /** @type {DOMRect[]} */
+  let cachedThumbRects = [];
+
+  const invalidateLayoutRects = () => {
+    layoutRectsDirty = true;
+  };
+
+  const refreshLayoutRectsIfNeeded = () => {
+    if (!layoutRectsDirty) return;
+    cachedCanvasRect = renderer.domElement.getBoundingClientRect();
+    const thumbNodes = thumbNodeCache.getElements();
+    const next = [];
+    for (let i = 0; i < thumbNodes.length; i++) {
+      next.push(thumbNodes[i].getBoundingClientRect());
+    }
+    cachedThumbRects = next;
+    layoutRectsDirty = false;
+  };
+
   const handleMouseMove = (e) => {
     if (!isCursorFollowEnabled) return;
     if (isTouchDevice) return;
-    const rect = renderer.domElement.getBoundingClientRect();
+    refreshLayoutRectsIfNeeded();
+    const rect = cachedCanvasRect || renderer.domElement.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     target.set(x, y);
@@ -194,7 +221,8 @@ function createCustomCursorEffect(THREE, initialColor) {
     detectTouchDevice();
     if (e.touches.length > 0) {
       const touch = e.touches[0];
-      const rect = renderer.domElement.getBoundingClientRect();
+      refreshLayoutRectsIfNeeded();
+      const rect = cachedCanvasRect || renderer.domElement.getBoundingClientRect();
       const x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
       target.set(x, y);
@@ -206,7 +234,8 @@ function createCustomCursorEffect(THREE, initialColor) {
     if (!isCursorFollowEnabled) return;
     if (e.touches.length > 0) {
       const touch = e.touches[0];
-      const rect = renderer.domElement.getBoundingClientRect();
+      refreshLayoutRectsIfNeeded();
+      const rect = cachedCanvasRect || renderer.domElement.getBoundingClientRect();
       const x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
       target.set(x, y);
@@ -224,6 +253,7 @@ function createCustomCursorEffect(THREE, initialColor) {
   document.addEventListener('touchmove', handleTouchMove, { passive: true });
   document.addEventListener('touchend', handleTouchEnd, { passive: true });
   document.addEventListener('touchcancel', handleTouchCancel, { passive: true });
+  window.addEventListener('scroll', invalidateLayoutRects, { capture: true, passive: true });
 
   const handleResize = () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -252,9 +282,25 @@ function createCustomCursorEffect(THREE, initialColor) {
       currentSleepRadiusY = 150;
     }
     thumbNodeCache.invalidate();
+    invalidateLayoutRects();
   };
   window.addEventListener('resize', handleResize);
   handleResize();
+
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') {
+      if (state.cursorAnimationFrameId) {
+        cancelAnimationFrame(state.cursorAnimationFrameId);
+        state.cursorAnimationFrameId = null;
+      }
+      return;
+    }
+    if (!state.cursorAnimationFrameId) {
+      prevAnimClockTime = null;
+      state.cursorAnimationFrameId = requestAnimationFrame(animate);
+    }
+  };
+  document.addEventListener('visibilitychange', handleVisibilityChange);
 
   function animate() {
     state.cursorAnimationFrameId = requestAnimationFrame(animate);
@@ -295,17 +341,20 @@ function createCustomCursorEffect(THREE, initialColor) {
       idleThresholdSec
     );
 
-    const canvasRect = renderer.domElement.getBoundingClientRect();
+    refreshLayoutRectsIfNeeded();
+    // プレビュー時の margin 変化などに追従するため、低頻度で再計測
+    layoutRefreshFrameCounter += 1;
+    if (layoutRefreshFrameCounter % 12 === 0) {
+      invalidateLayoutRects();
+    }
+    const canvasRect = cachedCanvasRect;
     const pad = config.thumbnailOverlapPadPx;
     // .project-item は拡大前のレイアウト枠（90px 等）。img の scale は rect に乗らない
     const thumbNodes = thumbNodeCache.getElements();
-    const rects = [];
-    for (let i = 0; i < thumbNodes.length; i++) {
-      rects.push(thumbNodes[i].getBoundingClientRect());
-    }
+    const rects = cachedThumbRects;
     let pointerOverThumb = false;
     let hitProjectIndex = null;
-    if (rects.length > 0) {
+    if (canvasRect && rects.length > 0) {
       const head =
         isMouseActive && (trailScript?.active || !useSleepTrajectory)
           ? target
@@ -514,7 +563,9 @@ function createCustomCursorEffect(THREE, initialColor) {
     document.removeEventListener('touchmove', handleTouchMove);
     document.removeEventListener('touchend', handleTouchEnd);
     document.removeEventListener('touchcancel', handleTouchCancel);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
     window.removeEventListener('resize', handleResize);
+    window.removeEventListener('scroll', invalidateLayoutRects, true);
     if (renderer.domElement && renderer.domElement.parentNode) {
       renderer.domElement.parentNode.removeChild(renderer.domElement);
     }

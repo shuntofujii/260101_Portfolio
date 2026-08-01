@@ -184,4 +184,31 @@ describe('renderProjectNavigation', () => {
     expect(prevented).toBe(true);
     expect(handlers.onClick).toHaveBeenCalledTimes(1);
   });
+
+  it('優先サムネは eager + fetchpriority=high、それ以外は lazy', () => {
+    const nav = document.createElement('nav');
+    const projects = createProjects();
+    Object.defineProperty(nav, 'scrollWidth', {
+      configurable: true,
+      get: () => nav.childElementCount * 100
+    });
+    Object.defineProperty(nav, 'clientWidth', {
+      configurable: true,
+      get: () => 400
+    });
+
+    renderProjectNavigation(nav, projects, {
+      baseAssetsUrl: '',
+      projectThumbnailSizePx: 90,
+      thumbnailFetchPriorityCount: 2,
+      handlers: createHandlers()
+    });
+
+    const thumbs = [...nav.querySelectorAll('.project-thumbnail')];
+    expect(thumbs[0].loading).toBe('eager');
+    expect(thumbs[0].fetchPriority).toBe('high');
+    expect(thumbs[0].sizes).toBe('90px');
+    expect(thumbs[2].loading).toBe('lazy');
+    expect(thumbs[2].fetchPriority).toBe('low');
+  });
 });

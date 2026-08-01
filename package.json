@@ -7,6 +7,7 @@
     "test": "vitest run --environment jsdom",
     "test:watch": "vitest --environment jsdom",
     "upload": "node scripts/upload-asset.mjs",
+    "optimize:cdn": "node scripts/optimize-cdn-assets.mjs",
     "build:pages": "node scripts/build-project-pages.mjs"
   },
   "repository": {

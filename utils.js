@@ -5,6 +5,16 @@ export function escapeHtml(str) {
   return str.replace(/[&<>"']/g, (c) => map[c]);
 }
 
+/** セクション見出しなどからアンカー用 id を生成 */
+export function slugifySectionId(text) {
+  return String(text || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFKC')
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 /** コンテナ内のフォーカス可能要素を document 順で返す */
 export function getFocusableElements(container) {
   if (!container) return [];

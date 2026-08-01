@@ -32,6 +32,21 @@ let lightboxSwipePreviewDirection = 0;
 let lightboxSwipePreviewTargetEl = null;
 let lightboxClickNavigateQueued = false;
 
+/** 閉じている間はフォーカス可能子孫を無効化（aria-hidden 内のフォーカス問題を防ぐ） */
+function setLightboxA11yOpen(isOpen) {
+  const refs = getRefs();
+  if (!refs.lightboxOverlay) return;
+  if (isOpen) {
+    refs.lightboxOverlay.setAttribute('aria-hidden', 'false');
+    refs.lightboxOverlay.removeAttribute('inert');
+    if (refs.lightboxClose) refs.lightboxClose.removeAttribute('tabindex');
+  } else {
+    refs.lightboxOverlay.setAttribute('aria-hidden', 'true');
+    refs.lightboxOverlay.setAttribute('inert', '');
+    if (refs.lightboxClose) refs.lightboxClose.setAttribute('tabindex', '-1');
+  }
+}
+
 /** パス上の拡張子で判定（`...webm?v=1` は endsWith('.webm') にならない） */
 function urlPathLooksLikeWebm(url) {
   if (!url || typeof url !== 'string') return false;
@@ -350,6 +365,7 @@ function finishLightboxClose(mediaType) {
   const refs = getRefs();
   refs.lightboxOverlay.setAttribute('hidden', '');
   refs.lightboxOverlay.classList.remove('closing');
+  setLightboxA11yOpen(false);
   if (mediaType === 'video' && refs.lightboxVideo) {
     refs.lightboxVideo.src = '';
     refs.lightboxVideo.removeAttribute('data-lightbox-canonical-src');
@@ -437,6 +453,7 @@ export function openLightboxVideo(videoSrc, originElement, options = {}) {
   refs.lightboxVideo.setAttribute('disablepictureinpicture', 'true');
   refs.lightboxOverlay.removeAttribute('hidden');
   refs.lightboxOverlay.classList.remove('closing');
+  setLightboxA11yOpen(true);
   bindLightboxSwipeHandlersOnce();
   setupLightboxFocusTrap();
 
@@ -555,6 +572,7 @@ export function openLightbox(imageSrc, originElement, options = {}) {
   refs.lightboxImage.alt = (originImg && originImg.alt) ? originImg.alt : '画像の拡大表示';
   refs.lightboxOverlay.removeAttribute('hidden');
   refs.lightboxOverlay.classList.remove('closing');
+  setLightboxA11yOpen(true);
   bindLightboxSwipeHandlersOnce();
   setupLightboxFocusTrap();
 

@@ -77,10 +77,10 @@
     box-shadow var(--transition-theme-color);
 }
 
-/* サムネイルプレビュー時の囲い・リングは、カーソル軌跡と同じタイミングで色が変化するように transition を短く */
+/* サムネイル枠・リング: opacity / transform のみ遷移（border-color・box-shadow は非合成のため遷移しない） */
 .project-item::before,
 .project-item::after {
-  transition: border-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  transition: opacity 0.25s ease-in-out, transform 0.3s ease-in-out;
 }
 
 /* スクリーンリーダー・SEO用: 視覚的に非表示だがテキストは残す（クローラー・アクセシビリティ） */
@@ -839,9 +839,16 @@ body.profile-intro-running #bgVideo {
   transform: translateX(-50%);
   z-index: var(--z-project-navigation);
   display: flex;
+  align-items: center;
   gap: 1.5rem;
-  /* 広がるネオンリングが切れないよう上下左右に余裕を持たせる + Safe Area */
-  padding: 58px calc(3rem + var(--safe-right)) 58px calc(3rem + var(--safe-left));
+  /*
+    プレビュー時: サムネ scale(1.3) + ::after リング scale(1.55) + box-shadow。
+    overflow-x:auto だと overflow-y も実質 clip になるため、上パディングで描画領域を確保する。
+    下余白は画面下端との関係を崩さないよう従来どおり短めにする。
+  */
+  --nav-pad-top: 120px;
+  --nav-pad-bottom: 58px;
+  padding: var(--nav-pad-top) calc(3rem + var(--safe-right)) var(--nav-pad-bottom) calc(3rem + var(--safe-left));
   background: rgba(255, 255, 255, 0);
   backdrop-filter: none;
   border: none;
@@ -849,7 +856,7 @@ body.profile-intro-running #bgVideo {
   width: auto;
   max-width: calc(100vw - var(--safe-left) - var(--safe-right));
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
   transition: opacity var(--transition-medium), transform var(--transition-medium);
@@ -946,14 +953,13 @@ body.modal-open .project-navigation {
   z-index: 2;
   pointer-events: none;
   box-sizing: border-box;
-  /* アニメーションの初期状態（大きい枠線） */
-  inset: -15px;
-  /* カーソルの軌跡と同じタイミングで色が変化するように、transitionを短くする */
-  /* カーソルは毎フレーム更新されるため、サムネイルも即座に追従するようにする */
-  transition: opacity 0.3s ease-in-out, border-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  /* 最終サイズ固定。縮小感は transform で出す（inset アニメは非合成） */
+  inset: -13.5px;
+  transform: scale(1);
+  transform-origin: center center;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
   /* カーソル軌跡と同じ輝き方：シェーダーの10倍の明るさとAdditiveBlendingを再現 */
-  /* 複数のbox-shadowを重ねて、距離ベースのグローを再現 */
-  box-shadow: 
+  box-shadow:
     0 0 3px var(--accent-color),
     0 0 6px var(--accent-color),
     0 0 10px var(--accent-color),
@@ -966,14 +972,13 @@ body.modal-open .project-navigation {
   animation: frameShrink 0.3s ease-in-out forwards;
 }
 
+/* 120px → 117px 相当（(90+30)/(90+27)）を scale で再現 */
 @keyframes frameShrink {
   from {
-    inset: -15px;
+    transform: scale(1.0256);
   }
   to {
-    /* 拡大したサムネイル（90px * 1.3 = 117px）に合致するサイズ */
-    /* アイテムサイズ90pxに対して、拡大後117pxに合わせるには inset: -13.5px */
-    inset: -13.5px;
+    transform: scale(1);
   }
 }
 
@@ -997,7 +1002,7 @@ body.modal-open .project-navigation {
     0 0 12px var(--accent-color),
     0 0 20px var(--accent-color),
     inset 0 0 8px rgba(0, 217, 255, 0.15);
-  transition: opacity 0.25s ease-in-out, border-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
 }
 
 /* Normal状態（デフォルト） */
@@ -1362,6 +1367,22 @@ body.modal-open .modal-overlay:not([hidden]) {
 
 .profile-modal-logos .mediaGrid {
   margin-bottom: 0;
+}
+
+.profile-modal-logos a.mediaItem {
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 160ms ease;
+}
+
+.profile-modal-logos a.mediaItem:hover,
+.profile-modal-logos a.mediaItem:focus-visible {
+  opacity: 0.78;
+  outline: none;
+}
+
+.profile-modal-logos a.mediaItem:focus-visible {
+  box-shadow: 0 0 0 2px var(--accent-color, #fff);
 }
 
 .initiative-list {
@@ -1905,6 +1926,7 @@ body.modal-open .modal-overlay:not([hidden]) {
 
 /* explicitModal（EJIC 等：ファイル名ベースの固定セクション） */
 .explicit-modal-section-title {
+  scroll-margin-top: 1.25rem;
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -2071,9 +2093,11 @@ body.modal-open .modal-overlay:not([hidden]) {
 
   .project-navigation {
     bottom: calc(4px + var(--safe-bottom));
-    /* タッチ時の scale(1.3)・::after リング(scale 1.55)・グローが overflow で切れないよう縦を確保 */
-    padding-top: 56px;
-    padding-bottom: 58px;
+    /* タッチ時の scale(1.3)・::after リング(scale 1.55)・グローが overflow で切れないよう上を確保 */
+    --nav-pad-top: 112px;
+    --nav-pad-bottom: 58px;
+    padding-top: var(--nav-pad-top);
+    padding-bottom: var(--nav-pad-bottom);
     padding-left: calc(2rem + var(--safe-left));
     padding-right: calc(2rem + var(--safe-right));
     gap: 1rem;
@@ -2153,8 +2177,10 @@ body.modal-open .modal-overlay:not([hidden]) {
   }
 
   .project-navigation {
-    padding-top: 56px;
-    padding-bottom: 58px;
+    --nav-pad-top: 112px;
+    --nav-pad-bottom: 58px;
+    padding-top: var(--nav-pad-top);
+    padding-bottom: var(--nav-pad-bottom);
     padding-left: calc(1.75rem + var(--safe-left));
     padding-right: calc(1.75rem + var(--safe-right));
   }
@@ -2168,9 +2194,11 @@ body.modal-open .modal-overlay:not([hidden]) {
   .project-navigation {
     bottom: calc(2px + var(--safe-bottom));
     gap: 0.75rem;
-    /* 小さいサムネでもリング・box-shadow が同じ px 幅のため下側をやや多めに */
-    padding-top: 58px;
-    padding-bottom: 36px;
+    /* 上だけ広げ、下は従来どおり短め（画面下端との距離を維持） */
+    --nav-pad-top: 108px;
+    --nav-pad-bottom: 36px;
+    padding-top: var(--nav-pad-top);
+    padding-bottom: var(--nav-pad-bottom);
     padding-left: calc(1.75rem + var(--safe-left));
     padding-right: calc(1.75rem + var(--safe-right));
   }
