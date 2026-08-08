@@ -27,6 +27,33 @@ function clipMeta(s, max = 155) {
   return `${raw.slice(0, max - 3)}...`;
 }
 
+function descriptionParagraphsHtml(description) {
+  const raw = String(description || '').trim();
+  const parts = raw
+    ? raw.split(/\n+/).map((p) => p.trim()).filter(Boolean)
+    : [];
+  if (parts.length === 0) return '';
+  return parts.map((p) => `<p>${escapeHtml(p)}</p>`).join('\n          ');
+}
+
+function seoDetailMetaRows(project) {
+  const rows = [];
+  if (project.category) {
+    rows.push(`<dt>Category</dt><dd>${escapeHtml(project.category)}</dd>`);
+  }
+  if (project.year) {
+    rows.push(`<dt>Year</dt><dd>${escapeHtml(project.year)}</dd>`);
+  }
+  if (project.disciplines) {
+    rows.push(`<dt>Disciplines</dt><dd>${escapeHtml(project.disciplines)}</dd>`);
+  }
+  if (Array.isArray(project.tools) && project.tools.length > 0) {
+    rows.push(`<dt>Tools</dt><dd>${escapeHtml(project.tools.join(' / '))}</dd>`);
+  }
+  if (rows.length === 0) return '';
+  return `<dl>\n            ${rows.join('\n            ')}\n          </dl>`;
+}
+
 function buildJsonLd(project, canonical, thumb) {
   const graph = [
     {
@@ -65,6 +92,12 @@ function pageHtml(project) {
   const ogTitle = escapeHtml(title);
   const ogDesc = escapeHtml(desc);
   const jsonLd = buildJsonLd(project, canonical, thumb);
+  const tagline = project.tagline ? String(project.tagline).trim() : '';
+  const detailParas = descriptionParagraphsHtml(project.description);
+  const detailMeta = seoDetailMetaRows(project);
+  const taglineHtml = tagline
+    ? `<p>${escapeHtml(tagline)}</p>`
+    : '';
 
   return `<!doctype html>
 <html lang="ja">
@@ -211,6 +244,14 @@ ${jsonLd}
         aria-label="プロジェクト一覧"
       ></nav>
 
+      <section class="seo-project-detail" aria-label="${escapeHtml(project.title)}の詳細">
+        <h2>${escapeHtml(project.title)}</h2>
+        ${taglineHtml}
+        ${detailParas}
+        ${detailMeta}
+        <p>制作: <a href="/">SHUNTO FUJII Portfolio</a></p>
+      </section>
+
       <section class="seo-project-list" aria-label="ポートフォリオ実績一覧">
         <h2 class="visually-hidden">ポートフォリオ実績</h2>
         <ol>
@@ -296,7 +337,7 @@ ${jsonLd}
       ></video>
     </div>
 
-    <script src="/vendor/matter.js"></script>
+    <!-- matter-js はプロフィール入場時のみ matterResolve.js が /vendor/matter.js を遅延読み込み -->
     <script type="module" src="/app.js"></script>
     <!--
       本HTMLは https://shuntofujii.com/ のポートフォリオテンプレートに基づいています。

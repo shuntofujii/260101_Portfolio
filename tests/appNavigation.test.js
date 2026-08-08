@@ -42,6 +42,15 @@ describe('renderProjectNavigation', () => {
     expect(items.length).toBe(projects.length * 3);
     expect(nav.classList.contains('is-infinite-loop')).toBe(true);
     expect(nav.scrollLeft).toBe(375);
+
+    const thumbs = [...nav.querySelectorAll('img.project-thumbnail')];
+    // 1周目: index < 2 が high、それ以外とループ複製は lazy
+    expect(thumbs[0].fetchPriority).toBe('high');
+    expect(thumbs[0].loading).toBe('eager');
+    expect(thumbs[2].fetchPriority).toBe('low');
+    expect(thumbs[2].loading).toBe('lazy');
+    expect(thumbs[3].fetchPriority).toBe('low');
+    expect(thumbs[3].loading).toBe('lazy');
   });
 
   it('端へ寄ったスクロール時に中央セグメントへ戻す', () => {

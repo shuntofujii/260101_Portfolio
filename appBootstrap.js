@@ -1,3 +1,16 @@
+import {
+  enterLiteMode,
+  isLiteMode,
+  onEnterLiteMode,
+  shouldPreferLiteModeEarly,
+  startNavReadyWatchdog
+} from './perfMode.js';
+import { PERF_MODE_WATCHDOG_MS } from './constants.js';
+import { applyLiteModeGuidance } from './guidanceTypewriter.js';
+
+/** createAppBootstrapController 多重生成でも lite ガイダンスフックは1回だけ */
+let liteGuidanceHookBound = false;
+
 export function createAppBootstrapController(deps) {
   const {
     state,
@@ -18,6 +31,15 @@ export function createAppBootstrapController(deps) {
     showErrorState
   } = deps;
 
+  if (!liteGuidanceHookBound) {
+    liteGuidanceHookBound = true;
+    onEnterLiteMode(() => {
+      const guidanceEl = refs.guidanceText;
+      if (!guidanceEl || document.body.dataset.portfolioPageSlug) return;
+      applyLiteModeGuidance(guidanceEl);
+    });
+  }
+
   const {
     videoPreloadLinkMaxMobile,
     videoPreloadLinkMaxDesktop,
@@ -34,6 +56,7 @@ export function createAppBootstrapController(deps) {
   }
 
   function isConservativeVideoPreload() {
+    if (isLiteMode()) return true;
     try {
       const c = navigator.connection;
       if (c && c.saveData) return true;
@@ -63,8 +86,19 @@ export function createAppBootstrapController(deps) {
     setupEventListeners();
     applyInitialRoute();
     if (!document.body.dataset.portfolioPageSlug) {
-      initGuidanceTypewriter(refs.guidanceText);
+      if (isLiteMode()) {
+        applyLiteModeGuidance(refs.guidanceText);
+      } else {
+        initGuidanceTypewriter(refs.guidanceText);
+      }
     }
+
+    startNavReadyWatchdog(refs.projectNavigation, {
+      timeoutMs: PERF_MODE_WATCHDOG_MS,
+      onTimeout: () => {
+        enterLiteMode({ reason: 'watchdog' });
+      }
+    });
   }
 
   function preloadProjectVideos(project) {
@@ -81,8 +115,12 @@ export function createAppBootstrapController(deps) {
    * requestIdleCallback でメインスレッドの空きに載せ、timeout で遅れすぎないようにする。
    */
   function scheduleCursorEffectInit() {
+    if (isLiteMode()) return Promise.resolve();
+
     const run = async () => {
+      if (isLiteMode()) return;
       const m = await import('./cursorEffect.js');
+      if (isLiteMode()) return;
       await m.initCursorEffect();
     };
     const mobile = isMobileViewport();
@@ -99,6 +137,10 @@ export function createAppBootstrapController(deps) {
 
   async function init() {
     try {
+      if (shouldPreferLiteModeEarly()) {
+        enterLiteMode({ reason: 'early-signal' });
+      }
+
       state.projects = await fetchProjectsData();
       warmupInitialHeroVideos(state.projects);
       bootstrapUiAfterDataReady();

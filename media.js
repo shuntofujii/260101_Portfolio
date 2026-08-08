@@ -578,8 +578,23 @@ function appendSectionMeta(parentEl, items) {
 }
 
 /**
+ * explicitModal のリード文（見出し付帯 description / type:text 共通）
+ * @param {HTMLElement} parentEl
+ * @param {unknown} text
+ */
+export function appendExplicitModalLead(parentEl, text) {
+  if (!parentEl) return;
+  const value = text == null ? '' : String(text).trim();
+  if (!value) return;
+  const p = document.createElement('p');
+  p.className = 'explicit-modal-lead';
+  p.textContent = value;
+  parentEl.appendChild(p);
+}
+
+/**
  * projects.json の explicitModal.segments からモーダル本文を生成（ファイル名ベースの固定レイアウト）
- * @param {{ projectSlug?: string, explicitModal?: { segments?: Array<{ type: string, text?: string, file?: string, files?: string[] }> } }} project
+ * @param {{ projectSlug?: string, explicitModal?: { segments?: Array<{ type: string, text?: string, description?: string, file?: string, files?: string[], items?: unknown[] }> } }} project
  * @param {HTMLElement} parentEl
  */
 export function appendExplicitModal(project, parentEl) {
@@ -613,6 +628,7 @@ export function appendExplicitModal(project, parentEl) {
       const sectionId = seg.id ? String(seg.id) : slugifySectionId(seg.text);
       if (sectionId) h.id = sectionId;
       parentEl.appendChild(h);
+      appendExplicitModalLead(parentEl, seg.description);
       return;
     }
 
@@ -622,6 +638,12 @@ export function appendExplicitModal(project, parentEl) {
       h.className = 'explicit-modal-subtitle';
       h.textContent = seg.text;
       parentEl.appendChild(h);
+      appendExplicitModalLead(parentEl, seg.description);
+      return;
+    }
+
+    if (seg.type === 'text' && seg.text) {
+      appendExplicitModalLead(parentEl, seg.text);
       return;
     }
 

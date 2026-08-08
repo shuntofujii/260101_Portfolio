@@ -5,6 +5,8 @@ export const state = {
 
   // UI mode
   currentState: 'initial', // 'initial' | 'hover' | 'modal'
+  /** 'full' | 'lite' — 低スペック／起動遅延時は演出を抑える（perfMode.js） */
+  perfMode: 'full',
   hoveredProject: null,
   selectedProject: null,
   hoverLeaveTimer: null,

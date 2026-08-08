@@ -21,8 +21,12 @@ import { state } from './state.js';
 
 /** 末尾の点滅 `_` は `.guidance-cursor` が担当（HTML）。本文のみ更新する */
 const FULL_PHRASE = 'Please select a project';
+const LITE_MODE_LINE = 'Operating in Lite Mode';
 
 const QWERTY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
+
+/** @type {null | (() => void)} */
+let activeGuidanceCleanup = null;
 
 function randomInt(min, max) {
   return min + Math.floor(Math.random() * (max - min + 1));
@@ -66,10 +70,37 @@ function clampProb(p) {
   return Math.min(0.92, Math.max(0.008, p));
 }
 
+/**
+ * lite モード用の静止ガイダンス（タイプライター停止＋2行表示）
+ * @param {HTMLElement | null | undefined} guidanceTextEl
+ */
+export function applyLiteModeGuidance(guidanceTextEl) {
+  if (!guidanceTextEl) return;
+
+  if (activeGuidanceCleanup) {
+    activeGuidanceCleanup();
+    activeGuidanceCleanup = null;
+  }
+
+  guidanceTextEl.classList.add('is-lite-guidance');
+  guidanceTextEl.innerHTML = `
+    <span class="guidance-main">${FULL_PHRASE}</span>
+    <span class="guidance-lite-line">${LITE_MODE_LINE}</span>
+  `;
+  guidanceTextEl.classList.add('visible');
+}
+
 export function initGuidanceTypewriter(guidanceTextEl) {
   const mainEl = guidanceTextEl?.querySelector('.guidance-main');
   const cursorEl = guidanceTextEl?.querySelector('.guidance-cursor');
   if (!mainEl || !cursorEl || !guidanceTextEl) return;
+
+  if (activeGuidanceCleanup) {
+    activeGuidanceCleanup();
+    activeGuidanceCleanup = null;
+  }
+
+  guidanceTextEl.classList.remove('is-lite-guidance');
 
   let timeoutId = null;
   let cancelled = false;
@@ -238,6 +269,11 @@ export function initGuidanceTypewriter(guidanceTextEl) {
 
   const observer = new MutationObserver(syncFromVisibility);
   observer.observe(guidanceTextEl, { attributes: true, attributeFilter: ['class'] });
+
+  activeGuidanceCleanup = () => {
+    stopLoop();
+    observer.disconnect();
+  };
 
   syncFromVisibility();
 }

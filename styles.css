@@ -85,7 +85,8 @@
 
 /* スクリーンリーダー・SEO用: 視覚的に非表示だがテキストは残す（クローラー・アクセシビリティ） */
 .visually-hidden,
-.seo-project-list {
+.seo-project-list,
+.seo-project-detail {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -99,6 +100,15 @@
 .seo-project-list ol {
   list-style: decimal;
   padding-left: 1.5em;
+}
+.seo-project-detail dl {
+  margin: 0.5em 0;
+}
+.seo-project-detail dt {
+  font-weight: 600;
+}
+.seo-project-detail dd {
+  margin: 0 0 0.35em 0;
 }
 
 /* スキップリンク: キーボードフォーカス時のみ表示 */
@@ -312,24 +322,6 @@ body {
 
 .profile-modal-mail:hover {
   opacity: 0.85;
-}
-
-.profile-modal-meta {
-  gap: 0.75rem 1.25rem;
-}
-
-.profile-modal-meta-item {
-  width: 100%;
-}
-
-.profile-modal-meta-item--half {
-  width: calc(50% - 0.625rem);
-}
-
-@media (max-width: 768px) {
-  .profile-modal-meta-item--half {
-    width: 100%;
-  }
 }
 
 /* プロフィール入場（Matter.js）オーバーレイ */
@@ -793,6 +785,25 @@ body.profile-intro-running #bgVideo {
   color: inherit;
 }
 
+.guidance-text.is-lite-guidance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45em;
+}
+
+.guidance-text.is-lite-guidance .guidance-main {
+  display: block;
+}
+
+.guidance-lite-line {
+  display: block;
+  font-size: 0.85em;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  opacity: 0.72;
+}
+
 .guidance-cursor {
   display: inline-block;
   color: inherit;
@@ -1010,6 +1021,23 @@ body.modal-open .project-navigation {
   opacity: 0.4;
 }
 
+/* lite: 非選択サムネの可読性を上げ、未ロードと誤認しにくくする */
+html[data-perf-mode='lite'] .project-item:not(.thumbnail-preview-active):not(.selected) {
+  opacity: 0.7;
+}
+
+/* lite: ホバー時の枠線／ネオンリングアニメを止める */
+html[data-perf-mode='lite'] .project-item.thumbnail-preview-active:not(.selected)::before {
+  animation: none;
+  transform: scale(1);
+}
+
+html[data-perf-mode='lite'] .project-item.thumbnail-preview-active:not(.selected)::after {
+  animation: none;
+  opacity: 0;
+  display: none;
+}
+
 .project-item:not(.thumbnail-preview-active):not(.selected) .project-thumbnail {
   transform: scale(1);
   filter: brightness(1);
@@ -1190,44 +1218,6 @@ body.modal-open .modal-overlay:not([hidden]) {
   pointer-events: none;
 }
 
-/* モバイル個別ページのスワイプ遷移（プロジェクト切替時のみ JS から付与） */
-.modal-container.swipe-exit-next,
-.modal-container.swipe-exit-prev {
-  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), opacity 280ms cubic-bezier(0.22, 1, 0.36, 1) !important;
-  pointer-events: none;
-}
-
-.modal-container.swipe-exit-next {
-  transform: translateX(-22%) scale(0.94) !important;
-  opacity: 0 !important;
-}
-
-.modal-container.swipe-exit-prev {
-  transform: translateX(22%) scale(0.94) !important;
-  opacity: 0 !important;
-}
-
-.modal-container.swipe-enter-next,
-.modal-container.swipe-enter-prev {
-  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), opacity 280ms cubic-bezier(0.22, 1, 0.36, 1) !important;
-}
-
-.modal-container.swipe-enter-next[data-state="closed"] {
-  transform: translateX(22%) scale(1.04) !important;
-  opacity: 0 !important;
-}
-
-.modal-container.swipe-enter-prev[data-state="closed"] {
-  transform: translateX(-22%) scale(1.04) !important;
-  opacity: 0 !important;
-}
-
-.modal-container.swipe-enter-next[data-state="open"],
-.modal-container.swipe-enter-prev[data-state="open"] {
-  transform: translateX(0) scale(1) !important;
-  opacity: 1 !important;
-}
-
 .modal-close {
   position: absolute;
   top: calc(1.5rem + var(--safe-top));
@@ -1361,6 +1351,20 @@ body.modal-open .modal-overlay:not([hidden]) {
   padding-top: 3rem;
 }
 
+/* 説明文がなくヘッダー直後に施策が続くときは余白を詰める（Others 等） */
+.modal-header + .modal-initiatives {
+  padding-top: 1rem;
+}
+
+.modal-header:has(+ .modal-initiatives) .modal-tagline {
+  margin-bottom: 0.75rem;
+}
+
+/* モーダルヘッダー非表示時（visually-hidden の h2 のみ）は先頭余白をほぼなくす */
+.modal-content > .visually-hidden + .modal-initiatives {
+  padding-top: 0;
+}
+
 .profile-modal-logos {
   padding-top: 1.75rem;
 }
@@ -1407,89 +1411,6 @@ body.modal-open .modal-overlay:not([hidden]) {
   font-weight: 500;
   color: var(--text-secondary);
   margin: 0;
-}
-
-.initiative-videoBlock {
-  position: relative;
-  width: 100%;
-  margin-bottom: 1.5rem;
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-.video-poster {
-  position: relative;
-  width: 100%;
-  padding: 0;
-  border: none;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.3s ease, border-color 0.3s ease;
-}
-
-.video-poster:hover {
-  transform: scale(1.01);
-  border-color: rgba(255, 255, 255, 0.35);
-}
-
-.video-poster img {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
-  background: #000;
-}
-
-.video-playBadge {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  pointer-events: none;
-}
-
-.video-playIcon {
-  width: 64px;
-  height: 64px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(6px);
-  position: relative;
-  transition: background 0.3s ease;
-}
-
-.video-poster:hover .video-playIcon {
-  background: rgba(0, 0, 0, 0.55);
-}
-
-.video-playIcon::before {
-  content: "";
-  position: absolute;
-  left: 26px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-left: 18px solid rgba(255, 255, 255, 0.9);
-  border-top: 14px solid transparent;
-  border-bottom: 14px solid transparent;
-}
-
-.video-playText {
-  font-size: 14px;
-  letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(0, 0, 0, 0.35);
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(6px);
 }
 
 /* ============================================
@@ -1730,36 +1651,6 @@ body.modal-open .modal-overlay:not([hidden]) {
   background: rgba(255, 255, 255, 0.9);
 }
 
-.video-closeInline {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: rgba(255, 255, 255, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  transition: background 0.3s ease, transform 0.3s ease;
-  z-index: 10;
-}
-
-.video-closeInline:hover {
-  background: rgba(0, 0, 0, 0.6);
-  transform: scale(1.05);
-}
-
-.video-closeInline::before {
-  content: "×";
-  font-size: 18px;
-  line-height: 1;
-}
-
 /* ============================================
    画像グリッド（固定ルールレイアウト）
    ============================================ */
@@ -1946,6 +1837,30 @@ body.modal-open .modal-overlay:not([hidden]) {
 
 .explicit-modal-section-title + .explicit-modal-subtitle {
   margin-top: 0.75rem;
+}
+
+/* 見出し直下／単独 text セグメントのリード（.modal-description と同系色） */
+.explicit-modal-lead {
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0 0 1rem 0;
+}
+
+.explicit-modal-section-title + .explicit-modal-lead {
+  margin-top: 0;
+}
+
+.explicit-modal-subtitle + .explicit-modal-lead {
+  margin-top: -0.25rem;
+}
+
+.explicit-modal-section-title:has(+ .explicit-modal-lead) {
+  margin-bottom: 0.5rem;
+}
+
+.explicit-modal-subtitle:has(+ .explicit-modal-lead) {
+  margin-bottom: 0.4rem;
 }
 
 /* explicitModal 内のセクション末尾メタ（モーダル全体の .modal-meta と同一コンポーネント） */
@@ -2147,6 +2062,14 @@ body.modal-open .modal-overlay:not([hidden]) {
   .modal-initiatives {
     margin-top: 0;
     padding-top: 2rem;
+  }
+
+  .modal-header + .modal-initiatives {
+    padding-top: 0.75rem;
+  }
+
+  .modal-content > .visually-hidden + .modal-initiatives {
+    padding-top: 0;
   }
 
   .profile-modal-logos {

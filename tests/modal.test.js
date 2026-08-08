@@ -52,6 +52,24 @@ describe('modal', () => {
     expect(modalContent.textContent).toContain('T');
   });
 
+  it('hideModalHeader 時は見た目のヘッダーを出さずタイトルは残す', () => {
+    const { modalContent } = setupModalRefs();
+    openModal(
+      {
+        title: 'Others',
+        tagline: '作ること全般が好きです。',
+        hideModalHeader: true,
+        projectSlug: 'others'
+      },
+      null
+    );
+    expect(modalContent.querySelector('.modal-header')).toBeNull();
+    expect(modalContent.querySelector('#modalTitleHeading')?.classList.contains('visually-hidden')).toBe(
+      true
+    );
+    expect(modalContent.querySelector('#modalTitleHeading')?.textContent).toBe('Others');
+  });
+
   it('openModal はスクロール位置を先頭に戻す', () => {
     const { modalContainer, modalContent } = setupModalRefs();
     modalContainer.scrollTop = 180;

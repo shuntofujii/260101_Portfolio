@@ -1,23 +1,32 @@
 import { ASSETS_CACHE_V } from './constants.js';
 
-function createThumbnail(project, index, options) {
+/**
+ * @param {object} project
+ * @param {number} index プロジェクト配列内インデックス
+ * @param {object} options
+ * @param {number} [pass] 無限ループの周（0 のみ eager/high 候補）
+ */
+function createThumbnail(project, index, options, pass = 0) {
   const {
     baseAssetsUrl,
     projectThumbnailSizePx,
     thumbnailFetchPriorityCount
   } = options;
 
+  const src = project.thumbnail || `${baseAssetsUrl}/top/placeholder-image.jpg${ASSETS_CACHE_V}`;
   const thumbnail = document.createElement('img');
   thumbnail.className = 'project-thumbnail';
-  thumbnail.src = project.thumbnail || `${baseAssetsUrl}/top/placeholder-image.jpg${ASSETS_CACHE_V}`;
+  thumbnail.dataset.canonicalSrc = src;
+  thumbnail.src = src;
   thumbnail.alt = project.title ? `${project.title}のサムネイル` : 'プロジェクトのサムネイル';
   thumbnail.width = projectThumbnailSizePx;
   thumbnail.height = projectThumbnailSizePx;
   thumbnail.sizes = `${projectThumbnailSizePx}px`;
   thumbnail.decoding = 'async';
 
-  // LCP 候補になりうるナビサムネは lazy にしない（PSI: lazy が LCP 遅延の主因）
-  if (index < thumbnailFetchPriorityCount) {
+  // 1周目の先頭数枚だけ high/eager。ループ複製は常に lazy（低スペックの帯域争奪を避ける）
+  const preferHigh = pass === 0 && index < thumbnailFetchPriorityCount;
+  if (preferHigh) {
     thumbnail.fetchPriority = 'high';
     thumbnail.loading = 'eager';
   } else {
@@ -30,6 +39,25 @@ function createThumbnail(project, index, options) {
   };
 
   return thumbnail;
+}
+
+/**
+ * 未完了サムネを canonicalSrc で1回だけ再取得（lite 突入時など）
+ * @param {ParentNode | null | undefined} navEl
+ */
+export function retryIncompleteNavThumbnails(navEl) {
+  if (!navEl) return;
+
+  navEl.querySelectorAll('img.project-thumbnail').forEach((img) => {
+    const canonical = img.dataset.canonicalSrc;
+    if (!canonical || img.dataset.retried === '1') return;
+    if (img.complete && img.naturalWidth > 0 && !String(img.src || '').startsWith('data:')) {
+      return;
+    }
+    img.dataset.retried = '1';
+    img.removeAttribute('src');
+    img.src = canonical;
+  });
 }
 
 const LOOP_SEGMENT_COUNT = 3;
@@ -134,7 +162,7 @@ function appendProjectItems(projectNavigationEl, projects, options, passCount) {
       item.dataset.projectIndex = String(index);
       item.setAttribute('aria-label', `${project.title} の詳細を開く`);
 
-      const thumbnail = createThumbnail(project, index, options);
+      const thumbnail = createThumbnail(project, index, options, pass);
       item.appendChild(thumbnail);
       projectNavigationEl.appendChild(item);
     });

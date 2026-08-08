@@ -77,7 +77,7 @@ export const CURSOR_CONFIG = {
 export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 
 /** CDN 画像・動画・アイコン共通のキャッシュバスター（先頭は ?）。projects.json / HTML の ?v= と揃える */
-export const ASSETS_CACHE_V = '?v=20260803';
+export const ASSETS_CACHE_V = '?v=20260808';
 
 /** プロフィール入場アニメ（Matter.js） */
 export const PROFILE_INTRO_ASSETS_V = ASSETS_CACHE_V;
@@ -128,10 +128,19 @@ export const PROJECT_THUMBNAIL_SIZE_PX = 90;
 export const THUMBNAIL_PREVIEW_ACTIVE_CLASS = 'thumbnail-preview-active';
 
 /**
- * 優先読み込みするサムネイル数（残りは lazy）。
- * 初期ビューで中央付近が LCP になりやすいため、全案件分を eager にする（8枚・小サイズ）。
+ * 1周目ナビで fetchpriority=high / eager にする先頭件数（残りとループ複製は lazy）。
+ * 全件 high だと低スペックで動画 warmup・WebGL と帯域争奪しやすい。
  */
-export const THUMBNAIL_FETCH_PRIORITY_COUNT = 8;
+export const THUMBNAIL_FETCH_PRIORITY_COUNT = 2;
+
+/** ナビ描画後、サムネ Ready にならない場合に lite へ落とすまでの待ち（ms） */
+export const PERF_MODE_WATCHDOG_MS = 10000;
+
+/** 早期 lite: deviceMemory（GB）がこの値以下なら軽量モード */
+export const PERF_MODE_DEVICE_MEMORY_MAX = 4;
+
+/** 早期 lite: hardwareConcurrency がこの値以下なら軽量モード */
+export const PERF_MODE_HARDWARE_CONCURRENCY_MAX = 4;
 
 /** ガイダンス「Please select a project」タイプライター（文字追加・削除の間隔・停止） */
 

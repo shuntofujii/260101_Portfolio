@@ -17,6 +17,7 @@
 - 動画の先読み・ホーバー再生の調整: `動画プリロード・ヒーロー再生（実装メモ）`
 - データ仕様を確認: `📦 アセットルール`
 - **画像・動画アップロード（R2）**: [`docs/R2_UPLOAD_SETUP.md`](docs/R2_UPLOAD_SETUP.md)
+- **www → 非 www リダイレクト**: [`docs/WWW_REDIRECT_SETUP.md`](docs/WWW_REDIRECT_SETUP.md)
 - UIルールを確認: `🎨 カスタマイズ`
 - SEO運用を確認: `🔁 デプロイ・データ更新時の推奨手順`
 
@@ -24,52 +25,39 @@
 
 ```
 /260101_Portfolio/
-├── index.html          # メインHTML（メタ・OGP・構造化データ・スキップリンク含む）
-├── styles.css          # スタイルシート（CSS変数でテーマ・z-index・Safe Area を集約）
-├── projects.json       # プロジェクトデータ（8件。cases 構造で施策別メディアも管理可）
-├── {pageSlug}/         # 各案件の静的HTML（例: ejic/index.html → shuntofujii.com/ejic/）
+├── index.html / {pageSlug}/ / profile/ / 404.html
+├── styles.css / projects.json / site.webmanifest
+├── sitemap.xml / robots.txt / CNAME
+├── app.js                    # エントリ（各モジュールのオーケストレーション）
+├── appBootstrap.js / appDomSetup.js / appRouting.js / appNavigation.js
+├── appHeroMedia.js / appStateTransitions.js / appEventBindings.js
+├── appModalRoutingController.js / appModalSwipeController.js
+├── appProjectInteractions.js
+├── state.js / domRefs.js / constants.js / utils.js / routing.js
+├── modal.js / modalChrome.js / lightbox.js / lightboxShared.js
+├── media.js / mediaLayout.js / videoCache.js / projectVideoUrls.js
+├── profileModal.js / profileIntroPhysics.js / profileOpenButtonMotion.js
+├── matterResolve.js          # Matter.js 遅延読込
+├── cursorEffect.js           # 軌跡（/vendor/three.module.js を動的 import）
+├── accentColorTheme.js / cursorTrail*.js / sleepTrajectory.js
+├── guidanceTypewriter.js / animatedFavicon.js
+├── siteBrokenPeriod.js / perfMode.js
+├── meta-audit.js             # CI・デプロイ前の meta 監査
+├── vendor/                   # matter.js / three.module.js（ローカル同梱）
 ├── scripts/
-│   ├── build-project-pages.mjs  # projects.json から {pageSlug}/index.html を再生成
-│   └── upload-asset.mjs           # R2 へ画像・動画をアップロード（npm run upload）
+│   ├── build-project-pages.mjs
+│   ├── upload-asset.mjs / optimize-cdn-assets.mjs
+│   └── lib/                  # R2・git・変換ヘルパ
 ├── docs/
-│   └── R2_UPLOAD_SETUP.md       # R2 設定・アップロード手順
-├── routing.js          # /{pageSlug}/ のパス解釈（純粋なルーティング関数）
-├── app.js              # エントリポイント（初期化・各モジュールのオーケストレーション）
-├── appDomSetup.js      # DOM参照の収集と refs 初期化（app.js から分離）
-├── appBootstrap.js     # 起動シーケンス（データ取得・初期先読み・UI起動順）を集約
-├── appRouting.js       # URL/履歴/title・description更新の制御
-├── appNavigation.js    # プロジェクトナビ（サムネイルDOM生成・イベント紐付け）
-├── appHeroMedia.js     # ヒーロー動画の再生切替・表示タイミング制御
-├── appStateTransitions.js # hover/initial/modal の状態遷移ユーティリティ
-├── appEventBindings.js # グローバルイベント登録（ESC/クリック/touch）
-├── appModalRoutingController.js # ルート連動とモーダル副作用（履歴/タイトル/meta）を集約
-├── appModalSwipeController.js # モーダル内スワイプ遷移の制御を分離
-├── appProjectInteractions.js # hover/touch/click と context panel 更新を分離
-├── state.js            # 状態管理（currentState, 選択中プロジェクト等）
-├── domRefs.js          # DOM 参照の保持（setRefs / getRefs）
-├── constants.js        # 定数（ブレークポイント・時間・カーソル設定・ベースURL）
-├── utils.js            # ユーティリティ（escapeHtml, フォーカストラップ）
-├── modal.js            # モーダルの開閉・コンテンツ組み立て
-├── lightbox.js         # ライトボックス（画像・動画の拡大表示）
-├── lightboxShared.js   # lightbox 共通ロジック（要素解決・origin矩形・inline style 後始末）
-├── media.js            # メディア表示（画像/動画グリッド、cases 用カード、動画プレイヤー）
-├── mediaLayout.js      # メディアURL生成とグリッドレイアウト計算（media.js から分離）
-├── videoCache.js       # 動画URL解決・`<link rel="preload">`・アイドル時プリロード
-├── projectVideoUrls.js # projects.json からヒーロー・cases・explicitModal 等の動画 URL を列挙（上記と連携）
-├── cursorEffect.js     # カーソル軌跡エフェクト・アクセント色の時間変化（Three.js を CDN から動的 import）
-├── meta-audit.js       # meta監査（hover左上/モーダルmeta の乖離防止）
-├── sitemap.xml         # サイトマップ（SEO・更新時に lastmod を更新推奨）
-├── robots.txt          # クローラー許可と Sitemap 指定
-├── CNAME               # GitHub Pages などでドメイン指定する場合に使用
-├── SEO_RECOMMENDATIONS.md  # SEO 実施内容と運用で推奨すること
-├── tests/              # Vitest による最小回帰テスト（routing / appRouting / modal / media / cache 含む）
-├── package.json        # テスト実行スクリプト（`npm test`, `npm run test:watch`）
-├── package-lock.json   # npm 依存ロック
-└── README.md           # このファイル
+│   ├── R2_UPLOAD_SETUP.md
+│   └── WWW_REDIRECT_SETUP.md
+├── SEO_RECOMMENDATIONS.md
+├── tests/                    # Vitest
+└── package.json
 ```
 
 - **アセット（画像・動画）**: 本リポジトリには `assets/` フォルダは含まれていません。`projects.json` および `constants.js` の `baseAssetsUrl` で指定した外部 URL（例: `https://assets.shuntofujii.com`）から読み込みます。自前で配信する場合は `baseAssetsUrl` と各プロジェクトの `heroMedia.src` / `thumbnail` / cases のアセット命名規則を揃えてください。
-
+- **GitHub Pages 成果物**: `deploy.yml` は `node_modules` / `tests` / `scripts` / `docs` などを除外した `_site` のみをデプロイします。
 ### モジュールの役割（データの流れ）
 
 1. **`app.js`** … エントリポイント。`projects.json` の取得、初期プリロード、初期UI起動を順序制御します（詳細処理は専用モジュールへ委譲）。
@@ -379,12 +367,12 @@ export const baseAssetsUrl = 'https://assets.shuntofujii.com';
 ```json
 {
   "modalMetaItems": [
-    { "label": "Client", "value": "株式会社○○", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260801" },
-    { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260801" },
-    { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260801" },
-    { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260801" },
-    { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260801" },
-    { "label": "Team", "value": "Role：Name / ...", "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260801" }
+    { "label": "Client", "value": "株式会社○○", "icon": "https://assets.shuntofujii.com/icons/client.svg?v=20260803" },
+    { "label": "Domain", "value": "$domain", "icon": "https://assets.shuntofujii.com/icons/domain.svg?v=20260803" },
+    { "label": "Year", "value": "$year", "icon": "https://assets.shuntofujii.com/icons/year.svg?v=20260803" },
+    { "label": "Disciplines", "value": "$disciplines", "icon": "https://assets.shuntofujii.com/icons/focus.svg?v=20260803" },
+    { "label": "Toolkits", "value": "$toolkits", "icon": "https://assets.shuntofujii.com/icons/toolkits.svg?v=20260803" },
+    { "label": "Team", "value": "Role：Name / ...", "icon": "https://assets.shuntofujii.com/icons/team.svg?v=20260803" }
   ]
 }
 ```
@@ -468,9 +456,13 @@ node meta-audit.js
 {baseAssetsUrl}/{projectSlug}/{filename}
 ```
 
-例: `https://assets.shuntofujii.com/izumo/strategy2024_p_1.webp?v=20260801`（実行時は `ASSETS_CACHE_V` が付与されます）
+例: `https://assets.shuntofujii.com/izumo/strategy2024_p_1.webp?v=20260803`（実行時は `ASSETS_CACHE_V` が付与されます）
 
 動画のポスター画像は、動画と同じ basename で拡張子を `.webp` にしたファイルを利用します（コード内で `.webm` → `.webp` に置換）。
+
+### 画像 caption（任意）
+
+`explicitModal` の `imageRow` では `captions` 配列（`files` と同じ長さ）、`mediaRow` の各 image では `caption` で alt を指定できます。未指定時は「案件名 + セクション名 + 番号」の自動 alt になります。**全枚への投入は不要**で、重要なキービジュアルだけ後から足す運用で十分です。
 
 ### projects.json の記述（cases / initiatives）
 

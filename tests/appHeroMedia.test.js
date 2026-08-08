@@ -32,6 +32,17 @@ describe('updateHeroMedia', () => {
     expect(ensureVideoPlayUrl).not.toHaveBeenCalled();
   });
 
+  it('skipHeroVideo 時は動画を初期化しない', () => {
+    const video = document.createElement('video');
+    updateHeroMedia(
+      { type: 'video', src: '/lite.webm' },
+      video,
+      { videoUpdateFadeDelayMs: 0, videoShowFallbackMs: 200, skipHeroVideo: true }
+    );
+    expect(ensureVideoPlayUrl).not.toHaveBeenCalled();
+    expect(video.dataset.canonicalVideoSrc).toBeUndefined();
+  });
+
   it('新しい src ではフェード後に動画URL解決を呼ぶ', async () => {
     const video = document.createElement('video');
     video.play = vi.fn(() => Promise.resolve());

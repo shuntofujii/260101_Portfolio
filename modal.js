@@ -105,13 +105,21 @@ export function renderModalContent(project, modalContentEl) {
   const modalMetaItems = buildModalMetaItems(project);
   const modalMetaHtml = buildModalMetaHtml(modalMetaItems);
 
-  modalContentEl.innerHTML = `
-    <div class="modal-header">
-      <h2 class="modal-title" id="modalTitleHeading">${safeTitle}</h2>
-      ${safeTagline ? `<p class="modal-tagline">${safeTagline}</p>` : ''}
-    </div>
-    ${safeDescription ? `<div class="modal-description">${safeDescription}</div>` : ''}
-  `;
+  if (project.hideModalHeader) {
+    // 見た目のヘッダーは出さず、dialog の aria-labelledby 用にタイトルだけ残す
+    modalContentEl.innerHTML = `
+      <h2 class="visually-hidden" id="modalTitleHeading">${safeTitle}</h2>
+      ${safeDescription ? `<div class="modal-description">${safeDescription}</div>` : ''}
+    `;
+  } else {
+    modalContentEl.innerHTML = `
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitleHeading">${safeTitle}</h2>
+        ${safeTagline ? `<p class="modal-tagline">${safeTagline}</p>` : ''}
+      </div>
+      ${safeDescription ? `<div class="modal-description">${safeDescription}</div>` : ''}
+    `;
+  }
 
   appendProjectContentSections(project, modalContentEl);
 

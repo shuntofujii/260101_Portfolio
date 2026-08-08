@@ -14,8 +14,7 @@ function cleanupHeroVideoRuntimeHandlers(video) {
 
 function ensureHeroVideoPlayWithGestureFallback(video) {
   if (video.readyState < 2) return;
-  video.play().catch((e) => {
-    console.log('Video autoplay prevented:', e);
+  video.play().catch(() => {
     const retryPlay = () => {
       video.play().catch(() => {});
       document.removeEventListener('pointerdown', retryPlay);
@@ -107,7 +106,7 @@ function applyHeroVideoBaseLayout(video) {
 function setupHeroVideoLoopHandler(video) {
   const loopHandler = function () {
     video.currentTime = 0;
-    video.play().catch((e) => { console.log('Video replay error:', e); });
+    video.play().catch(() => {});
   };
   video.removeEventListener('ended', loopHandler);
   video.addEventListener('ended', loopHandler);
@@ -141,6 +140,8 @@ function updateHeroVideoElement(video, heroMedia, config) {
 export function updateHeroMedia(heroMedia, heroVideoBase, config) {
   if (!heroMedia || !heroVideoBase) return;
   if (heroMedia.type !== 'video') return;
+  // lite ではヒーロー動画を再生せず、帯域・デコードをナビに譲る
+  if (config?.skipHeroVideo) return;
   if (heroVideoBase.dataset.canonicalVideoSrc === heroMedia.src) return;
   updateHeroVideoElement(heroVideoBase, heroMedia, config);
 }

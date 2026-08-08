@@ -36,6 +36,7 @@ import { createAppBootstrapController } from './appBootstrap.js';
 import { initAnimatedFavicon } from './animatedFavicon.js';
 import { initProfileOpenButtonMotion } from './profileOpenButtonMotion.js';
 import { initSiteBrokenPeriod } from './siteBrokenPeriod.js';
+import { isLiteMode } from './perfMode.js';
 import { createModalRoutingController } from './appModalRoutingController.js';
 import {
   clearHoverLeaveTimer as clearHoverLeaveTimerState,
@@ -527,7 +528,8 @@ function setupEventListeners() {
 function updateHeroMedia(heroMedia) {
   updateHeroMediaView(heroMedia, refs.heroVideoBase, {
     videoUpdateFadeDelayMs: VIDEO_UPDATE_FADE_DELAY_MS,
-    videoShowFallbackMs: VIDEO_SHOW_FALLBACK_MS
+    videoShowFallbackMs: VIDEO_SHOW_FALLBACK_MS,
+    skipHeroVideo: isLiteMode()
   });
 }
 
@@ -553,11 +555,14 @@ function showErrorState() {
 
 // 初期化実行（崩れ期間の起点はデータ取得完了後＝bootstrap 完了時）
 init().finally(() => {
-  initSiteBrokenPeriod();
+  if (!isLiteMode()) {
+    initSiteBrokenPeriod();
+  }
 });
 
 function scheduleNonCriticalChromeInit() {
   const run = () => {
+    if (isLiteMode()) return;
     initAnimatedFavicon();
     initProfileOpenButtonMotion();
   };

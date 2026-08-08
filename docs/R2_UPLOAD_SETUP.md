@@ -222,7 +222,8 @@ curl -I "https://assets.shuntofujii.com/izumo/strategy2024_p_3.webp"
 
 1. `meta-audit.js`
 2. `build-project-pages.mjs`
-3. GitHub Pages へデプロイ
+3. `_site` を準備（`node_modules` / `tests` / `scripts` / `docs` 等を除外）
+4. GitHub Pages へデプロイ
 
 を実行します。
 
@@ -342,7 +343,7 @@ CLI は README のアセットルールに従って自動命名します。
 公開 URL:
 
 ```
-https://assets.shuntofujii.com/{projectSlug}/{filename}?v=20260801
+https://assets.shuntofujii.com/{projectSlug}/{filename}?v=20260803
 ```
 
 `?v=` は `constants.js` の `ASSETS_CACHE_V` です。CDN キャッシュを更新したい場合は、この値を変更してから再デプロイしてください。

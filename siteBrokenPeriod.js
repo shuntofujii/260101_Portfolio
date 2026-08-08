@@ -59,7 +59,7 @@ function markActivity() {
 }
 
 function tick() {
-  if (prefersReducedMotion()) {
+  if (state.perfMode === 'lite' || prefersReducedMotion()) {
     state.brokenPeriodActive = false;
     return;
   }
@@ -135,6 +135,10 @@ function tick() {
  */
 export function initSiteBrokenPeriod() {
   if (typeof window === 'undefined') return;
+  if (state.perfMode === 'lite') {
+    state.brokenPeriodActive = false;
+    return;
+  }
 
   const t0 = nowMs();
   landTimeMs = t0;

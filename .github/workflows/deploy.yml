@@ -36,10 +36,34 @@ jobs:
       - name: Build project pages
         run: node scripts/build-project-pages.mjs
 
+      - name: Prepare Pages artifact
+        run: |
+          mkdir -p _site
+          rsync -a \
+            --exclude '_site' \
+            --exclude 'node_modules' \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude '.env' \
+            --exclude '.env.*' \
+            --exclude 'coverage' \
+            --exclude '.vite' \
+            --exclude 'tests' \
+            --exclude 'scripts' \
+            --exclude 'package.json' \
+            --exclude 'package-lock.json' \
+            --exclude 'meta-audit.js' \
+            --exclude 'SEO_RECOMMENDATIONS.md' \
+            --exclude 'README.md' \
+            --exclude 'docs' \
+            --exclude '.DS_Store' \
+            --exclude '.gitignore' \
+            ./ _site/
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
 
   deploy:
     needs: build
