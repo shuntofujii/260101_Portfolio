@@ -106,10 +106,10 @@ export function renderModalContent(project, modalContentEl) {
   const modalMetaHtml = buildModalMetaHtml(modalMetaItems);
 
   if (project.hideModalHeader) {
-    // 見た目のヘッダーは出さず、dialog の aria-labelledby 用にタイトルだけ残す
+    // 見た目のヘッダー・リード文は出さず、dialog の aria-labelledby 用にタイトルだけ残す
+    // （description は meta / SEO 用に projects.json に残してよい）
     modalContentEl.innerHTML = `
       <h2 class="visually-hidden" id="modalTitleHeading">${safeTitle}</h2>
-      ${safeDescription ? `<div class="modal-description">${safeDescription}</div>` : ''}
     `;
   } else {
     modalContentEl.innerHTML = `

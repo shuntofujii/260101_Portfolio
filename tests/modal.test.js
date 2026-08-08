@@ -58,12 +58,14 @@ describe('modal', () => {
       {
         title: 'Others',
         tagline: '作ること全般が好きです。',
+        description: 'SEO用の説明文',
         hideModalHeader: true,
         projectSlug: 'others'
       },
       null
     );
     expect(modalContent.querySelector('.modal-header')).toBeNull();
+    expect(modalContent.querySelector('.modal-description')).toBeNull();
     expect(modalContent.querySelector('#modalTitleHeading')?.classList.contains('visually-hidden')).toBe(
       true
     );
